@@ -66,6 +66,10 @@ flutter:
     - assets/images/контроль.png
     - assets/images/касса.png
     - assets/images/грузперевозщик.png
+    - assets/images/products/potato.png
+    - assets/images/products/banana.png
+    - assets/images/products/cucumber.png
+    - assets/images/products/tomato.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

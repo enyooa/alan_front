@@ -1,7 +1,5 @@
-
 import 'package:flutter/material.dart';
-// import 'package:flutter_svg/flutter_svg.dart';
-import 'package:cash_control/ui/widgets/onboarding/onboarding_content.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cash_control/ui/main/home.dart';
 
 class Onbording extends StatefulWidget {
@@ -23,6 +21,12 @@ class _OnbordingState extends State<Onbording> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _completeOnboarding() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isFirstLaunch', false); // Save the flag to indicate onboarding is complete
+    Navigator.pushReplacementNamed(context, '/home'); // Navigate to home
   }
 
   @override
@@ -85,25 +89,20 @@ class _OnbordingState extends State<Onbording> {
             width: double.infinity,
             child: TextButton(
               child: Text(
-                  currentIndex == contents.length - 1 ? "Continue" : "Next"),
+                currentIndex == contents.length - 1 ? "Continue" : "Next",
+              ),
               onPressed: () {
                 if (currentIndex == contents.length - 1) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => Home(),
-                    ),
+                  _completeOnboarding();  // Mark onboarding as complete and navigate to home
+                } else {
+                  _controller.nextPage(
+                    duration: Duration(milliseconds: 100),
+                    curve: Curves.bounceIn,
                   );
                 }
-                _controller.nextPage(
-                  duration: Duration(milliseconds: 100),
-                  curve: Curves.bounceIn,
-                );
               },
-              
-              ),
             ),
-          
+          ),
         ],
       ),
     );
@@ -121,3 +120,30 @@ class _OnbordingState extends State<Onbording> {
     );
   }
 }
+
+class UnbordingContent {
+  String? image;
+  String? title;
+  String? discription;
+
+  UnbordingContent({this.image, this.title, this.discription});
+}
+
+List<UnbordingContent> contents = [
+  UnbordingContent(
+    title: 'Склад',
+    image: 'assets/images/грузперевозщик.png',
+    discription: "Вся информация о товарах, ценах и остатках. История движения в карточке товара. "
+        "Инвентаризация, списания и перемещения.",
+  ),
+  UnbordingContent(
+    title: 'Продажи',
+    image: 'assets/images/касса.png',
+    discription: "Оформляйте продажи/возвраты в основном и кассовых приложениях. Все документы в одном журнале.",
+  ),
+  UnbordingContent(
+    title: 'Контроль',
+    image: 'assets/images/контроль.png',
+    discription: "Отчеты по продажам, сотрудникам и движению товара. Данные о продажах с касс сразу попадают в приложение.",
+  ),
+];
