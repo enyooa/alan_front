@@ -25,6 +25,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
   int _selectedIndex = 0; // Manage the selected tab index
   String searchQuery = ""; // Store search query
 
+  // Store quantity for each product
+  List<int> quantities = List<int>.filled(4, 0); // Initialize with 4 products, all quantities set to 0
+
   final List<Widget> _screens = [
     CardScreen(), // Карточка
     CalculationScreen(), // Расчеты
@@ -157,6 +160,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
           imageUrl: filteredProducts[index]['imageUrl']!,
           name: filteredProducts[index]['name']!,
           supplier: filteredProducts[index]['supplier']!,
+          quantity: quantities[index], // Pass current quantity
+          onQuantityChanged: (newQuantity) {
+            setState(() {
+              quantities[index] = newQuantity; // Update quantity for the specific product
+            });
+          },
         );
       },
     );
@@ -195,22 +204,24 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 }
 
-// ProductCard is now stateless, quantity handled externally (can add callback to pass quantity)
+// ProductCard with external quantity management
 class ProductCard extends StatelessWidget {
   final String imageUrl;
   final String name;
   final String supplier;
+  final int quantity; // Quantity from the parent
+  final ValueChanged<int> onQuantityChanged; // Callback to update quantity
 
   ProductCard({
     required this.imageUrl,
     required this.name,
     required this.supplier,
+    required this.quantity, // Add quantity to the constructor
+    required this.onQuantityChanged, // Add callback for quantity change
   });
 
   @override
   Widget build(BuildContext context) {
-    int quantity = 0;
-
     return Card(
       margin: EdgeInsets.symmetric(vertical: 10),
       child: Padding(
@@ -261,12 +272,12 @@ class ProductCard extends StatelessWidget {
                         icon: Icon(Icons.remove),
                         onPressed: () {
                           if (quantity > 0) {
-                            quantity--;
+                            onQuantityChanged(quantity - 1); // Decrease quantity
                           }
                         },
                       ),
                       Text(
-                        '$quantity',
+                        '$quantity', // Display current quantity
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -275,7 +286,7 @@ class ProductCard extends StatelessWidget {
                       IconButton(
                         icon: Icon(Icons.add),
                         onPressed: () {
-                          quantity++;
+                          onQuantityChanged(quantity + 1); // Increase quantity
                         },
                       ),
                     ],
