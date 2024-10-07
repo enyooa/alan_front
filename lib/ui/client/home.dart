@@ -28,10 +28,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
   // Store quantity for each product
   List<int> quantities = List<int>.filled(4, 0); // Initialize with 4 products, all quantities set to 0
 
+  // Store products added to the cart
+  List<Map<String, dynamic>> cartItems = [];
+
   final List<Widget> _screens = [
     CardScreen(), // Карточка
     CalculationScreen(), // Расчеты
-    CartScreen(), // Корзина
+    CartScreen(cartItems: const []), // Корзина (we will pass the cartItems later)
     FavoritesScreen(), // Избранное
     ProfileScreen(), // Профиль
   ];
@@ -75,6 +78,28 @@ class _ProductListScreenState extends State<ProductListScreen> {
     },
   ];
 
+  // Add the product to the cart with a given quantity
+  void addToCart(int index) {
+    String productName = products[index]['name']!;
+    int quantity = quantities[index];
+
+    setState(() {
+  // If product already in cart, update its quantity
+  var existingProduct = cartItems.firstWhere(
+      (item) => item['name'] == productName,
+      orElse: () => {});
+  if (existingProduct.isNotEmpty) {
+    existingProduct['quantity'] = quantity;
+  } else {
+    // Add new product to cart
+    cartItems.add({
+      'name': productName,
+      'quantity': quantity,
+    });
+  }
+});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,7 +110,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
           Expanded(
             child: _selectedIndex == 0 // Check if current tab is "Product List"
                 ? buildProductList()
-                : _screens[_selectedIndex], // Show other screens based on index
+                : _screens[_selectedIndex] is CartScreen
+                    ? CartScreen(cartItems: cartItems) // Pass cartItems to CartScreen
+                    : _screens[_selectedIndex], // Show other screens based on index
           ),
         ],
       ),
@@ -164,6 +191,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
           onQuantityChanged: (newQuantity) {
             setState(() {
               quantities[index] = newQuantity; // Update quantity for the specific product
+              if (newQuantity > 0) {
+                addToCart(index); // Add/update product in cart if quantity > 0
+              }
             });
           },
         );
@@ -171,14 +201,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  // Bottom navigation bar
+  // Bottom navigation bar with a badge on the Cart tab
   BottomNavigationBar buildBottomNavigationBar() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex, // Track the selected item index
       selectedItemColor: Colors.blueAccent, // Color for selected item
       unselectedItemColor: Colors.grey, // Color for unselected items
       onTap: _onItemTapped,
-      items: const <BottomNavigationBarItem>[
+      items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Карточка',
@@ -188,7 +218,34 @@ class _ProductListScreenState extends State<ProductListScreen> {
           label: 'Расчеты',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.shopping_cart),
+          icon: Stack(
+            children: [
+              Icon(Icons.shopping_cart),
+              if (cartItems.isNotEmpty)
+                Positioned(
+                  right: 0,
+                  child: Container(
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    constraints: BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '${cartItems.length}', // Show number of items in the cart
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           label: 'Корзина',
         ),
         BottomNavigationBarItem(
@@ -226,6 +283,7 @@ class ProductCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 10),
       child: Padding(
         padding: const EdgeInsets.all(10.0),
+
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -317,12 +375,29 @@ class CalculationScreen extends StatelessWidget {
 }
 
 class CartScreen extends StatelessWidget {
+  final List<Map<String, dynamic>> cartItems;
+
+  const CartScreen({Key? key, required this.cartItems}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('Корзина Screen'));
+    // Your build method implementation
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Cart'),
+      ),
+      body: ListView.builder(
+        itemCount: cartItems.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(cartItems[index]['name']),
+            subtitle: Text('Quantity: ${cartItems[index]['quantity']}'),
+          );
+        },
+      ),
+    );
   }
 }
-
 class FavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
