@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_native_splash: ^2.2.16
   shared_preferences: ^2.0.15
+  excel: ^2.0.5
 
 
 dev_dependencies:
@@ -72,7 +73,7 @@ flutter:
     - assets/images/products/tomato.png
     - assets/images/products/mango.png
     - assets/images/products/watermelon.png
-        
+
     - assets/images/kassa/arears.png
     - assets/images/kassa/income.png
     - assets/images/kassa/expenses.jpg

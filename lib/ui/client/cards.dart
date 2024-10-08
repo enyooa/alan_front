@@ -1,3 +1,4 @@
+import 'package:cash_control/ui/scaffold_parts/header.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -28,7 +29,7 @@ class ProductGridScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Выбор поставщика'),
+        title: Header(title:'Выбор поставщика'),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
