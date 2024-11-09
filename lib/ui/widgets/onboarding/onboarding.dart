@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cash_control/ui/main/home.dart';
 
-class Onbording extends StatefulWidget {
+class Onboarding extends StatefulWidget {
+  const Onboarding({super.key});
+
   @override
   _OnbordingState createState() => _OnbordingState();
 }
 
-class _OnbordingState extends State<Onbording> {
+class _OnbordingState extends State<Onboarding> {
   int currentIndex = 0;
   late PageController _controller;
 
@@ -26,7 +27,7 @@ class _OnbordingState extends State<Onbording> {
   Future<void> _completeOnboarding() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isFirstLaunch', false); // Save the flag to indicate onboarding is complete
-    Navigator.pushReplacementNamed(context, '/home'); // Navigate to home
+    Navigator.pushReplacementNamed(context, '/login'); // Navigate to home
   }
 
   @override
@@ -48,22 +49,26 @@ class _OnbordingState extends State<Onbording> {
                   padding: const EdgeInsets.all(40),
                   child: Column(
                     children: [
-                      Image.asset(
-                        contents[i].image!,
-                        height: 300,
-                      ),
-                      Text(
-                        contents[i].title!,
-                        style: TextStyle(
-                          fontSize: 35,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Image.asset(
+                          contents[i].image!,
+                          height: 300,
                         ),
                       ),
-                      SizedBox(height: 20),
+                      Expanded(
+                        child: Text(
+                          contents[i].title!,
+                          style: const TextStyle(
+                            fontSize: 35,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                       Text(
                         contents[i].discription!,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           color: Colors.grey,
                         ),
@@ -85,18 +90,22 @@ class _OnbordingState extends State<Onbording> {
           ),
           Container(
             height: 60,
-            margin: EdgeInsets.all(40),
+            margin: const EdgeInsets.all(40),
             width: double.infinity,
             child: TextButton(
               child: Text(
-                currentIndex == contents.length - 1 ? "Continue" : "Next",
+                style: const TextStyle(
+                  fontSize: 24,
+                  color: Colors.blueAccent
+                  ),
+                currentIndex == contents.length - 1 ? "Продолжить" : "Далее",
               ),
               onPressed: () {
                 if (currentIndex == contents.length - 1) {
                   _completeOnboarding();  // Mark onboarding as complete and navigate to home
                 } else {
                   _controller.nextPage(
-                    duration: Duration(milliseconds: 100),
+                    duration: const Duration(milliseconds: 100),
                     curve: Curves.bounceIn,
                   );
                 }
@@ -112,7 +121,7 @@ class _OnbordingState extends State<Onbording> {
     return Container(
       height: 10,
       width: currentIndex == index ? 25 : 10,
-      margin: EdgeInsets.only(right: 5),
+      margin: const EdgeInsets.only(right: 5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         color: Theme.of(context).primaryColor,

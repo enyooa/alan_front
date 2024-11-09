@@ -38,8 +38,31 @@ dependencies:
   flutter_native_splash: ^2.2.16
   shared_preferences: ^2.0.15
   excel: ^2.0.5
+  hugeicons:
+  google_fonts:
+  flutter_bloc: ^8.0.0
+  internet_connection_checker_plus: ^2.5.2
+  dio: ^5.7.0
+  flutter_secure_storage: ^9.2.2
+  flutter_svg_provider:
+  get: ^4.6.5
+  cached_network_image: ^3.2.3
+
+  provider:
+  flutter_feather_icons:
 
 
+
+  bloc:
+  connectivity_plus:
+  equatable: ^2.0.5
+  http: ^1.2.2
+  carousel_slider: ^5.0.0
+  flutter_spin_wheel_menu: ^0.0.4
+  font_awesome_flutter: ^10.8.0
+  image_picker: ^1.1.2
+  path: ^1.8.3
+  path_provider: ^2.0.11
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -63,6 +86,10 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
+  
+  
+  
+  
   assets:
     - assets/images/контроль.png
     - assets/images/касса.png
@@ -78,6 +105,11 @@ flutter:
     - assets/images/kassa/income.png
     - assets/images/kassa/expenses.jpg
     - assets/images/kassa/report.png
+    - assets/images/avatar.svg
+
+
+
+    - assets/img/
 
 
 
@@ -92,12 +124,17 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
+  fonts:
+    - family: Merriweather
+      fonts:
+
+        - asset: assets/fonts/Merriweather-Regular.ttf
+          weight: 300
+        - asset: assets/fonts/Merriweather-Italic.ttf
+          weight: 400
+
+        
+  # style: italic
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

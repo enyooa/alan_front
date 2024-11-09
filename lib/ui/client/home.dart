@@ -1,45 +1,37 @@
+import 'package:cash_control/constant.dart';
+import 'package:cash_control/ui/client/widgets/bottom_nav_bar.dart';
+import 'package:cash_control/ui/main/profile.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(MyApp());
+void main(){
+  runApp(const MaterialApp(home: ClientDashboardScreen(),));
 }
 
-class MyApp extends StatelessWidget {
+
+class ClientDashboardScreen extends StatefulWidget {
+  const ClientDashboardScreen({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ProductListScreen(),
-    );
-  }
+  _ClientDashboardScreenState createState() => _ClientDashboardScreenState();
 }
 
-class ProductListScreen extends StatefulWidget {
-  @override
-  _ProductListScreenState createState() => _ProductListScreenState();
-}
-
-class _ProductListScreenState extends State<ProductListScreen> {
-  bool isSearching = false; // Toggle between title and search field
+class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
+  bool isSearching = false;
   TextEditingController searchController = TextEditingController();
-  int _selectedIndex = 0; // Manage the selected tab index
-  String searchQuery = ""; // Store search query
+  int _selectedIndex = 0;
+  String searchQuery = "";
 
-  // Store quantity for each product
-  List<int> quantities = List<int>.filled(4, 0); // Initialize with 4 products, all quantities set to 0
-
-  // Store products added to the cart
+  List<int> quantities = List<int>.filled(4, 0);
   List<Map<String, dynamic>> cartItems = [];
 
   final List<Widget> _screens = [
-    CardScreen(), // Карточка
-    CalculationScreen(), // Расчеты
-    CartScreen(cartItems: const []), // Корзина (we will pass the cartItems later)
-    FavoritesScreen(), // Избранное
-    ProfileScreen(), // Профиль
+    const CalculationScreen(),
+    const CartScreen(cartItems: []),
+        const CartScreen(cartItems: []),
+
+    const AccountView(),
   ];
 
-  // Function to handle searching products
   void _searchProduct(String query) {
     setState(() {
       searchQuery = query;
@@ -47,14 +39,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
     print("Searching for: $query");
   }
 
-  // Method to handle screen switch
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  // List of products
   final List<Map<String, String>> products = [
     {
       'imageUrl': 'assets/images/products/potato.png',
@@ -78,26 +68,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
     },
   ];
 
-  // Add the product to the cart with a given quantity
   void addToCart(int index) {
     String productName = products[index]['name']!;
     int quantity = quantities[index];
 
     setState(() {
-  // If product already in cart, update its quantity
-  var existingProduct = cartItems.firstWhere(
-      (item) => item['name'] == productName,
-      orElse: () => {});
-  if (existingProduct.isNotEmpty) {
-    existingProduct['quantity'] = quantity;
-  } else {
-    // Add new product to cart
-    cartItems.add({
-      'name': productName,
-      'quantity': quantity,
+      var existingProduct = cartItems.firstWhere(
+          (item) => item['name'] == productName,
+          orElse: () => {});
+      if (existingProduct.isNotEmpty) {
+        existingProduct['quantity'] = quantity;
+      } else {
+        cartItems.add({
+          'name': productName,
+          'quantity': quantity,
+        });
+      }
     });
-  }
-});
   }
 
   @override
@@ -106,13 +93,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
       appBar: buildAppBar(),
       body: Column(
         children: [
-          if (_selectedIndex == 0) buildSupplierHeader(), // Only show on Product List screen
+          if (_selectedIndex == 0)
+            buildSupplierHeader(),
           Expanded(
-            child: _selectedIndex == 0 // Check if current tab is "Product List"
-                ? buildProductList()
-                : _screens[_selectedIndex] is CartScreen
-                    ? CartScreen(cartItems: cartItems) // Pass cartItems to CartScreen
-                    : _screens[_selectedIndex], // Show other screens based on index
+            child: _selectedIndex == 0
+                ? buildProductList() // Show ProductList content on the first screen
+                : _screens[_selectedIndex - 1], // Adjusted index for other screens
           ),
         ],
       ),
@@ -120,24 +106,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  // Build AppBar with search functionality
   AppBar buildAppBar() {
     return AppBar(
       title: isSearching
           ? TextField(
               controller: searchController,
               autofocus: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Поиск товара...',
                 border: InputBorder.none,
-                hintStyle: TextStyle(color: Colors.white),
+                hintStyle: TextStyle(color: Colors.grey),
               ),
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.grey),
               onChanged: (value) {
-                _searchProduct(value); // Call your search logic here
+                _searchProduct(value);
               },
             )
-          : Text('Наименование товара'),
+          : const Text('Наименование товара'),
       actions: [
         IconButton(
           icon: Icon(isSearching ? Icons.close : Icons.search),
@@ -145,7 +130,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             setState(() {
               if (isSearching) {
                 searchController.clear();
-                _searchProduct(''); // Clear search results
+                _searchProduct('');
               }
               isSearching = !isSearching;
             });
@@ -155,12 +140,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  // Build supplier header section
   Container buildSupplierHeader() {
     return Container(
-      padding: EdgeInsets.all(8.0),
-      color: Colors.blueAccent,
-      child: Center(
+      padding: const EdgeInsets.all(8.0),
+      color: primaryColor,
+      child: const Center(
         child: Text(
           'Выбор поставщика',
           style: TextStyle(
@@ -173,26 +157,25 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  // Build the product list with the ability to filter by search query
   Widget buildProductList() {
     List<Map<String, String>> filteredProducts = products.where((product) {
       return product['name']!.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
 
     return ListView.builder(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       itemCount: filteredProducts.length,
       itemBuilder: (context, index) {
         return ProductCard(
           imageUrl: filteredProducts[index]['imageUrl']!,
           name: filteredProducts[index]['name']!,
           supplier: filteredProducts[index]['supplier']!,
-          quantity: quantities[index], // Pass current quantity
+          quantity: quantities[index],
           onQuantityChanged: (newQuantity) {
             setState(() {
-              quantities[index] = newQuantity; // Update quantity for the specific product
+              quantities[index] = newQuantity;
               if (newQuantity > 0) {
-                addToCart(index); // Add/update product in cart if quantity > 0
+                addToCart(index);
               }
             });
           },
@@ -201,14 +184,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  // Bottom navigation bar with a badge on the Cart tab
   BottomNavigationBar buildBottomNavigationBar() {
     return BottomNavigationBar(
-      currentIndex: _selectedIndex, // Track the selected item index
-      selectedItemColor: Colors.blueAccent, // Color for selected item
-      unselectedItemColor: Colors.grey, // Color for unselected items
+      currentIndex: _selectedIndex,
+      selectedItemColor: Colors.blueAccent,
+      unselectedItemColor: Colors.grey,
       onTap: _onItemTapped,
-      items: <BottomNavigationBarItem>[
+      items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Карточка',
@@ -218,34 +200,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
           label: 'Расчеты',
         ),
         BottomNavigationBarItem(
-          icon: Stack(
-            children: [
-              Icon(Icons.shopping_cart),
-              if (cartItems.isNotEmpty)
-                Positioned(
-                  right: 0,
-                  child: Container(
-                    padding: EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    constraints: BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      '${cartItems.length}', // Show number of items in the cart
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
-          ),
+          icon: Icon(Icons.shopping_cart),
           label: 'Корзина',
         ),
         BottomNavigationBarItem(
@@ -269,7 +224,7 @@ class ProductCard extends StatelessWidget {
   final int quantity; // Quantity from the parent
   final ValueChanged<int> onQuantityChanged; // Callback to update quantity
 
-  ProductCard({
+  const ProductCard({super.key, 
     required this.imageUrl,
     required this.name,
     required this.supplier,
@@ -279,80 +234,90 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.asset(
-              imageUrl,
-              height: 80,
-              width: 80,
-              fit: BoxFit.cover,
-            ),
-            SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    supplier,
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.favorite_border),
-                        onPressed: () {
-                          // Add to favorites functionality here
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.shopping_cart_outlined),
-                        onPressed: () {
-                          // Add to cart functionality here
-                        },
-                      ),
-                      Spacer(),
-                      IconButton(
-                        icon: Icon(Icons.remove),
-                        onPressed: () {
-                          if (quantity > 0) {
-                            onQuantityChanged(quantity - 1); // Decrease quantity
-                          }
-                        },
-                      ),
-                      Text(
-                        '$quantity', // Display current quantity
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.add),
-                        onPressed: () {
-                          onQuantityChanged(quantity + 1); // Increase quantity
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+    return Expanded(
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 1),
+        child: Padding(
+          padding: const EdgeInsets.all(1.0),
+      
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(width: 20,),
+              Container(
+                padding: const EdgeInsets.only(top: 20),
+                child: Image.asset(
+                  imageUrl,
+                  height: 80,
+                  width: 80,
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 30),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      supplier,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.favorite_border),
+                            onPressed: () {
+                              // Add to favorites functionality here
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.shopping_cart_outlined),
+                            onPressed: () {
+                              // Add to cart functionality here
+                            },
+                          ),
+                          
+                          IconButton(
+                            icon: const Icon(Icons.remove),
+                            onPressed: () {
+                              if (quantity > 0) {
+                                onQuantityChanged(quantity - 1); // Decrease quantity
+                              }
+                            },
+                          ),
+                          Text(
+                            '$quantity', // Display current quantity
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Expanded(
+                            child: IconButton(
+                              icon: const Icon(Icons.add),
+                              onPressed: () {
+                                onQuantityChanged(quantity + 1); // Increase quantity
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -360,54 +325,159 @@ class ProductCard extends StatelessWidget {
 }
 
 // Example screens for each tab
-class CardScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('Карточка Screen'));
-  }
-}
+
 
 class CalculationScreen extends StatelessWidget {
+  const CalculationScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('Расчеты Screen'));
+    return const Center(child: Text('Расчеты Screen'));
   }
 }
 
 class CartScreen extends StatelessWidget {
   final List<Map<String, dynamic>> cartItems;
 
-  const CartScreen({Key? key, required this.cartItems}) : super(key: key);
+  const CartScreen({super.key, required this.cartItems});
 
   @override
   Widget build(BuildContext context) {
-    // Your build method implementation
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cart'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'корзина',
+          style: TextStyle(color: Colors.black),
+        ),
+        centerTitle: true,
       ),
-      body: ListView.builder(
-        itemCount: cartItems.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(cartItems[index]['name']),
-            subtitle: Text('Quantity: ${cartItems[index]['quantity']}'),
-          );
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Магнум Сагынак 33',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Cart items
+            Expanded(
+              child: ListView.builder(
+                itemCount: cartItems.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    leading: Checkbox(
+                      value: cartItems[index]['selected'],
+                      onChanged: (value) {
+                        // Handle checkbox change
+                      },
+                    ),
+                    title: Row(
+                      children: [
+                        Image.network(
+                          cartItems[index]['image'],
+                          width: 40,
+                          height: 40,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                cartItems[index]['name'],
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                              Text(
+                                'цена ${cartItems[index]['price']} ед. изм ${cartItems[index]['unit']}',
+                                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            const Divider(color: Colors.grey, thickness: 0.5, height: 20),
+
+            // Delivery date section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Доставка до (календарь)',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.calendar_today, color: Colors.blue),
+                  onPressed: () {
+                    // Show date picker
+                  },
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // Checkout button
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  // Handle checkout
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(19),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                ),
+                child: const Text(
+                  'Оформить заказ',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      
+      // Bottom navigation bar
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0, // Set the selected index
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'главная',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calculate),
+            label: 'расчеты',
+          ),
+        ],
+        onTap: (index) {
+          // Handle bottom navigation item selection
         },
       ),
     );
   }
 }
+
 class FavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(child: Text('Избранное Screen'));
-  }
-}
-
-class ProfileScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('Профиль Screen'));
   }
 }

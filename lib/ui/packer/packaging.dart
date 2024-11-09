@@ -1,15 +1,17 @@
 import 'package:cash_control/ui/packer/requests.dart';
-import 'package:cash_control/ui/scaffold_parts/header.dart';
+import 'package:cash_control/ui/client/widgets/appbar.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Dashboard',
       home: DashboardScreen(),
@@ -17,23 +19,15 @@ class MyApp extends StatelessWidget {
   }
 }
 class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Header(title: "Фасовка"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {
-              // Handle notifications button press
-            },
-          ),
-        ],
-      ),
+      appBar: const MainAppBar(title: "Фасовка"),
       body: GridView.count(
         crossAxisCount: 2, // Still showing 2 cards per row
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
         children: [
@@ -45,7 +39,7 @@ class DashboardScreen extends StatelessWidget {
           DashboardCard(title: 'Продажа', onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Requests()),
+              MaterialPageRoute(builder: (context) =>  Requests()),
             );
           }, icon: Icons.bar_chart),
                 ],
@@ -60,7 +54,7 @@ class DashboardCard extends StatelessWidget {
   final VoidCallback onTap;
   final IconData icon; // Replaced ImageProvider with IconData
 
-  const DashboardCard({
+  const DashboardCard({super.key, 
     required this.title,
     required this.onTap,
     required this.icon,
@@ -85,11 +79,11 @@ class DashboardCard extends StatelessWidget {
               size: 100, // Icon size
               color: Colors.blueAccent,
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.blueAccent,
                   fontWeight: FontWeight.bold,
                   fontSize: 20, // Reduced font size for a smaller button

@@ -1,89 +1,55 @@
+import 'package:cash_control/bloc/blocs/product_bloc.dart';
+import 'package:cash_control/bloc/services/organization_service.dart';
+import 'package:cash_control/bloc/services/unit_service.dart';
+import 'package:cash_control/ui/admin/form_pages/product_form_page.dart';
+import 'package:cash_control/ui/main/repositories/product_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cash_control/bloc/blocs/organization_bloc.dart';
+import 'package:cash_control/bloc/blocs/unit_bloc.dart';
+import 'package:cash_control/ui/admin/dynamic_form_page.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
-  runApp(MyApp());
+  final organizationService = OrganizationService();
+  final unitService = UnitService();
+
+  runApp(GroceryApp(
+    organizationService: organizationService,
+    unitService: unitService,
+  ));
 }
 
-class MyApp extends StatelessWidget {
+class GroceryApp extends StatelessWidget {
+  final OrganizationService organizationService;
+  final UnitService unitService;
+
+  const GroceryApp({
+    Key? key,
+    required this.organizationService,
+    required this.unitService,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("Layout Example"),
+    return MultiBlocProvider(
+      providers: [
+                BlocProvider(create: (context) => ProductBloc(ProductRepository())),
+
+        BlocProvider(
+          create: (context) => OrganizationBloc(organizationService: organizationService),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              // First row (Supplier and Bell Icon)
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: EdgeInsets.all(16),
-                      color: Colors.blue,
-                      child: Text(
-                        'Поставщик',
-                        style: TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                    ),
-                  ),
-                InkWell(
-                  onTap: () {
-                    
-                  },
-                    child: Container(
-                      padding: EdgeInsets.all(16),
-                      color: Colors.blue,
-                      child: Icon(Icons.notifications, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-              // Second row (Access on the left and an empty space on the right)
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        color: Colors.blue,
-                        child: Center(
-                          child: Text(
-                            'Доступы',
-                            style: TextStyle(color: Colors.white, fontSize: 18),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 8), // Empty space
-                    Expanded(
-                      child: Container(
-                        color: Colors.blue,
-                        child: SizedBox(), // Empty container to match the layout
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 8),
-              // Third row (References block at the bottom)
-              Expanded(
-                child: Container(
-                  color: Colors.blue,
-                  child: Center(
-                    child: Text(
-                      'Справочник',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        BlocProvider(
+          create: (context) => UnitBloc(unitService: unitService),
         ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primaryColor: Colors.green,
+          textTheme: GoogleFonts.montserratTextTheme(),
+        ),
+        home: ProductFormPage(),
       ),
     );
   }
