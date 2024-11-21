@@ -1,4 +1,5 @@
 import 'package:cash_control/constant.dart';
+import 'package:cash_control/ui/cashbox/calculations.dart';
 import 'package:cash_control/ui/client/home.dart';
 import 'package:flutter/material.dart';
 
@@ -16,9 +17,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
   List<Map<String, dynamic>> cartItems = [];
 
   final List<Widget> _screens = [
-    const CalculationScreen(),
-    const CartScreen(cartItems: []),
-        const CartScreen(cartItems: []),
+   CalculationScreen(),
+    // const CartScreen(cartItems: []),
+    //     const CartScreen(cartItems: []),
 
     const AccountView(),// Профиль
   ];

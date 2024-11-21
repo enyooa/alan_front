@@ -1,70 +1,48 @@
-// lib/bloc/blocs/product_bloc.dart
 import 'dart:convert';
-
-import 'package:cash_control/constant.dart';
-import 'package:cash_control/ui/main/repositories/product_repository.dart';
+import 'package:cash_control/ui/main/models/product_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cash_control/bloc/events/product_event.dart';
 import 'package:cash_control/bloc/states/product_state.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
+import 'package:cash_control/constant.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
-  final ProductRepository productRepository;
-
-  ProductBloc(this.productRepository) : super(ProductInitial()) {
-    on<CreateProductEvent>(_onCreateProductEvent);
+  ProductBloc() : super(ProductInitial()) {
+    on<FetchProductsEvent>(_onFetchProductsEvent);
   }
 
-Future<void> _onCreateProductEvent(CreateProductEvent event, Emitter<ProductState> emit) async {
-  emit(ProductLoading());
-  try {
-    final uri = Uri.parse(baseUrl+'basic-products-prices');
-    final request = MultipartRequest('POST', uri);
+  Future<void> _onFetchProductsEvent(FetchProductsEvent event, Emitter<ProductState> emit) async {
+    emit(ProductLoading());
 
-    // Add text fields
-    request.fields['name_of_products'] = event.name;
-    request.fields['description'] = event.description ?? '';
-    request.fields['country'] = event.country ?? '';
-    request.fields['type'] = event.type ?? '';
-    request.fields['brutto'] = event.brutto.toString();
-    request.fields['netto'] = event.netto.toString();
+    try {
+      // Get the stored token from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
 
-    print("Creating product with: ");
-    print("Name: ${event.name}");
-    print("Description: ${event.description}");
-    print("Country: ${event.country}");
-    print("Type: ${event.type}");
-    print("Brutto: ${event.brutto}");
-    print("Netto: ${event.netto}");
+      if (token == null) {
+        emit(ProductError(message: "Authentication token not found."));
+        return;
+      }
 
-    // Add file if available
-    if (event.photo != null && event.photo!.existsSync()) {
-      request.files.add(await MultipartFile.fromPath(
-        'photo_product',
-        event.photo!.path,
-      ));
-      print("Photo path: ${event.photo!.path}");
-    } else {
-      print("No photo selected");
+      // Make the request with the Authorization header
+      final response = await http.get(
+        Uri.parse(baseUrl+'product_cards'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        final products = data.map((json) => ProductCard.fromJson(json)).toList();
+        emit(ProductsLoaded(products: products));
+      } else {
+        emit(ProductError(message: "Failed to load products. Status code: ${response.statusCode}"));
+      }
+    } catch (error) {
+      emit(ProductError(message: error.toString()));
     }
-
-    // Send the request
-    final response = await request.send();
-    final responseBody = await response.stream.bytesToString();
-
-    print("Response status code: ${response.statusCode}");
-    print("Response body: $responseBody");
-
-    if (response.statusCode == 201) {
-      emit(ProductCreated());
-    } else {
-      final data = jsonDecode(responseBody);
-      emit(ProductError(message: data['message'] ?? "Product creation failed."));
-    }
-  } catch (error) {
-    print("Error creating product: $error");
-    emit(ProductError(message: error.toString()));
   }
-}
-
 }

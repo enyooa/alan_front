@@ -1,23 +1,6 @@
 import 'package:cash_control/constant.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: CreateOrderScreen(),
-    );
-  }
-}
 
 class CreateOrderScreen extends StatefulWidget {
   @override
@@ -152,21 +135,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Приходный ордер'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Расходный ордер'),
-          BottomNavigationBarItem(icon: Icon(Icons.calculate), label: 'Расчеты с поставщиком'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Отчет по кассе'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Справочник'),
-        ],
-        currentIndex: 0, // Highlight 'Приходный ордер' as active
-        onTap: (index) {
-          // Handle navigation tap
-        },
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-      ),
-    );
+       );
   }
 }

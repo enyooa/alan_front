@@ -1,23 +1,20 @@
 import 'dart:convert';
-import 'package:cash_control/constant.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../constant.dart';
 
 class OrganizationService {
-  Future<String?> getToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
-  }
-
-  Future<http.Response> createOrganization({required String name, required String currentAccounts}) async {
-    final token = await getToken();
-    return await http.post(
-      Uri.parse('$baseUrl/organizations'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+  Future<bool> createOrganization(String name, String currentAccounts) async {
+    final response = await http.post(
+      Uri.parse(baseUrl+'organizations'),
+      headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'name': name, 'current_accounts': currentAccounts}),
     );
+
+    if (response.statusCode == 201) {
+      return true; // Organization created successfully
+    } else {
+      print('Error: ${response.body}');
+      return false;
+    }
   }
 }

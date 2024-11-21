@@ -32,6 +32,12 @@
          "type": "dart",
          "request": "launch",
          "program": "lib\\ui\\packer\\requests.dart"
+      },
+      {
+         "name": "Flutter (lib\\ui\\client\\widgets\\basket.dart)",
+         "type": "dart",
+         "request": "launch",
+         "program": "lib\\ui\\client\\widgets\\basket.dart"
       }
    ]
 }

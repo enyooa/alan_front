@@ -26,21 +26,23 @@ class _LoginState extends State<Login> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            switch (state.role) {
-              case 'admin':
-                Navigator.pushReplacementNamed(context, '/admin_dashboard');
-                break;
-              case 'cashbox':
-                Navigator.pushReplacementNamed(context, '/cashbox_dashboard');
-                break;
-              case 'client':
-                Navigator.pushReplacementNamed(context, '/client_dashboard');
-                break;
-              case 'packer':
-                Navigator.pushReplacementNamed(context, '/packer_dashboard');
-                break;
-              default:
-                Navigator.pushReplacementNamed(context, '/home');
+            // Navigate based on the list of roles
+            final roles = state.roles;
+
+            if (roles.contains('admin')) {
+              Navigator.pushReplacementNamed(context, '/admin_dashboard');
+            } else if (roles.contains('cashbox')) {
+              Navigator.pushReplacementNamed(context, '/cashbox_dashboard');
+            } else if (roles.contains('client')) {
+              Navigator.pushReplacementNamed(context, '/client_dashboard');
+            } else if (roles.contains('packer')) {
+              Navigator.pushReplacementNamed(context, '/packer_dashboard');
+            } else if (roles.contains('courier')) {
+              Navigator.pushReplacementNamed(context, '/courier_dashboard');
+            } else if (roles.contains('storage')) {
+              Navigator.pushReplacementNamed(context, '/storage_dashboard');
+            } else {
+              Navigator.pushReplacementNamed(context, '/home');
             }
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -48,7 +50,7 @@ class _LoginState extends State<Login> {
             );
           }
         },
-        child: SingleChildScrollView( // Wrap main content to make it scrollable
+        child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 50),
             child: Column(
@@ -66,6 +68,7 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 const SizedBox(height: 50),
+                // WhatsApp Number Input
                 TextField(
                   controller: _whatsappNumberController,
                   textAlign: TextAlign.center,
@@ -94,6 +97,7 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 const SizedBox(height: 30),
+                // Password Input
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
@@ -123,6 +127,7 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 const SizedBox(height: 25),
+                // Login Button
                 ClipRRect(
                   borderRadius: const BorderRadius.all(Radius.circular(10)),
                   child: SizedBox(
@@ -172,10 +177,11 @@ class _LoginState extends State<Login> {
                     ),
                     TextButton(
                       onPressed: () {
-                      Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => Register()),
-                    );                      },
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Register()),
+                        );
+                      },
                       child: const Text(
                         'Регистрация',
                         style: TextStyle(

@@ -1,10 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:cash_control/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cash_control/bloc/blocs/product_bloc.dart';
 import 'package:cash_control/bloc/events/product_event.dart';
 import 'package:cash_control/bloc/states/product_state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProductFormPage extends StatefulWidget {
   @override
@@ -23,7 +27,17 @@ class _ProductFormPageState extends State<ProductFormPage> {
   File? selectedImage;
   final ImagePicker picker = ImagePicker();
 
-  // Function to choose a photo from the gallery
+  @override
+  void dispose() {
+    productNameController.dispose();
+    productDescriptionController.dispose();
+    countryController.dispose();
+    typeController.dispose();
+    bruttoController.dispose();
+    nettoController.dispose();
+    super.dispose();
+  }
+
   Future<void> _chooseImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -33,46 +47,114 @@ class _ProductFormPageState extends State<ProductFormPage> {
     }
   }
 
-  // Function to save the product
-  void _saveProduct(BuildContext context) {
-    final String name = productNameController.text.trim();
-    final String description = productDescriptionController.text.trim();
-    final String country = countryController.text.trim();
-    final String type = typeController.text.trim();
-    final double brutto = double.tryParse(bruttoController.text.trim()) ?? 0.0;
-    final double netto = double.tryParse(nettoController.text.trim()) ?? 0.0;
-
-    if (name.isEmpty || brutto <= 0 || netto <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields')),
-      );
-      return;
+  Future<void> _takePhoto() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        selectedImage = File(pickedFile.path);
+      });
     }
-
-    context.read<ProductBloc>().add(
-      CreateProductEvent(
-        name: name,
-        description: description,
-        country: country,
-        type: type,
-        brutto: brutto,
-        netto: netto,
-        photo: selectedImage,
-      ),
-    );
   }
 
+Future<void> _saveProduct(BuildContext context) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+  final roles = prefs.getStringList('roles') ?? [];
+
+  if (token == null || !roles.contains('admin')) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Отказ в доступе: Только админ может создать карточку товара')),
+    );
+    return;
+  }
+
+  final String name = productNameController.text.trim();
+  final String description = productDescriptionController.text.trim();
+  final String country = countryController.text.trim();
+  final String type = typeController.text.trim();
+  final double brutto = double.tryParse(bruttoController.text.trim()) ?? 0.0;
+  final double netto = double.tryParse(nettoController.text.trim()) ?? 0.0;
+  final File? photoFile = selectedImage;
+
+  // Validate required fields
+  if (name.isEmpty || brutto <= 0 || netto <= 0) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please fill in all required fields')),
+    );
+    return;
+  }
+
+  // Create request
+  final uri = Uri.parse(baseUrl + 'product_card_create');
+  final request = MultipartRequest('POST', uri);
+
+  // Add headers
+  request.headers['Authorization'] = 'Bearer $token';
+
+  // Add fields
+  request.fields['name_of_products'] = name;
+  request.fields['description'] = description;
+  request.fields['country'] = country;
+  request.fields['type'] = type;
+  request.fields['brutto'] = brutto.toString();
+  request.fields['netto'] = netto.toString();
+
+  // Add file if exists
+  if (photoFile != null) {
+    request.files.add(await MultipartFile.fromPath('photo_product', photoFile.path));
+  }
+
+  // Send request
+  try {
+    final response = await request.send();
+    final responseBody = await response.stream.bytesToString();
+
+    if (response.statusCode == 201) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Product created successfully')),
+      );
+      _clearFields();
+    } else {
+      final data = jsonDecode(responseBody);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(data['message'] ?? 'Failed to create product')),
+      );
+    }
+  } catch (error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error while creating product: $error')),
+    );
+  }
+}
+
+// Clear input fields
+void _clearFields() {
+  productNameController.clear();
+  productDescriptionController.clear();
+  countryController.clear();
+  typeController.clear();
+  bruttoController.clear();
+  nettoController.clear();
+  setState(() {
+    selectedImage = null;
+  });
+}
+
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Product')),
+      appBar: AppBar(
+        title: const Text('Создать продукт', style: headingStyle),
+        backgroundColor: primaryColor,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: BlocConsumer<ProductBloc, ProductState>(
           listener: (context, state) {
             if (state is ProductCreated) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Product created successfully')),
+                const SnackBar(content: Text('Продукт успешно создан')),
               );
               _clearFields();
             } else if (state is ProductError) {
@@ -87,36 +169,26 @@ class _ProductFormPageState extends State<ProductFormPage> {
             }
             return ListView(
               children: [
-                TextField(
-                  controller: productNameController,
-                  decoration: const InputDecoration(labelText: 'Наименование товара'),
-                ),
-                TextField(
-                  controller: productDescriptionController,
-                  decoration: const InputDecoration(labelText: 'Характеристика'),
-                ),
-                TextField(
-                  controller: countryController,
-                  decoration: const InputDecoration(labelText: 'Страна'),
-                ),
-                TextField(
-                  controller: typeController,
-                  decoration: const InputDecoration(labelText: 'Тип'),
-                ),
-                TextField(
-                  controller: bruttoController,
-                  decoration: const InputDecoration(labelText: 'Brutto'),
-                  keyboardType: TextInputType.number,
-                ),
-                TextField(
-                  controller: nettoController,
-                  decoration: const InputDecoration(labelText: 'Netto'),
-                  keyboardType: TextInputType.number,
-                ),
+                _buildTextField(productNameController, 'Наименование товара'),
+                _buildTextField(productDescriptionController, 'Характеристика'),
+                _buildTextField(countryController, 'Страна'),
+                _buildTextField(typeController, 'Тип'),
+                _buildTextField(bruttoController, 'Brutto', isNumber: true),
+                _buildTextField(nettoController, 'Netto', isNumber: true),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _chooseImage,
-                  child: const Text('Choose Image'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _chooseImage,
+                      child: const Text('Выбрать из галереи', style: buttonTextStyle),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: _takePhoto,
+                      child: const Text('Сделать фото', style: buttonTextStyle),
+                    ),
+                  ],
                 ),
                 if (selectedImage != null)
                   Padding(
@@ -126,7 +198,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () => _saveProduct(context),
-                  child: const Text('Сохранить'),
+                  style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+                  child: const Text('Сохранить', style: buttonTextStyle),
                 ),
               ],
             );
@@ -136,16 +209,21 @@ class _ProductFormPageState extends State<ProductFormPage> {
     );
   }
 
-  // Function to clear the form fields after successful submission
-  void _clearFields() {
-    productNameController.clear();
-    productDescriptionController.clear();
-    countryController.clear();
-    typeController.clear();
-    bruttoController.clear();
-    nettoController.clear();
-    setState(() {
-      selectedImage = null;
-    });
+  Widget _buildTextField(TextEditingController controller, String label, {bool isNumber = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: subheadingStyle,
+          border: const OutlineInputBorder(),
+        ),
+        keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+        style: bodyTextStyle,
+      ),
+    );
   }
+
+  
 }

@@ -1,17 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: InvoiceScreen(),
-    );
-  }
-}
 
 class InvoiceScreen extends StatelessWidget {
   @override
@@ -122,26 +110,7 @@ class InvoiceScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'главная',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.document_scanner),
-            label: 'Документ',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: 'Чат',
-          ),
-        ],
-        onTap: (index) {
-          // Handle bottom navigation tap
-        },
-      ),
-    );
+       );
   }
 
   Widget tableCell(String text, {bool isHeader = false}) {

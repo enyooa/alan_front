@@ -1,22 +1,6 @@
 import 'package:cash_control/ui/cashbox/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Expense Order',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: ExpenseOrderScreen(),
-    );
-  }
-}
 
 class ExpenseOrderScreen extends StatelessWidget {
   @override
@@ -62,32 +46,7 @@ class ExpenseOrderScreen extends StatelessWidget {
         ),
       ),
       // Bottom Navigation Bar
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt),
-            label: 'Приходный ордер',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.outbox),
-            label: 'Расходный ордер',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance),
-            label: 'Расчеты с поставщиками',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.analytics),
-            label: 'Отчет по кассе',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Справочник',
-          ),
-        ],
-      ),
-    );
+      );
   }
 }
 

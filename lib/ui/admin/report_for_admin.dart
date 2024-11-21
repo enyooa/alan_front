@@ -2,7 +2,7 @@ import 'package:cash_control/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class ReportPage extends StatelessWidget {
+class ReportForAdmin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -179,22 +179,6 @@ class ReportPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.insert_chart),
-            label: 'отчеты',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory),
-            label: 'Товар',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.help),
-            label: 'справка',
-          ),
-        ],
-      ),
-    );
+      );
   }
 }

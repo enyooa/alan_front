@@ -1,5 +1,4 @@
-// lib/models/product_model.dart
-class Product {
+class ProductCard {
   final int id;
   final String nameOfProducts;
   final String? description;
@@ -8,8 +7,9 @@ class Product {
   final double brutto;
   final double netto;
   final String? photoProduct;
+  final String? photoUrl;
 
-  Product({
+  ProductCard({
     required this.id,
     required this.nameOfProducts,
     this.description,
@@ -18,18 +18,20 @@ class Product {
     required this.brutto,
     required this.netto,
     this.photoProduct,
+    this.photoUrl,
   });
 
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      id: json['id'],
-      nameOfProducts: json['name_of_products'],
+  factory ProductCard.fromJson(Map<String, dynamic> json) {
+    return ProductCard(
+      id: json['id'] ?? 0, // Default to 0 if null
+      nameOfProducts: json['name_of_products'] ?? 'Unknown Product',
       description: json['description'],
       country: json['country'],
       type: json['type'],
-      brutto: double.parse(json['brutto'].toString()),
-      netto: double.parse(json['netto'].toString()),
+      brutto: double.tryParse(json['brutto']?.toString() ?? '0') ?? 0.0,
+      netto: double.tryParse(json['netto']?.toString() ?? '0') ?? 0.0,
       photoProduct: json['photo_product'],
+      photoUrl: json['photo_url'],
     );
   }
 }

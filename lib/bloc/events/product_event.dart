@@ -29,3 +29,5 @@ class CreateProductEvent extends ProductEvent {
   @override
   List<Object?> get props => [name, description, country, type, brutto, netto, photo];
 }
+
+class FetchProductsEvent extends ProductEvent {}

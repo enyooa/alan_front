@@ -132,6 +132,10 @@ flutter:
           weight: 300
         - asset: assets/fonts/Merriweather-Italic.ttf
           weight: 400
+    - family: Raleway
+      fonts:
+        - asset: assets/fonts/Raleway-Regular.ttf
+          weight: 100
 
         
   # style: italic
