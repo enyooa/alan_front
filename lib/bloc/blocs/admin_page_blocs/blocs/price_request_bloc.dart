@@ -43,10 +43,10 @@ Future<void> _onCreatePriceRequest(
     print('Response Body: ${response.body}');
 
     if (response.statusCode == 201) {
-      emit(PriceRequestCreated('Price request created successfully'));
+      emit(PriceRequestCreated('Ценовое предложение успешно отправлено'));
     } else {
       final data = jsonDecode(response.body);
-      emit(PriceRequestError(data['message'] ?? 'Failed to create price request'));
+      emit(PriceRequestError(data['message'] ?? 'не удалось отправить ценовое предложение'));
     }
   } catch (error) {
     print('Error: $error');

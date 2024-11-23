@@ -18,7 +18,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   final List<Widget> _screens = [
    CalculationScreen(),
-    // const CartScreen(cartItems: []),
+    //  const CartScreen(cartItems: []),
     //     const CartScreen(cartItems: []),
 
     const AccountView(),// Профиль

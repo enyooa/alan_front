@@ -1,37 +1,19 @@
-import 'package:cash_control/ui/main/models/product_card.dart';
-import 'package:equatable/equatable.dart';
+abstract class ProductCardState {}
 
-abstract class ProductCardState extends Equatable {
-  @override
-  List<Object?> get props => [];
-}
+class ProductCardInitial extends ProductCardState {}
 
-class ProductInitial extends ProductCardState {}
+class ProductCardLoading extends ProductCardState {}
+class ProductCardLoaded extends ProductCardState {}
 
-class ProductLoading extends ProductCardState {}
 
-class ProductCardCreated extends ProductCardState {
+class ProductCardSuccess extends ProductCardState {
   final String message;
 
-  ProductCardCreated({required this.message});
-
-  @override
-  List<Object?> get props => [message];
+  ProductCardSuccess(this.message);
 }
 
 class ProductCardError extends ProductCardState {
-  final String message;
+  final String error;
 
-  ProductCardError({required this.message});
-
-  @override
-  List<Object?> get props => [message];
-}
-class ProductCardLoaded extends ProductCardState {
-  final List<ProductCard> products;
-
-  ProductCardLoaded({required this.products});
-
-  @override
-  List<Object?> get props => [products];
+  ProductCardError(this.error);
 }

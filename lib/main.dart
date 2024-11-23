@@ -1,8 +1,8 @@
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_card_event.dart';
 import 'package:cash_control/bloc/blocs/auth_bloc.dart';
 import 'package:cash_control/bloc/blocs/connectivity_bloc.dart';
-import 'package:cash_control/bloc/blocs/product_bloc.dart';
 import 'package:cash_control/bloc/events/connectivity_event.dart';
-import 'package:cash_control/bloc/events/product_event.dart';
 import 'package:cash_control/bloc/services/organization_service.dart';
 import 'package:cash_control/bloc/services/unit_service.dart';
 import 'package:cash_control/bloc/states/auth_state.dart';
@@ -38,7 +38,7 @@ class StartApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => ProductBloc()..add(FetchProductsEvent())),
+        BlocProvider(create: (context) => ProductCardBloc()),
         BlocProvider(
           create: (context) => ConnectivityBloc()..add(CheckConnectivity()),
         ),

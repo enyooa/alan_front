@@ -10,6 +10,11 @@ class DynamicReportPage extends StatefulWidget {
 class _DynamicReportPageState extends State<DynamicReportPage> {
   String selectedReport = 'Отчет по кассе';
 
+  final List<Map<String, dynamic>> reportOptions = [
+    {'label': 'Отчет по кассе', 'icon': FontAwesomeIcons.cashRegister},
+    {'label': 'Отчет по складу', 'icon': FontAwesomeIcons.warehouse},
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,24 +28,35 @@ class _DynamicReportPageState extends State<DynamicReportPage> {
           children: [
             Row(
               children: [
-                Flexible(
-                  child: DropdownButton<String>(
+                Expanded(
+                  child: DropdownButtonFormField<String>(
                     value: selectedReport,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Отчет по кассе',
-                        child: Text('Отчет по кассе', style: bodyTextStyle),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Отчет по складу',
-                        child: Text('Отчет по складу', style: bodyTextStyle),
-                      ),
-                    ],
+                    items: reportOptions.map((report) {
+                      return DropdownMenuItem<String>(
+                        value: report['label'],
+                        child: Row(
+                          children: [
+                            FaIcon(report['icon'], size: 16, color: primaryColor),
+                            const SizedBox(width: 8),
+                            Text(report['label'], style: bodyTextStyle),
+                          ],
+                        ),
+                      );
+                    }).toList(),
                     onChanged: (value) {
                       setState(() {
                         selectedReport = value!;
                       });
                     },
+                    decoration: InputDecoration(
+                      labelText: 'Выберите отчет',
+                      labelStyle: formLabelStyle,
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
                     style: bodyTextStyle,
                     dropdownColor: Colors.white,
                   ),
@@ -69,34 +85,33 @@ class _DynamicReportPageState extends State<DynamicReportPage> {
     );
   }
 
-  // Widget to display the Cash Report
   Widget _buildCashReport() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text("Отчет по кассе", style: headingStyle),
+        const Text("Отчет по кассе", style: titleStyle),
         const SizedBox(height: 10),
         Table(
-          border: TableBorder.all(color: Colors.grey),
+          border: TableBorder.all(color: borderColor),
           children: [
             TableRow(
-              decoration: BoxDecoration(color: Colors.grey.shade300),
+              decoration: BoxDecoration(color: primaryColor.withOpacity(0.2)),
               children: const [
                 Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text('остаток на начало дня', style: tableHeaderStyle),
+                  child: Text('Остаток на начало дня', style: tableHeaderStyle),
                 ),
                 Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text('приход', style: tableHeaderStyle),
+                  child: Text('Приход', style: tableHeaderStyle),
                 ),
                 Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text('расход', style: tableHeaderStyle),
+                  child: Text('Расход', style: tableHeaderStyle),
                 ),
                 Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text('сальдо на конец дня', style: tableHeaderStyle),
+                  child: Text('Сальдо на конец дня', style: tableHeaderStyle),
                 ),
               ],
             ),
@@ -105,7 +120,7 @@ class _DynamicReportPageState extends State<DynamicReportPage> {
                 4,
                 (index) => const Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text('', style: bodyTextStyle),
+                  child: Text('-', style: bodyTextStyle),
                 ),
               ),
             ),
@@ -133,7 +148,6 @@ class _DynamicReportPageState extends State<DynamicReportPage> {
     );
   }
 
-  // Widget to display the Inventory Report
   Widget _buildInventoryReport() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -141,10 +155,10 @@ class _DynamicReportPageState extends State<DynamicReportPage> {
         const Text("Отчет по складу", style: headingStyle),
         const SizedBox(height: 10),
         Table(
-          border: TableBorder.all(color: Colors.grey),
+          border: TableBorder.all(color: borderColor),
           children: [
             TableRow(
-              decoration: BoxDecoration(color: Colors.grey.shade300),
+              decoration: BoxDecoration(color: primaryColor.withOpacity(0.2)),
               children: const [
                 Padding(
                   padding: EdgeInsets.all(8.0),
@@ -156,15 +170,15 @@ class _DynamicReportPageState extends State<DynamicReportPage> {
                 ),
                 Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text('Приход кол', style: tableHeaderStyle),
+                  child: Text('Приход', style: tableHeaderStyle),
                 ),
                 Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text('Расход кол', style: tableHeaderStyle),
+                  child: Text('Расход', style: tableHeaderStyle),
                 ),
                 Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text('Остаток кол', style: tableHeaderStyle),
+                  child: Text('Остаток', style: tableHeaderStyle),
                 ),
               ],
             ),
@@ -173,7 +187,7 @@ class _DynamicReportPageState extends State<DynamicReportPage> {
                 5,
                 (index) => const Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: Text('', style: bodyTextStyle),
+                  child: Text('-', style: bodyTextStyle),
                 ),
               ),
             ),

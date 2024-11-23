@@ -23,7 +23,7 @@ class ProductCard {
 
   factory ProductCard.fromJson(Map<String, dynamic> json) {
     return ProductCard(
-      id: json['id'] ?? 0, // Default to 0 if null
+      id: json['id'] ?? 0,
       nameOfProducts: json['name_of_products'] ?? 'Unknown Product',
       description: json['description'],
       country: json['country'],

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:cash_control/constant.dart';
 
 class AccountView extends StatefulWidget {
   const AccountView({Key? key}) : super(key: key);
@@ -18,7 +17,6 @@ class _AccountViewState extends State<AccountView> {
   final picker = ImagePicker();
   String? photoUrl;
   String fullName = 'User';
-  String whatsappNumber = '';
 
   @override
   void initState() {
@@ -33,9 +31,7 @@ class _AccountViewState extends State<AccountView> {
       photoUrl = prefs.getString('photo');
       final firstName = prefs.getString('first_name') ?? '';
       final lastName = prefs.getString('last_name') ?? '';
-      final surname = prefs.getString('surname') ?? '';
-      fullName = '$firstName $lastName $surname'.trim();
-      whatsappNumber = prefs.getString('whatsapp_number') ?? '';
+      fullName = '$firstName $lastName'.trim();
     });
   }
 
@@ -58,7 +54,7 @@ class _AccountViewState extends State<AccountView> {
 
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('$baseUrl/upload-photo'),
+      Uri.parse('https://yourapi.com/upload-photo'),
     );
     request.files.add(await http.MultipartFile.fromPath('photo', _image!.path));
     request.headers['Authorization'] = 'Bearer $token';
@@ -85,147 +81,165 @@ class _AccountViewState extends State<AccountView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Account')),
+      appBar: AppBar(
+        title: const Text('Настройки',style: TextStyle(color: Colors.white),),
+        centerTitle: true,
+        backgroundColor: Colors.black87,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
-        child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              // Profile photo
-              GestureDetector(
-                onTap: _pickImage,
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundImage: _image != null
-                      ? FileImage(_image!)
-                      : (photoUrl != null ? NetworkImage(photoUrl!) : null),
-                  child: _image == null && photoUrl == null
-                      ? const Icon(Icons.person, size: 50)
-                      : null,
-                ),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: _uploadImage,
-                child: const Text('Загрузить фото'),
-              ),
-              const SizedBox(height: 20),
-              // Display full name
-              Text(
-                fullName,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+        child: Column(
+          children: [
+            // Header with profile picture
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  height: 180,
                   color: Colors.black87,
                 ),
-              ),
-              const SizedBox(height: 5),
-              // Display WhatsApp number
-              Text(
-                'WhatsApp: $whatsappNumber',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage: _image != null
+                        ? FileImage(_image!)
+                        : (photoUrl != null ? NetworkImage(photoUrl!) : null),
+                    child: _image == null && photoUrl == null
+                        ? const Icon(Icons.person, size: 50, color: Colors.white)
+                        : null,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 30),
-              // Additional Account Settings or Options
-              AccountRow(
-                title: "Order History",
-                icon: "assets/img/a_order.png",
-                onPressed: () {},
-              ),
-              AccountRow(
-                title: "Delivery Addresses",
-                icon: "assets/img/a_delivery_address.png",
-                onPressed: () {},
-              ),
-              AccountRow(
-                title: "Payment Methods",
-                icon: "assets/img/payment_methods.png",
-                onPressed: () {},
-              ),
-              AccountRow(
-                title: "Notifications",
-                icon: "assets/img/a_notification.png",
-                onPressed: () {},
-              ),
-              // Logout Button
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: ElevatedButton(
-                  onPressed: () async {
-                    SharedPreferences prefs = await SharedPreferences.getInstance();
-                    await prefs.clear(); // Clear all saved data
-                    Navigator.pushReplacementNamed(context, '/login'); // Navigate to login screen
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade50,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(19),
+                Positioned(
+                  bottom: 20,
+                  child: IconButton(
+                    onPressed: _pickImage,
+                    icon: const Icon(
+                      Icons.camera_alt,
+                      color: Colors.red,
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        "assets/img/logout.png",
-                        width: 24,
-                        height: 24,
-                        color: Colors.blue,
-                      ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        "Log Out",
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Settings Rows
+            SettingsRow(
+              title: "Добавить фото",
+              trailing: null,
+              onTap: _uploadImage,
+            ),
+            SettingsRow(
+              title: "Push-уведомления",
+              trailing: Switch(
+                value: true,
+                onChanged: (value) {
+                  setState(() {
+                    // Toggle logic
+                  });
+                },
+              ),
+            ),
+            SettingsRow(
+              title: "Язык приложения",
+              subtitle: "Русский",
+              trailing: null,
+              onTap: () {
+                // Open language settings
+              },
+            ),
+            SettingsRow(
+              title: "Изменить пароль",
+              trailing: null,
+              onTap: () {
+                // Open password settings
+              },
+            ),
+            SettingsRow(
+              title: "Блокирование скриншотов",
+              subtitle: "Скриншоты разрешены для всех случаев",
+              trailing: Switch(
+                value: false,
+                onChanged: (value) {
+                  setState(() {
+                    // Toggle screenshot blocking
+                  });
+                },
+              ),
+            ),
+            const Divider(),
+
+            // Logout Button
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: ElevatedButton(
+                onPressed: () async {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.clear(); // Clear all saved data
+                  Navigator.pushReplacementNamed(context, '/login'); // Navigate to login screen
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade50,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.logout, color: Colors.red),
+                    SizedBox(width: 10),
+                    Text(
+                      "Выйти",
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// Helper widget for each account row
-class AccountRow extends StatelessWidget {
+// Settings Row Widget
+class SettingsRow extends StatelessWidget {
   final String title;
-  final String icon;
-  final VoidCallback onPressed;
+  final String? subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
 
-  const AccountRow({
+  const SettingsRow({
     Key? key,
     required this.title,
-    required this.icon,
-    required this.onPressed,
+    this.subtitle,
+    this.trailing,
+    this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-      leading: Image.asset(
-        icon,
-        width: 30,
-        height: 30,
-      ),
       title: Text(
         title,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
-      onTap: onPressed,
+      subtitle: subtitle != null
+          ? Text(
+              subtitle!,
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            )
+          : null,
+      trailing: trailing,
+      onTap: onTap,
     );
   }
 }

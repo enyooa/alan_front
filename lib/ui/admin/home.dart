@@ -1,8 +1,11 @@
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/price_request_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_receiving_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_card_event.dart';
 import 'package:cash_control/ui/admin/dynamic_pages/dynamic_product_page.dart';
 import 'package:cash_control/ui/admin/dynamic_pages/dynamic_report_page.dart';
+import 'package:cash_control/ui/admin/form_pages/subproduct_form_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cash_control/bloc/blocs/organization_bloc.dart';
@@ -40,9 +43,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => ProductCardBloc()..add(FetchProductCardsEvent())),
+        // BlocProvider(create: (context) => ProductSubCardBloc(),child: SubProductFormPage(),),
+        BlocProvider(create: (context) => ProductReceivingBloc()),
         BlocProvider(create: (context) => PriceRequestBloc()),
-        BlocProvider(create: (context) => ProductBloc()),
+        BlocProvider(create: (context) => ProductCardBloc()),
         BlocProvider(create: (context) => UserBloc()),
         BlocProvider(create: (context) => OrganizationBloc(organizationService: widget.organizationService)),
         BlocProvider(create: (context) => UnitBloc(unitService: widget.unitService)),

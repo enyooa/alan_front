@@ -89,12 +89,12 @@ class _DynamicProductPageState extends State<DynamicProductPage> {
     switch (selectedOption) {
       case 'Продажа':
         return ProductSalePage();
-      case 'Ценовое предложение':
-        return ProductPricingPage();
+      // case 'Ценовое предложение':
+      //   return ProductPricingPage();
       case 'Склад':
         return ProductInventoryPage();
-      case 'Поступление товара':
-        return ProductReceivingPage();
+      // case 'Поступление товара':
+      //   return ProductReceivingPage();
       default:
         return const Center(
           child: Text(

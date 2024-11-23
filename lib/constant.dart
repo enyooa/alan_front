@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-  const baseUrl = 'http://192.168.101.7:8000/api/';
+  const baseUrl = 'http://192.168.1.108:8000/api/';
+  // const baseUrl = 'http://192.168.101.7:8000/api/';
   // const baseUrl = 'http://192.168.1.67:8000/api/';
  
 //  const baseUrl = 'http://127.0.0.1:8000/api/';
@@ -15,6 +16,13 @@ const borderColor = Color(0xFFD1D9E6);
 const TextStyle headingStyle = TextStyle(
   fontSize: 16,
   fontWeight: FontWeight.w100,
+  color: Colors.white,
+  
+);
+
+const TextStyle titleStyle = TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.w100,
   color: Colors.black,
   
 );
@@ -22,13 +30,13 @@ const TextStyle headingStyle = TextStyle(
 const TextStyle subheadingStyle = TextStyle(
   fontSize: 16,
   fontWeight: FontWeight.w600,
-  color: Colors.black87,
+  color: Colors.black,
 );
 
 const TextStyle bodyTextStyle = TextStyle(
   fontSize: 12,
   fontWeight: FontWeight.normal,
-  color: Colors.black54,
+  color: Colors.black,
 );
 
 const TextStyle captionStyle = TextStyle(
@@ -53,7 +61,7 @@ const TextStyle formLabelStyle = TextStyle(
 const TextStyle tableHeaderStyle = TextStyle(
   fontSize: 10,
   fontWeight: FontWeight.bold,
-  color: Colors.black,
+  color: Colors.white,
 );
 
 const TextStyle tableCellStyle = TextStyle(
