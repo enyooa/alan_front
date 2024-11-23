@@ -106,10 +106,10 @@ class _DynamicFormPageState extends State<DynamicFormPage> {
         return EmployeeFormPage();
       case 'Карточка товара':
         return ProductCardPage();
-      // case 'Подкарточка':
-      //   return SubProductFormPage();
-      case 'Поставщик товара':
-        return OrganizationFormPage();
+      case 'Подкарточка':
+        return ProductSubCardPage();
+      // case 'Поставщик товара':
+      //   return OrganizationFormPage();
       case 'Ед изм':
         return UnitFormPage();
       default:

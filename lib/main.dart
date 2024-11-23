@@ -3,8 +3,7 @@ import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_card_eve
 import 'package:cash_control/bloc/blocs/auth_bloc.dart';
 import 'package:cash_control/bloc/blocs/connectivity_bloc.dart';
 import 'package:cash_control/bloc/events/connectivity_event.dart';
-import 'package:cash_control/bloc/services/organization_service.dart';
-import 'package:cash_control/bloc/services/unit_service.dart';
+
 import 'package:cash_control/bloc/states/auth_state.dart';
 import 'package:cash_control/ui/admin/home.dart';
 import 'package:cash_control/ui/cashbox/home.dart';
@@ -63,10 +62,7 @@ class StartApp extends StatelessWidget {
           '/onboarding': (context) => const Onboarding(),
           '/login': (context) => const Login(),
           '/profile': (context) => const AccountView(),
-          '/admin_dashboard': (context) => AdminDashboardScreen(
-                organizationService: OrganizationService(),
-                unitService: UnitService(),
-              ),
+          '/admin_dashboard': (context) => AdminDashboardScreen(),
           '/cashbox_dashboard': (context) => CashboxDashboardScreen(),
           '/client_dashboard': (context) => const ClientDashboardScreen(),
           '/packer_dashboard': (context) => PackerScreen(),

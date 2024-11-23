@@ -1,47 +1,53 @@
 class PriceRequest {
-  final String choiceStatus;
-  final String userId; // Ensure userId is consistent in type
-  final int? addressId;
-  final List<ProductRequestItem> products; // Use a clear name for items in the request
+  final String clientId;
+  final List<PriceRequestItem> products;
 
   PriceRequest({
-    required this.choiceStatus,
-    required this.userId,
-    this.addressId,
+    required this.clientId,
     required this.products,
   });
 
+  factory PriceRequest.fromJson(Map<String, dynamic> json) {
+    return PriceRequest(
+      clientId: json['client_id'],
+      products: (json['products'] as List)
+          .map((product) => PriceRequestItem.fromJson(product))
+          .toList(),
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
-      'choice_status': choiceStatus,
-      'user_id': userId,
-      'address_id': addressId,
+      'client_id': clientId,
       'products': products.map((product) => product.toJson()).toList(),
     };
   }
 }
 
-class ProductRequestItem {
-  final String productId;
-  final String unitMeasurement;
-  final int amount;
+class PriceRequestItem {
+  final String productCardId;
+  final int quantity;
   final double price;
 
-  ProductRequestItem({
-    required this.productId,
-    required this.unitMeasurement,
-    required this.amount,
+  PriceRequestItem({
+    required this.productCardId,
+    required this.quantity,
     required this.price,
   });
 
+  factory PriceRequestItem.fromJson(Map<String, dynamic> json) {
+    return PriceRequestItem(
+      productCardId: json['product_card_id'],
+      quantity: json['quantity'],
+      price: (json['price'] as num).toDouble(),
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
-      'product_id': productId,
-      'unit_measurement': unitMeasurement,
-      'amount': amount,
+      'product_card_id': productCardId,
+      'quantity': quantity,
       'price': price,
     };
   }
 }
-
-

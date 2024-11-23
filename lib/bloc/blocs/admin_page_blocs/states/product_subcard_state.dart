@@ -1,3 +1,4 @@
+import 'package:cash_control/ui/main/models/product_subcard.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class ProductSubCardState extends Equatable {
@@ -9,10 +10,20 @@ class ProductSubCardInitial extends ProductSubCardState {}
 
 class ProductSubCardLoading extends ProductSubCardState {}
 
-class ProductSubCardCreated extends ProductSubCardState {
+class ProductSubCardsLoaded extends ProductSubCardState {
+  final List<ProductSubCard> subcards;
+
+  ProductSubCardsLoaded(this.subcards);
+
+  @override
+  List<Object?> get props => [subcards];
+}
+
+
+class ProductSubCardSuccess extends ProductSubCardState {
   final String message;
 
-  ProductSubCardCreated(this.message);
+  ProductSubCardSuccess(this.message);
 
   @override
   List<Object?> get props => [message];

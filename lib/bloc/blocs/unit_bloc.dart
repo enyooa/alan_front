@@ -1,26 +1,82 @@
-import 'package:cash_control/bloc/services/unit_service.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bloc/bloc.dart';
 import 'package:cash_control/bloc/events/unit_event.dart';
 import 'package:cash_control/bloc/states/unit_state.dart';
+import 'package:cash_control/constant.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UnitBloc extends Bloc<UnitEvent, UnitState> {
-  final UnitService unitService;
+  UnitBloc() : super(UnitInitial()) {
+    on<CreateUnitEvent>(_createUnit);
+    on<FetchUnitsEvent>(_fetchUnits);
 
-  UnitBloc({required this.unitService}) : super(UnitInitial()) {
-    on<CreateUnitEvent>(_onCreateUnit);
   }
 
-  Future<void> _onCreateUnit(CreateUnitEvent event, Emitter<UnitState> emit) async {
+Future<void> _fetchUnits(FetchUnitsEvent event, Emitter<UnitState> emit) async {
+  emit(UnitLoading());
+
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      emit(UnitError("Authentication token not found."));
+      return;
+    }
+
+    final response = await http.get(
+      Uri.parse(baseUrl + 'unit-measurements'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final units = jsonDecode(response.body) as List;
+      emit(UnitSuccess(units.map((u) => u['name']).join(','))); // Comma-separated units
+    } else {
+      emit(UnitError("Failed to fetch unit measurements."));
+    }
+  } catch (e) {
+    emit(UnitError("Error: $e"));
+  }
+}
+
+  Future<void> _createUnit(CreateUnitEvent event, Emitter<UnitState> emit) async {
     emit(UnitLoading());
+
     try {
-      final response = await unitService.createUnit(event.name);
+      // Retrieve the token from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        emit(UnitError("Authentication token not found."));
+        return;
+      }
+
+      // API request
+      final response = await http.post(
+        Uri.parse(baseUrl + 'unit-measurements'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'name': event.name,
+        }),
+      );
+
       if (response.statusCode == 201) {
-        emit(UnitCreated());
+        emit(UnitSuccess("Единица успешно сохранена"));
       } else {
-        emit(UnitError('Не удалось создать ед измерения'));
+        final errorData = jsonDecode(response.body);
+        emit(UnitError(errorData['message'] ?? "Не удалось сохранить единицу"));
       }
     } catch (e) {
-      emit(UnitError(e.toString()));
+      emit(UnitError("Ошибка: $e"));
     }
   }
 }

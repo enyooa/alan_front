@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:cash_control/constant.dart';
 
 class ProductCardPage extends StatefulWidget {
   @override
@@ -62,7 +63,7 @@ class _ProductCardPageState extends State<ProductCardPage> {
 
     if (name.isEmpty || brutto <= 0 || netto <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all required fields.')),
+        const SnackBar(content: Text('Пожалуйста, заполните все обязательные поля')),
       );
       return;
     }
@@ -83,7 +84,10 @@ class _ProductCardPageState extends State<ProductCardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Product Card')),
+      appBar: AppBar(
+        title: const Text('Создать карточку продукта', style: headingStyle),
+        backgroundColor: primaryColor,
+      ),
       body: BlocConsumer<ProductCardBloc, ProductCardState>(
         listener: (context, state) {
           if (state is ProductCardSuccess) {
@@ -104,23 +108,33 @@ class _ProductCardPageState extends State<ProductCardPage> {
             padding: const EdgeInsets.all(16.0),
             child: ListView(
               children: [
-                _buildTextField(nameController, 'Product Name'),
-                _buildTextField(descriptionController, 'Description'),
-                _buildTextField(countryController, 'Country'),
-                _buildTextField(typeController, 'Type'),
-                _buildTextField(bruttoController, 'Brutto', isNumber: true),
-                _buildTextField(nettoController, 'Netto', isNumber: true),
+                _buildTextField(nameController, 'Название продукта'),
+                _buildTextField(descriptionController, 'Описание'),
+                _buildTextField(countryController, 'Страна'),
+                _buildTextField(typeController, 'Тип'),
+                _buildTextField(bruttoController, 'Брутто', isNumber: true),
+                _buildTextField(nettoController, 'Нетто', isNumber: true),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    ElevatedButton(
+                    ElevatedButton.icon(
                       onPressed: _pickImage,
-                      child: const Text('Choose Image'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                      ),
+                      icon: const Icon(Icons.upload_file, color: Colors.white), // Icon for upload
+                      label: const Text('Выбрать изображение', style: buttonTextStyle),
                     ),
-                    ElevatedButton(
+                    ElevatedButton.icon(
                       onPressed: _takePhoto,
-                      child: const Text('Take Photo'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                      ),
+                      icon: const Icon(Icons.camera_alt, color: Colors.white), // Icon for take photo
+                      label: const Text('Сделать фото', style: buttonTextStyle),
                     ),
                   ],
                 ),
@@ -132,7 +146,11 @@ class _ProductCardPageState extends State<ProductCardPage> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _saveProduct,
-                  child: const Text('Save Product'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  ),
+                  child: const Text('Сохранить продукт', style: buttonTextStyle),
                 ),
               ],
             ),
@@ -149,9 +167,11 @@ class _ProductCardPageState extends State<ProductCardPage> {
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
+          labelStyle: subheadingStyle,
           border: const OutlineInputBorder(),
         ),
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+        style: bodyTextStyle,
       ),
     );
   }

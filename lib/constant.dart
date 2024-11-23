@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-  const baseUrl = 'http://192.168.1.108:8000/api/';
-  // const baseUrl = 'http://192.168.101.7:8000/api/';
-  // const baseUrl = 'http://192.168.1.67:8000/api/';
+// const baseUrl = 'http://192.168.101.7:8000/api/';
+const baseUrl = 'http://192.168.1.67:8000/api/';
  
 //  const baseUrl = 'http://127.0.0.1:8000/api/';
 //  const baseUrl = 'http://185.22.65.56/api/';
@@ -11,6 +10,7 @@ const primaryColor = Color(0xFF0288d1);
 const accentColor = Color(0xFF0288d1);
 const backgroundColor = Color(0xFFF1F3F8);
 const borderColor = Color(0xFFD1D9E6);
+const unselectednavbar = Colors.grey;
 
 // Define text styles
 const TextStyle headingStyle = TextStyle(

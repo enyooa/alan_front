@@ -3,6 +3,7 @@ import 'package:cash_control/ui/admin/dynamic_pages/product_options/product_pric
 import 'package:cash_control/ui/admin/dynamic_pages/product_options/product_receiving_page.dart';
 import 'package:cash_control/ui/admin/dynamic_pages/product_options/product_sale_page.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:cash_control/constant.dart';
 
 class DynamicProductPage extends StatefulWidget {
@@ -13,11 +14,11 @@ class DynamicProductPage extends StatefulWidget {
 class _DynamicProductPageState extends State<DynamicProductPage> {
   String selectedOption = 'Ценовое предложение';
 
-  final List<String> options = [
-    'Продажа',
-    'Ценовое предложение',
-    'Склад',
-    'Поступление товара',
+  final List<Map<String, dynamic>> productOptions = [
+    {'label': 'Продажа', 'icon': FontAwesomeIcons.cashRegister},
+    {'label': 'Ценовое предложение', 'icon': FontAwesomeIcons.tags},
+    {'label': 'Склад', 'icon': FontAwesomeIcons.warehouse},
+    {'label': 'Поступление товара', 'icon': FontAwesomeIcons.truck},
   ];
 
   @override
@@ -36,10 +37,16 @@ class _DynamicProductPageState extends State<DynamicProductPage> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: selectedOption,
-                    items: options.map((String value) {
+                    items: productOptions.map((option) {
                       return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value, style: bodyTextStyle),
+                        value: option['label'],
+                        child: Row(
+                          children: [
+                            FaIcon(option['icon'], size: 16, color: primaryColor),
+                            const SizedBox(width: 8),
+                            Text(option['label'], style: bodyTextStyle),
+                          ],
+                        ),
                       );
                     }).toList(),
                     onChanged: (newValue) {
@@ -52,10 +59,8 @@ class _DynamicProductPageState extends State<DynamicProductPage> {
                       labelStyle: formLabelStyle,
                       filled: true,
                       fillColor: Colors.white,
-                      
                       border: OutlineInputBorder(
-                        
-                        // borderRadius: BorderRadius.circular(10.0),
+                        borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
                     style: bodyTextStyle,
@@ -64,14 +69,15 @@ class _DynamicProductPageState extends State<DynamicProductPage> {
                 ),
                 const SizedBox(width: 10),
                 if (selectedOption == 'Ценовое предложение')
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     onPressed: () {
                       // Add creation logic here
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                     ),
-                    child: const Text("Создать", style: buttonTextStyle),
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    label: const Text("Создать", style: buttonTextStyle),
                   ),
               ],
             ),
@@ -89,8 +95,8 @@ class _DynamicProductPageState extends State<DynamicProductPage> {
     switch (selectedOption) {
       case 'Продажа':
         return ProductSalePage();
-      // case 'Ценовое предложение':
-      //   return ProductPricingPage();
+      case 'Ценовое предложение':
+        return ProductPricingPage();
       case 'Склад':
         return ProductInventoryPage();
       // case 'Поступление товара':

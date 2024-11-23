@@ -1,4 +1,9 @@
+import 'package:cash_control/bloc/blocs/unit_bloc.dart';
+import 'package:cash_control/bloc/events/unit_event.dart';
+import 'package:cash_control/bloc/states/unit_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:cash_control/constant.dart';
 
 class UnitFormPage extends StatefulWidget {
@@ -9,7 +14,13 @@ class UnitFormPage extends StatefulWidget {
 class _UnitFormPageState extends State<UnitFormPage> {
   final TextEditingController unitNameController = TextEditingController();
 
-  void _saveUnit() {
+  @override
+  void dispose() {
+    unitNameController.dispose();
+    super.dispose();
+  }
+
+  void _saveUnit(BuildContext context) {
     final unitName = unitNameController.text.trim();
 
     if (unitName.isEmpty) {
@@ -19,13 +30,7 @@ class _UnitFormPageState extends State<UnitFormPage> {
       return;
     }
 
-    // Add your unit saving logic here
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Единица успешно сохранена')),
-    );
-
-    // Clear the text field after saving
-    _clearFields();
+    context.read<UnitBloc>().add(CreateUnitEvent(name: unitName));
   }
 
   @override
@@ -35,27 +40,46 @@ class _UnitFormPageState extends State<UnitFormPage> {
         title: const Text('Создать Единицу Измерения', style: headingStyle),
         backgroundColor: primaryColor,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            _buildTextField(unitNameController, 'Наименование единицы'),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _saveUnit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-              ),
-              child: const Text('Сохранить', style: buttonTextStyle),
+      body: BlocConsumer<UnitBloc, UnitState>(
+        listener: (context, state) {
+          if (state is UnitSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+            unitNameController.clear();
+          } else if (state is UnitError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.error)),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is UnitLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView(
+              children: [
+                _buildTextField(unitNameController, 'Наименование единицы'),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => _saveUnit(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  ),
+                  child: const Text('Сохранить', style: buttonTextStyle),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  // Helper method to build text fields with consistent styling
   Widget _buildTextField(TextEditingController controller, String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -69,10 +93,5 @@ class _UnitFormPageState extends State<UnitFormPage> {
         style: bodyTextStyle,
       ),
     );
-  }
-
-  // Function to clear the input fields
-  void _clearFields() {
-    unitNameController.clear();
   }
 }

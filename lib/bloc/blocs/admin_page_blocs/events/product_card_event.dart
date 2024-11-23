@@ -22,3 +22,4 @@ class CreateProductCardEvent extends ProductCardEvent {
     this.photoProduct,
   });
 }
+class FetchProductCardsEvent extends ProductCardEvent {}
