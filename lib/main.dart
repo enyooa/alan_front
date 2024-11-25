@@ -1,4 +1,3 @@
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_card_event.dart';
 import 'package:cash_control/bloc/blocs/auth_bloc.dart';
 import 'package:cash_control/bloc/blocs/connectivity_bloc.dart';
@@ -12,11 +11,11 @@ import 'package:cash_control/ui/courier/home.dart';
 import 'package:cash_control/ui/main/auth/login.dart';
 import 'package:cash_control/ui/packer/home.dart';
 import 'package:cash_control/ui/storage/home.dart';
-import 'package:cash_control/ui/widgets/onboarding/onboarding.dart';
+import 'package:cash_control/ui/main/widgets/onboarding/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cash_control/ui/main/profile.dart';
+import 'package:cash_control/ui/client/profile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +36,6 @@ class StartApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => ProductCardBloc()),
         BlocProvider(
           create: (context) => ConnectivityBloc()..add(CheckConnectivity()),
         ),

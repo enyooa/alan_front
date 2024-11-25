@@ -1,4 +1,4 @@
-import 'package:cash_control/ui/main/models/price_request.dart';
+import 'package:cash_control/bloc/models/price_request.dart';
 import 'package:equatable/equatable.dart';
 
 class PriceRequestEvent extends Equatable {

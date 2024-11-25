@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:cash_control/ui/admin/form_pages/employee_form_page.dart';
 import 'package:cash_control/ui/admin/form_pages/organization_form_page.dart';
 import 'package:cash_control/ui/admin/form_pages/product_card_page.dart';
-import 'package:cash_control/ui/admin/form_pages/subproduct_form_page.dart';
+import 'package:cash_control/ui/admin/form_pages/subproduct_card_page.dart';
 import 'package:cash_control/ui/admin/form_pages/unit_form_page.dart';
 
 class DynamicFormPage extends StatefulWidget {

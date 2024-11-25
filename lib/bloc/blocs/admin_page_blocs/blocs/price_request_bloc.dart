@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:cash_control/ui/main/models/price_request.dart';
+import 'package:cash_control/bloc/models/price_request.dart';
 
 class PriceRequestBloc extends Bloc<PriceRequestEvent, PriceRequestState> {
   PriceRequestBloc() : super(PriceRequestInitial()) {

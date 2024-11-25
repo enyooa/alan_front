@@ -9,98 +9,90 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ProductCardBloc extends Bloc<ProductCardEvent, ProductCardState> {
   ProductCardBloc() : super(ProductCardInitial()) {
-    on<CreateProductCardEvent>(_createProductCard);
-    on<FetchProductCardsEvent>(_fetchProductCards);
+    on<CreateProductCardEvent>(_handleCreateProductCard);
+    on<FetchProductCardsEvent>(_handleFetchProductCards);
+
   }
 
-  // Create Product Card
-  Future<void> _createProductCard(
-      CreateProductCardEvent event, Emitter<ProductCardState> emit) async {
+  Future<void> _handleCreateProductCard(
+    CreateProductCardEvent event,
+    Emitter<ProductCardState> emit,
+  ) async {
     emit(ProductCardLoading());
-
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final token = prefs.getString('token') ?? '';
 
-      if (token == null) {
-        emit(ProductCardError("Authentication token not found."));
-        return;
+      final uri = Uri.parse(baseUrl+'product_card_create');
+      final request = http.MultipartRequest('POST', uri)
+        ..headers['Authorization'] = 'Bearer $token'
+        ..fields['name_of_products'] = event.nameOfProducts;
+
+      if (event.description != null) {
+        request.fields['description'] = event.description!;
       }
-
-      final uri = Uri.parse(baseUrl + 'product_card_create');
-      final request = http.MultipartRequest('POST', uri);
-
-      request.headers['Authorization'] = 'Bearer $token';
-      request.fields['name_of_products'] = event.nameOfProducts;
-      request.fields['description'] = event.description ?? '';
-      request.fields['country'] = event.country ?? '';
-      request.fields['type'] = event.type ?? '';
-      request.fields['brutto'] = event.brutto.toString();
-      request.fields['netto'] = event.netto.toString();
-
+      if (event.country != null) {
+        request.fields['country'] = event.country!;
+      }
+      if (event.type != null) {
+        request.fields['type'] = event.type!;
+      }
       if (event.photoProduct != null) {
-        request.files.add(await http.MultipartFile.fromPath(
-          'photo_product',
-          event.photoProduct!.path,
-        ));
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'photo_product',
+            event.photoProduct!.path,
+          ),
+        );
       }
 
       final response = await request.send();
-
       if (response.statusCode == 201) {
-        emit(ProductCardSuccess("Карточка товара успешно создано."));
+        emit(ProductCardCreated('Карточка товара успешно создана!'));
       } else {
-        final responseBody = await response.stream.bytesToString();
-        final errorData = jsonDecode(responseBody);
-        emit(ProductCardError(errorData['message'] ?? "Failed to create product card."));
+        final responseData = await response.stream.bytesToString();
+        emit(ProductCardError('Error: $responseData'));
       }
     } catch (e) {
-      emit(ProductCardError("Error: $e"));
+      emit(ProductCardError('Failed to create product card: $e'));
     }
   }
 
-  // Fetch Product Cards
-  Future<void> _fetchProductCards(
-      FetchProductCardsEvent event, Emitter<ProductCardState> emit) async {
-    emit(ProductCardLoading());
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+  Future<void> _handleFetchProductCards(
+  FetchProductCardsEvent event,
+  Emitter<ProductCardState> emit,
+) async {
+  emit(ProductCardLoading());
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    print('Token: $token');
 
-      if (token == null) {
-        emit(ProductCardError("Authentication token not found."));
-        return;
-      }
+    final uri = Uri.parse('${baseUrl}product_cards');
+    final response = await http.get(uri, headers: {
+      'Authorization': 'Bearer $token',
+    });
 
-      final response = await http.get(
-        Uri.parse(baseUrl + 'product_cards'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
+    if (response.statusCode == 200) {
+      final List<dynamic> responseData = json.decode(response.body);
+      print('Response Data: $responseData');
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        final productCards = data.map((json) => ProductCard.fromJson(json)).toList();
-        emit(ProductCardLoaded(productCards: productCards));
-      } else {
-        emit(ProductCardError("Failed to fetch product cards."));
-      }
-    } catch (e) {
-      emit(ProductCardError("Error: $e"));
+      final productCards = responseData.map((product) {
+        return {
+          'id': product['id'],
+          'name': product['name_of_products'],
+        };
+      }).toList();
+
+      emit(ProductCardsLoaded(productCards));
+    } else {
+      print('Error: ${response.statusCode}, ${response.body}');
+      emit(ProductCardError('Failed to fetch product cards.'));
     }
+  } catch (e) {
+    print('Exception: $e');
+    emit(ProductCardError('Error: $e'));
   }
 }
 
-// Model for ProductCard (if not already implemented)
-class ProductCard {
-  final int id;
-  final String nameOfProducts;
-
-  ProductCard({required this.id, required this.nameOfProducts});
-
-  factory ProductCard.fromJson(Map<String, dynamic> json) {
-    return ProductCard(
-      id: json['id'],
-      nameOfProducts: json['name_of_products'],
-    );
-  }
 }

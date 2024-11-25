@@ -1,25 +1,23 @@
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
-
 abstract class ProductCardState {}
 
 class ProductCardInitial extends ProductCardState {}
 
 class ProductCardLoading extends ProductCardState {}
 
-class ProductCardSuccess extends ProductCardState {
+class ProductCardCreated extends ProductCardState {
   final String message;
 
-  ProductCardSuccess(this.message);
+  ProductCardCreated(this.message);
 }
 
 class ProductCardError extends ProductCardState {
-  final String error;
+  final String message;
 
-  ProductCardError(this.error);
+  ProductCardError(this.message);
 }
 
-class ProductCardLoaded extends ProductCardState {
-  final List<ProductCard> productCards;
+class ProductCardsLoaded extends ProductCardState {
+  final List<Map<String, dynamic>> productCards;
 
-  ProductCardLoaded({required this.productCards});
+  ProductCardsLoaded(this.productCards);
 }

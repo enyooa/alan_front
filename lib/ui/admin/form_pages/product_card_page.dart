@@ -4,174 +4,193 @@ import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_card_eve
 import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_card_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'package:image_picker/image_picker.dart';
 import 'package:cash_control/constant.dart';
+import 'package:image_picker/image_picker.dart';
 
-class ProductCardPage extends StatefulWidget {
-  @override
-  _ProductCardPageState createState() => _ProductCardPageState();
-}
-
-class _ProductCardPageState extends State<ProductCardPage> {
+class ProductCardPage extends StatelessWidget {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController countryController = TextEditingController();
   final TextEditingController typeController = TextEditingController();
-  final TextEditingController bruttoController = TextEditingController();
-  final TextEditingController nettoController = TextEditingController();
-  File? selectedImage;
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    descriptionController.dispose();
-    countryController.dispose();
-    typeController.dispose();
-    bruttoController.dispose();
-    nettoController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        selectedImage = File(pickedFile.path);
-      });
-    }
-  }
-
-  Future<void> _takePhoto() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      setState(() {
-        selectedImage = File(pickedFile.path);
-      });
-    }
-  }
-
-  void _saveProduct() {
-    final name = nameController.text.trim();
-    final description = descriptionController.text.trim();
-    final country = countryController.text.trim();
-    final type = typeController.text.trim();
-    final brutto = double.tryParse(bruttoController.text.trim()) ?? 0.0;
-    final netto = double.tryParse(nettoController.text.trim()) ?? 0.0;
-
-    if (name.isEmpty || brutto <= 0 || netto <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Пожалуйста, заполните все обязательные поля')),
-      );
-      return;
-    }
-
-    context.read<ProductCardBloc>().add(
-          CreateProductCardEvent(
-            nameOfProducts: name,
-            description: description,
-            country: country,
-            type: type,
-            brutto: brutto,
-            netto: netto,
-            photoProduct: selectedImage,
-          ),
-        );
-  }
+  File? photoProduct;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Создать карточку продукта', style: headingStyle),
-        backgroundColor: primaryColor,
-      ),
-      body: BlocConsumer<ProductCardBloc, ProductCardState>(
+    return BlocProvider(
+      create: (_) => ProductCardBloc(),
+      child: BlocListener<ProductCardBloc, ProductCardState>(
         listener: (context, state) {
-          if (state is ProductCardSuccess) {
+          if (state is ProductCardCreated) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
           } else if (state is ProductCardError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error)),
+              SnackBar(content: Text(state.message)),
             );
           }
         },
-        builder: (context, state) {
-          if (state is ProductCardLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ListView(
-              children: [
-                _buildTextField(nameController, 'Название продукта'),
-                _buildTextField(descriptionController, 'Описание'),
-                _buildTextField(countryController, 'Страна'),
-                _buildTextField(typeController, 'Тип'),
-                _buildTextField(bruttoController, 'Брутто', isNumber: true),
-                _buildTextField(nettoController, 'Нетто', isNumber: true),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+        child: BlocBuilder<ProductCardBloc, ProductCardState>(
+          builder: (context, state) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('Создать карточку товара', style: headingStyle),
+                backgroundColor: primaryColor,
+              ),
+              body: SingleChildScrollView(
+                padding: pagePadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ElevatedButton.icon(
-                      onPressed: _pickImage,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                    const Text('Название', style: formLabelStyle),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        hintText: 'Введите название продукта',
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
                       ),
-                      icon: const Icon(Icons.upload_file, color: Colors.white), // Icon for upload
-                      label: const Text('Выбрать изображение', style: buttonTextStyle),
                     ),
+                    const SizedBox(height: 12),
+
+                    const Text('Описание', style: formLabelStyle),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: descriptionController,
+                      decoration: InputDecoration(
+                        hintText: 'Введите описание',
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    const Text('Страна', style: formLabelStyle),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: countryController,
+                      decoration: InputDecoration(
+                        hintText: 'Введите страну',
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    const Text('Тип', style: formLabelStyle),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: typeController,
+                      decoration: InputDecoration(
+                        hintText: 'Введите тип',
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              final imagePicker = ImagePicker();
+                              final pickedImage = await imagePicker.pickImage(
+                                  source: ImageSource.gallery);
+                              if (pickedImage != null) {
+                                photoProduct = File(pickedImage.path);
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 8,
+                              ),
+                            ),
+                            icon: const Icon(Icons.photo_library, size: 16,color: Colors.white,),
+                            label: const Text('Выбрать фото', style: buttonTextStyle),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              final imagePicker = ImagePicker();
+                              final pickedImage = await imagePicker.pickImage(
+                                  source: ImageSource.camera);
+                              if (pickedImage != null) {
+                                photoProduct = File(pickedImage.path);
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 8,
+                              ),
+                            ),
+                            icon: const Icon(Icons.camera_alt, size: 16,color: Colors.white,),
+                            label: const Text('Сделать фото', style: buttonTextStyle),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
                     ElevatedButton.icon(
-                      onPressed: _takePhoto,
+                      onPressed: () {
+                        BlocProvider.of<ProductCardBloc>(context).add(
+                          CreateProductCardEvent(
+                            nameOfProducts: nameController.text,
+                            description: descriptionController.text,
+                            country: countryController.text,
+                            type: typeController.text,
+                            photoProduct: photoProduct,
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 16,
+                        ),
+                        minimumSize: const Size.fromHeight(48),
                       ),
-                      icon: const Icon(Icons.camera_alt, color: Colors.white), // Icon for take photo
-                      label: const Text('Сделать фото', style: buttonTextStyle),
+                      icon: state is ProductCardLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Icon(Icons.send,color: Colors.white,),
+                      label: const Text('Отправить', style: buttonTextStyle),
                     ),
                   ],
                 ),
-                if (selectedImage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: Image.file(selectedImage!, height: 150),
-                  ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _saveProduct,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                  ),
-                  child: const Text('Сохранить продукт', style: buttonTextStyle),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildTextField(TextEditingController controller, String label, {bool isNumber = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: subheadingStyle,
-          border: const OutlineInputBorder(),
+              ),
+            );
+          },
         ),
-        keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-        style: bodyTextStyle,
       ),
     );
   }

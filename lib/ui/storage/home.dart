@@ -1,7 +1,7 @@
 import 'package:cash_control/ui/storage/TMZreport.dart';
 import 'package:cash_control/ui/client/widgets/appbar.dart';
 import 'package:cash_control/ui/client/widgets/bottom_nav_bar.dart';
-import 'package:cash_control/ui/widgets/dashboard_card.dart';
+import 'package:cash_control/ui/main/widgets/dashboard_card.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 class StorageScreen extends StatelessWidget {

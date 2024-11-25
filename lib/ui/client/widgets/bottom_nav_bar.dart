@@ -3,7 +3,7 @@ import 'package:cash_control/ui/cashbox/calculations.dart';
 import 'package:cash_control/ui/client/home.dart';
 import 'package:flutter/material.dart';
 
-import '../../main/profile.dart';
+import '../profile.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});

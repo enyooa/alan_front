@@ -1,19 +1,23 @@
-import 'dart:convert';
+import 'package:equatable/equatable.dart';
 
-abstract class ProductSubCardEvent {}
+class ProductSubCardEvent extends Equatable {
+  @override
+  List<Object?> get props => [];
+}
 
-// Fetch subcards
-class FetchProductSubCardsEvent extends ProductSubCardEvent {}
-
-// Create a new subcard
 class CreateProductSubCardEvent extends ProductSubCardEvent {
-  final int productCardId;
-  final double quantitySold;
-  final int priceAtSale;
+  final int productCardId; // ID of the parent ProductCard
+  final String name;
+  final double brutto;
+  final double netto;
 
   CreateProductSubCardEvent({
     required this.productCardId,
-    required this.quantitySold,
-    required this.priceAtSale,
+    required this.name,
+    required this.brutto,
+    required this.netto,
   });
+
+  @override
+  List<Object?> get props => [productCardId, name, brutto, netto];
 }
