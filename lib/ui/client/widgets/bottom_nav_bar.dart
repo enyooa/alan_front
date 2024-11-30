@@ -1,27 +1,26 @@
-import 'package:cash_control/constant.dart';
-import 'package:cash_control/ui/cashbox/calculations.dart';
-import 'package:cash_control/ui/client/home.dart';
 import 'package:flutter/material.dart';
-
-import '../profile.dart';
+import '../client_pages/main_page.dart'; // Main Page
+import '../client_pages/basket_page.dart'; // Basket Page
+import '../client_pages/favorites_page.dart'; // Favorites Page
+import '../client_pages/calculations_page.dart'; // Calculations Page
+import '../profile.dart'; // Profile Page
 
 class BottomNavBar extends StatefulWidget {
-  const BottomNavBar({super.key});
+  const BottomNavBar({Key? key}) : super(key: key);
 
   @override
   State<BottomNavBar> createState() => _BottomNavBarState();
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
-  int _selectedIndex = 0; 
-  List<Map<String, dynamic>> cartItems = [];
+  int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-   CalculationScreen(),
-    //  const CartScreen(cartItems: []),
-    //     const CartScreen(cartItems: []),
-
-    const AccountView(),// Профиль
+    const MainPage(), // Main/Home Page without BottomNavBar inside
+    const BasketPage(), // Basket Page
+    const FavoritesPage(), // Favorites Page
+    const CalculationsPage(), // Calculations Page
+    const AccountView(), // Profile Page
   ];
 
   void _onItemTapped(int index) {
@@ -32,60 +31,39 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-        currentIndex: _selectedIndex, // Track the selected item index
-        selectedItemColor: primaryColor, // Color for selected item
-        unselectedItemColor: Colors.grey, // Color for unselected items
+    return Scaffold(
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.blue, // Customize selected icon color
+        unselectedItemColor: Colors.grey, // Customize unselected icon color
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
-        items: <BottomNavigationBarItem>[
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Карточка',
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.storefront),
+            label: 'Главная',
           ),
-          const BottomNavigationBarItem(
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Корзина',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Избранное',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.calculate),
             label: 'Расчеты',
           ),
           BottomNavigationBarItem(
-            icon: Stack(
-              children: [
-                const Icon(Icons.shopping_cart),
-                if (cartItems.isNotEmpty)
-                  Positioned(
-                    right: 0,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
-                      ),
-                      child: Text(
-                        '${cartItems.length}', // Show number of items in the cart
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            label: 'Корзина',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Избранное',
-          ),
-          const BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Профиль',
           ),
         ],
-      
+      ),
     );
   }
 }

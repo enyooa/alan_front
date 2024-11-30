@@ -1,39 +1,30 @@
-import 'dart:async';
-import 'package:bloc/bloc.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+
+
 import 'package:cash_control/bloc/events/connectivity_event.dart';
 import 'package:cash_control/bloc/states/connectivity_state.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ConnectivityBloc extends Bloc<ConnectivityEvent, ConnectivityState> {
   final Connectivity _connectivity = Connectivity();
-  StreamSubscription? _connectivitySubscription;
 
   ConnectivityBloc() : super(ConnectivityInitial()) {
-    // Listen for changes in network connectivity
     on<CheckConnectivity>((event, emit) async {
-      final result = await _connectivity.checkConnectivity();
-      if (result == ConnectivityResult.none) {
-        emit(ConnectivityFailure());
+      final connectivityResult = await _connectivity.checkConnectivity();
+      if (connectivityResult == ConnectivityResult.none) {
+        emit(ConnectivityLost());
       } else {
-        emit(ConnectivitySuccess(true));
+        emit(ConnectivityRestored());
       }
+
+      // Listen for connectivity changes
+      _connectivity.onConnectivityChanged.listen((result) {
+        if (result == ConnectivityResult.none) {
+          add(CheckConnectivity());
+        } else {
+          add(CheckConnectivity());
+        }
+      });
     });
-
-    // Subscribe to network changes and emit states
-    _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
-      if (result == ConnectivityResult.none) {
-        add(CheckConnectivity());  // No internet connection
-      } else {
-        add(CheckConnectivity());  // Internet connection is restored
-      }
-    } as void Function(List<ConnectivityResult> event)?);
-  }
-
-  // Dispose of connectivity subscription when Bloc is closed
-  @override
-  Future<void> close() {
-    _connectivitySubscription?.cancel();
-    return super.close();
   }
 }

@@ -4,6 +4,12 @@ class ProductSubCardInitial extends ProductSubCardState {}
 
 class ProductSubCardLoading extends ProductSubCardState {}
 
+class ProductSubCardsLoaded extends ProductSubCardState {
+  final List<Map<String, dynamic>> productSubCards;
+
+  ProductSubCardsLoaded(this.productSubCards);
+}
+
 class ProductSubCardCreated extends ProductSubCardState {
   final String message;
 

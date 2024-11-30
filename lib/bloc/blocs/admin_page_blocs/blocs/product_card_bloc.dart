@@ -59,38 +59,37 @@ class ProductCardBloc extends Bloc<ProductCardEvent, ProductCardState> {
   }
 
   Future<void> _handleFetchProductCards(
-  FetchProductCardsEvent event,
-  Emitter<ProductCardState> emit,
+    FetchProductCardsEvent event,
+    Emitter<ProductCardState> emit,
 ) async {
   emit(ProductCardLoading());
   try {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
-    print('Token: $token');
+    if (token.isEmpty) {
+      emit(ProductCardError('Authentication token not found.'));
+      return;
+    }
 
-    final uri = Uri.parse('${baseUrl}product_cards');
-    final response = await http.get(uri, headers: {
-      'Authorization': 'Bearer $token',
-    });
+    final uri = Uri.parse(baseUrl + 'product_cards');
+    final response = await http.get(uri, headers: {'Authorization': 'Bearer $token'});
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body);
-      print('Response Data: $responseData');
-
       final productCards = responseData.map((product) {
         return {
           'id': product['id'],
-          'name': product['name_of_products'],
+          'name_of_products': product['name_of_products'] ?? 'Unnamed Product',
+          'description': product['description'] ?? '',
+          'photo_url': product['photo_url'] ?? '',
         };
       }).toList();
 
       emit(ProductCardsLoaded(productCards));
     } else {
-      print('Error: ${response.statusCode}, ${response.body}');
       emit(ProductCardError('Failed to fetch product cards.'));
     }
   } catch (e) {
-    print('Exception: $e');
     emit(ProductCardError('Error: $e'));
   }
 }

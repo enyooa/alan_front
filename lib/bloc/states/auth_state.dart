@@ -28,3 +28,23 @@ class AuthError extends AuthState {
   @override
   List<Object> get props => [message];
 }
+
+// для склад 
+class StorageUsersLoaded extends AuthState {
+  final List<Map<String, dynamic>> storageUsers;
+
+  StorageUsersLoaded({required this.storageUsers});
+
+  @override
+  List<Object> get props => [storageUsers];
+}
+
+// для ценовое предложения
+class ClientUsersLoaded extends AuthState {
+  final List<Map<String, dynamic>> clientUsers;
+
+  ClientUsersLoaded({required this.clientUsers});
+
+  @override
+  List<Object> get props => [clientUsers];
+}

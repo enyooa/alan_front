@@ -38,6 +38,18 @@
          "type": "dart",
          "request": "launch",
          "program": "lib\\ui\\client\\widgets\\basket.dart"
+      },
+      {
+         "name": "Flutter (lib\\main.dart)",
+         "type": "dart",
+         "request": "launch",
+         "program": "lib\\main.dart"
+      },
+      {
+         "name": "Flutter (lib\\main.dart)",
+         "type": "dart",
+         "request": "launch",
+         "program": "lib\\main.dart"
       }
    ]
 }

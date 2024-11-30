@@ -1,6 +1,10 @@
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/price_request_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/inventory_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/operations_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_receiving_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
+import 'package:cash_control/bloc/blocs/provider_bloc.dart';
 import 'package:cash_control/constant.dart';
 import 'package:cash_control/ui/admin/dynamic_pages/dynamic_product_page.dart';
 import 'package:cash_control/ui/admin/dynamic_pages/dynamic_report_page.dart';
@@ -38,12 +42,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => PriceRequestBloc()),
         BlocProvider(create: (context) => ProductCardBloc(),child: ProductCardPage(),),        
         BlocProvider(create: (context) => UserBloc()),
         // BlocProvider(create: (context) => OrganizationBloc(organizationService: widget.organizationService)),
         BlocProvider(create: (context) => UnitBloc()),
+        BlocProvider(create: (context) => ProviderBloc()),
+
         BlocProvider(create: (context) => ProductSubCardBloc(),child: ProductSubCardPage(),),        
+        BlocProvider(create: (context) => ProductReceivingBloc()),
+        BlocProvider(create: (context) => SalesBloc()),
+        BlocProvider(create: (context) => InventoryBloc()),
+        BlocProvider(create: (context) => OperationsBloc()),
+
+
 
       ],
       child: Scaffold(

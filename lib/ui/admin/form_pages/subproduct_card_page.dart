@@ -20,18 +20,15 @@ class _ProductSubCardPageState extends State<ProductSubCardPage> {
   int? selectedProductCardId;
 
   @override
-  void initState() {
-    super.initState();
-    // Fetch product cards when the widget is initialized
-    context.read<ProductCardBloc>().add(FetchProductCardsEvent());
-  }
-
-  @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<ProductCardBloc>(create: (_) => ProductCardBloc()..add(FetchProductCardsEvent())),
-        BlocProvider<ProductSubCardBloc>(create: (_) => ProductSubCardBloc()),
+        BlocProvider<ProductCardBloc>(
+          create: (_) => ProductCardBloc()..add(FetchProductCardsEvent()),
+        ),
+        BlocProvider<ProductSubCardBloc>(
+          create: (_) => ProductSubCardBloc(),
+        ),
       ],
       child: Scaffold(
         appBar: AppBar(
@@ -67,13 +64,16 @@ class _ProductSubCardPageState extends State<ProductSubCardPage> {
                     const Text('Выберите карточку', style: formLabelStyle),
                     const SizedBox(height: 8),
                     if (productCardState is ProductCardsLoaded)
-                      DropdownButton<int>(
+                      DropdownButtonFormField<int>(
                         value: selectedProductCardId,
                         hint: const Text('Выберите карточку', style: bodyTextStyle),
                         items: productCardState.productCards.map((productCard) {
                           return DropdownMenuItem<int>(
                             value: productCard['id'],
-                            child: Text(productCard['name'], style: bodyTextStyle),
+                            child: Text(
+                              productCard['name_of_products'] ?? 'Unnamed Product Card',
+                              style: bodyTextStyle,
+                            ),
                           );
                         }).toList(),
                         onChanged: (value) {
@@ -81,11 +81,23 @@ class _ProductSubCardPageState extends State<ProductSubCardPage> {
                             selectedProductCardId = value;
                           });
                         },
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
                       )
                     else if (productCardState is ProductCardLoading)
                       const Center(child: CircularProgressIndicator())
                     else
-                      const Text('Не удалось загрузить карточки', style: bodyTextStyle),
+                      const Text(
+                        'Не удалось загрузить карточки',
+                        style: bodyTextStyle,
+                      ),
                     const SizedBox(height: 12),
 
                     const Text('Название', style: formLabelStyle),
@@ -150,7 +162,13 @@ class _ProductSubCardPageState extends State<ProductSubCardPage> {
                           return;
                         }
 
-                        // Dispatch event to create a subcard
+                        if (nameController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Введите название')),
+                          );
+                          return;
+                        }
+
                         context.read<ProductSubCardBloc>().add(
                           CreateProductSubCardEvent(
                             productCardId: selectedProductCardId!,

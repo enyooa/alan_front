@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class ProductSubCardEvent extends Equatable {
+abstract class ProductSubCardEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
@@ -20,4 +20,9 @@ class CreateProductSubCardEvent extends ProductSubCardEvent {
 
   @override
   List<Object?> get props => [productCardId, name, brutto, netto];
+}
+
+class FetchProductSubCardsEvent extends ProductSubCardEvent {
+  @override
+  List<Object?> get props => [];
 }

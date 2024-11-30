@@ -1,13 +1,21 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:convert';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_receiving_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_card_event.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_receiving_event.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_card_state.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_receiving_state.dart';
+import 'package:cash_control/bloc/blocs/provider_bloc.dart';
+import 'package:cash_control/bloc/blocs/unit_bloc.dart';
+import 'package:cash_control/bloc/events/unit_event.dart';
+import 'package:cash_control/bloc/states/provider_state.dart';
+import 'package:cash_control/bloc/states/unit_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cash_control/constant.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+
+import '../../../../bloc/events/provider_event.dart';
 
 class ProductReceivingPage extends StatefulWidget {
   @override
@@ -15,15 +23,18 @@ class ProductReceivingPage extends StatefulWidget {
 }
 
 class _ProductReceivingPageState extends State<ProductReceivingPage> {
-  int? selectedOrganizationId;
-  String? organizationAddress;
   List<Map<String, dynamic>> productRows = [];
   DateTime? selectedDate;
+  int? selectedProviderId;
 
   @override
   void initState() {
     super.initState();
-    // context.read<ProductCardBloc>();
+    // Fetch product cards and units on initialization
+    context.read<ProductCardBloc>().add(FetchProductCardsEvent());
+    context.read<UnitBloc>().add(FetchUnitsEvent());
+    context.read<ProviderBloc>().add(FetchProvidersEvent());
+
   }
 
   @override
@@ -41,8 +52,8 @@ class _ProductReceivingPageState extends State<ProductReceivingPage> {
             );
             setState(() {
               productRows.clear();
-              selectedOrganizationId = null;
-              organizationAddress = null;
+              selectedDate = null;
+              selectedProviderId = null;
             });
           } else if (state is ProductReceivingError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -55,14 +66,15 @@ class _ProductReceivingPageState extends State<ProductReceivingPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildSupplierDropdownTable(),
+              _buildProviderAndDateTable(),
               const SizedBox(height: 20),
-              // _buildProductTable(),
+              _buildProductTable(),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _submitReceivingData,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
+                  padding: const EdgeInsets.all(12.0),
                 ),
                 child: const Text('Сохранить', style: buttonTextStyle),
               ),
@@ -73,15 +85,12 @@ class _ProductReceivingPageState extends State<ProductReceivingPage> {
     );
   }
 
-Widget _buildSupplierDropdownTable() {
-    return FutureBuilder<String>(
-      future: _getAdminName(), // Fetch the admin's name
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+  Widget _buildProviderAndDateTable() {
+    return BlocBuilder<ProviderBloc, ProviderState>(
+      builder: (context, state) {
+        if (state is ProviderLoading) {
           return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return const Center(child: Text('Ошибка загрузки данных администратора'));
-        } else {
+        } else if (state is ProvidersLoaded) {
           return Table(
             border: TableBorder.all(color: borderColor),
             children: [
@@ -100,28 +109,27 @@ Widget _buildSupplierDropdownTable() {
               ),
               TableRow(
                 children: [
-                  DropdownButtonFormField<int>(
-                    decoration: InputDecoration(
-                      labelText: 'Выберите поставщика',
-                      labelStyle: formLabelStyle,
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: DropdownButtonFormField<int>(
+                      value: selectedProviderId,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8),
                       ),
+                      hint: const Text('Выберите поставщика', style: bodyTextStyle),
+                      items: state.providers.map((provider) {
+                        return DropdownMenuItem<int>(
+                          value: provider.id,
+                          child: Text(provider.name, style: bodyTextStyle),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedProviderId = value;
+                        });
+                      },
                     ),
-                    value: selectedOrganizationId,
-                    items: [
-                      DropdownMenuItem(
-                        value: 1, // Static value for admin's ID
-                        child: Text(snapshot.data ?? 'Admin', style: bodyTextStyle),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        selectedOrganizationId = value;
-                      });
-                    },
                   ),
                   GestureDetector(
                     onTap: () async {
@@ -151,133 +159,153 @@ Widget _buildSupplierDropdownTable() {
               ),
             ],
           );
+        } else {
+          return const Center(
+            child: Text(
+              'Ошибка при загрузке поставщиков',
+              style: bodyTextStyle,
+            ),
+          );
         }
       },
     );
   }
+  
+ Widget _buildProductTable() {
+  return BlocBuilder<ProductCardBloc, ProductCardState>(
+    builder: (context, productCardState) {
+      if (productCardState is ProductCardLoading) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (productCardState is ProductCardsLoaded) {
+        return BlocBuilder<UnitBloc, UnitState>(
+          builder: (context, unitState) {
+            if (unitState is UnitLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (unitState is UnitSuccess) {
+              final units = unitState.message.split(',');
+              return Column(
+                children: [
+                  Table(
+  border: TableBorder.all(color: borderColor),
+  children: [
+    // Header Row
+    TableRow(
+      decoration: BoxDecoration(color: primaryColor),
+      children: const [
+        Padding(padding: EdgeInsets.all(8.0), child: Text('Товар', style: tableHeaderStyle)),
+        Padding(padding: EdgeInsets.all(8.0), child: Text('Ед изм', style: tableHeaderStyle)),
+        Padding(padding: EdgeInsets.all(8.0), child: Text('Кол-во', style: tableHeaderStyle)),
+        Padding(padding: EdgeInsets.all(8.0), child: Text('Цена', style: tableHeaderStyle)),
+        Padding(padding: EdgeInsets.all(8.0), child: Text('Сумма', style: tableHeaderStyle)),
+        Padding(padding: EdgeInsets.all(8.0), child: Text('Удалить', style: tableHeaderStyle)),
+      ],
+    ),
+    // Data Rows
+    ...productRows.asMap().entries.map((entry) {
+      int index = entry.key;
+      Map<String, dynamic> row = entry.value;
+      return TableRow(
+        children: [
+          // Product dropdown
+          DropdownButtonFormField<int>(
+            value: row['product_card_id'],
+            items: productCardState.productCards.map((product) {
+              return DropdownMenuItem<int>(
+                value: product['id'],
+                child: Text(product['name_of_products'] ?? 'Unnamed Product'),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                row['product_card_id'] = value;
+              });
+            },
+          ),
+          // Unit dropdown
+          DropdownButtonFormField<String>(
+            value: row['unit_measurement'],
+            items: units.map((unit) {
+              return DropdownMenuItem<String>(
+                value: unit,
+                child: Text(unit),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                row['unit_measurement'] = value;
+              });
+            },
+          ),
+          // Quantity input
+          TextField(
+            onChanged: (value) {
+              setState(() {
+                row['quantity'] = double.tryParse(value) ?? 0.0;
+              });
+            },
+            decoration: const InputDecoration(hintText: 'Кол-во'),
+            keyboardType: TextInputType.number,
+          ),
+          // Price input
+          TextField(
+            onChanged: (value) {
+              setState(() {
+                row['price'] = double.tryParse(value) ?? 0.0;
+              });
+            },
+            decoration: const InputDecoration(hintText: 'Цена'),
+            keyboardType: TextInputType.number,
+          ),
+          // Total sum
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text((row['quantity'] * row['price']).toStringAsFixed(2)),
+          ),
+          // Delete icon
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              setState(() {
+                productRows.removeAt(index);
+              });
+            },
+          ),
+        ],
+      );
+    }).toList(),
+  ],
+),
 
-  // Helper method to fetch admin's name from SharedPreferences
-  Future<String> _getAdminName() async {
-    final prefs = await SharedPreferences.getInstance();
-    final firstName = prefs.getString('first_name');
-    return firstName ?? 'Admin'; // Default to "Admin" if name not found
-  }
-
-
-  // Widget _buildProductTable() {
-  //   return BlocBuilder<ProductCardBloc, ProductCardState>(
-  //     builder: (context, state) {
-  //       if (state is ProductCardLoading) {
-  //         return const Center(child: CircularProgressIndicator());
-  //       } else if (state is ProductCardLoaded) {
-  //         return Column(
-  //           children: [
-  //             Table(
-  //               border: TableBorder.all(color: borderColor),
-  //               children: [
-  //                 TableRow(
-  //                   decoration: BoxDecoration(color: primaryColor),
-  //                   children: const [
-  //                     Padding(
-  //                       padding: EdgeInsets.all(8.0),
-  //                       child: Text('Наименование', style: tableHeaderStyle),
-  //                     ),
-  //                     Padding(
-  //                       padding: EdgeInsets.all(8.0),
-  //                       child: Text('Ед изм', style: tableHeaderStyle),
-  //                     ),
-  //                     Padding(
-  //                       padding: EdgeInsets.all(8.0),
-  //                       child: Text('Кол-во', style: tableHeaderStyle),
-  //                     ),
-  //                     Padding(
-  //                       padding: EdgeInsets.all(8.0),
-  //                       child: Text('Цена', style: tableHeaderStyle),
-  //                     ),
-  //                     Padding(
-  //                       padding: EdgeInsets.all(8.0),
-  //                       child: Text('Сумма', style: tableHeaderStyle),
-  //                     ),
-  //                   ],
-  //                 ),
-  //                 ...productRows.map((row) {
-  //                   return TableRow(
-  //                     children: [
-  //                       DropdownButtonFormField<String>(
-  //                         decoration: const InputDecoration(border: InputBorder.none),
-  //                         value: row['product_card_id'],
-  //                         items: state.productCards.map((product) {
-  //                           return DropdownMenuItem(
-  //                             value: product.id.toString(),
-  //                             child: Text(product.nameOfProducts, style: bodyTextStyle),
-  //                           );
-  //                         }).toList(),
-  //                         onChanged: (value) {
-  //                           setState(() {
-  //                             row['product_card_id'] = value;
-  //                           });
-  //                         },
-  //                       ),
-  //                       Padding(
-  //                         padding: const EdgeInsets.all(8.0),
-  //                         child: Text(row['unit_measurement'] ?? '', style: tableCellStyle),
-  //                       ),
-  //                       TextField(
-  //                         onChanged: (value) {
-  //                           setState(() {
-  //                             row['quantity'] = double.tryParse(value) ?? 0;
-  //                             row['total_sum'] = (row['quantity'] ?? 0) * (row['price'] ?? 0);
-  //                           });
-  //                         },
-  //                         decoration: const InputDecoration(hintText: 'Кол-во'),
-  //                         keyboardType: TextInputType.number,
-  //                         style: bodyTextStyle,
-  //                       ),
-  //                       TextField(
-  //                         onChanged: (value) {
-  //                           setState(() {
-  //                             row['price'] = double.tryParse(value) ?? 0;
-  //                             row['total_sum'] = (row['quantity'] ?? 0) * (row['price'] ?? 0);
-  //                           });
-  //                         },
-  //                         decoration: const InputDecoration(hintText: 'Цена'),
-  //                         keyboardType: TextInputType.number,
-  //                         style: bodyTextStyle,
-  //                       ),
-  //                       Padding(
-  //                         padding: const EdgeInsets.all(8.0),
-  //                         child: Text(row['total_sum'].toString(), style: tableCellStyle),
-  //                       ),
-  //                     ],
-  //                   );
-  //                 }).toList(),
-  //               ],
-  //             ),
-  //             IconButton(
-  //               icon: const Icon(Icons.add),
-  //               onPressed: () {
-  //                 setState(() {
-  //                   productRows.add({
-  //                     'product_card_id': null,
-  //                     'unit_measurement': '',
-  //                     'quantity': 0,
-  //                     'price': 0,
-  //                     'total_sum': 0,
-  //                   });
-  //                 });
-  //               },
-  //             ),
-  //           ],
-  //         );
-  //       } else {
-  //         return const Text('Ошибка при загрузке товаров', style: bodyTextStyle);
-  //       }
-  //     },
-  //   );
-  // }
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      setState(() {
+                        productRows.add({
+                          'product_card_id': null,
+                          'unit_measurement': null,
+                          'quantity': 0.0,
+                          'price': 0.0,
+                          'total_sum': 0.0,
+                        });
+                      });
+                    },
+                  ),
+                ],
+              );
+            } else {
+              return const Center(child: Text('Ошибка при загрузке единиц измерения.'));
+            }
+          },
+        );
+      } else {
+        return const Center(child: Text('Ошибка при загрузке карточек товаров.'));
+      }
+    },
+  );
+}
 
   void _submitReceivingData() {
-    if (selectedOrganizationId == null || productRows.isEmpty) {
+    if (selectedDate == null || selectedProviderId == null || productRows.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Заполните все поля')),
       );
@@ -287,13 +315,42 @@ Widget _buildSupplierDropdownTable() {
     for (var row in productRows) {
       context.read<ProductReceivingBloc>().add(
             CreateProductReceivingEvent(
-              productCardId: int.parse(row['product_card_id']),
+              productCardId: row['product_card_id'],
               unitMeasurement: row['unit_measurement'],
               quantity: row['quantity'],
               price: row['price'],
               totalSum: row['total_sum'],
+              date: DateFormat('yyyy-MM-dd').format(selectedDate!),
             ),
           );
     }
   }
+
+  void _submitBulkReceivingData() {
+  if (selectedDate == null || selectedProviderId == null || productRows.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Fill all fields before submission.')),
+    );
+    return;
+  }
+
+  // Prepare data for submission
+  List<Map<String, dynamic>> formattedRows = productRows.map((row) {
+    return {
+      'organization_id': selectedProviderId,
+      'product_card_id': row['product_card_id'],
+      'unit_measurement': row['unit_measurement'],
+      'quantity': row['quantity'],
+      'price': row['price'],
+      'total_sum': row['total_sum'],
+      'date': DateFormat('yyyy-MM-dd').format(selectedDate!),
+    };
+  }).toList();
+
+  // Trigger the bulk submission event
+  context.read<ProductReceivingBloc>().add(
+        CreateBulkProductReceivingEvent(receivings: formattedRows),
+      );
+}
+
 }

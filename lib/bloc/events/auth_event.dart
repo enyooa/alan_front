@@ -14,5 +14,9 @@ class LoginEvent extends AuthEvent {
   @override
   List<Object> get props => [whatsapp_number, password];
 }
+// для склада и ценового предложения
+class FetchStorageUsersEvent extends AuthEvent {}
+class FetchClientUsersEvent extends AuthEvent {}
+// для склада и ценового предложения
 
 class LogoutEvent extends AuthEvent {}

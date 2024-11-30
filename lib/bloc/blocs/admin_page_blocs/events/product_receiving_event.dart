@@ -11,6 +11,8 @@ class FetchProductReceivingEvent extends ProductReceivingEvent {
   List<Object?> get props => [];
 }
 
+
+
 class CreateProductReceivingEvent extends ProductReceivingEvent {
   final int productCardId;
   final String? unitMeasurement;
@@ -37,4 +39,13 @@ class CreateProductReceivingEvent extends ProductReceivingEvent {
         totalSum,
         date,
       ];
+}
+
+class CreateBulkProductReceivingEvent extends ProductReceivingEvent {
+  final List<Map<String, dynamic>> receivings;
+
+  CreateBulkProductReceivingEvent({required this.receivings});
+
+  @override
+  List<Object?> get props => [receivings];
 }
