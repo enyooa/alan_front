@@ -1,5 +1,6 @@
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/inventory_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/operations_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/price_offer_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_receiving_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
@@ -52,6 +53,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         BlocProvider(create: (context) => ProductReceivingBloc()),
         BlocProvider(create: (context) => SalesBloc()),
         BlocProvider(create: (context) => InventoryBloc()),
+        BlocProvider(create: (context) => PriceOfferBloc()),
+
         BlocProvider(create: (context) => OperationsBloc()),
 
 

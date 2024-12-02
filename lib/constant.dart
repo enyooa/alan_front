@@ -4,7 +4,7 @@ const baseUrl = 'http://192.168.101.7:8000/api/';
 // const baseUrl = 'http://192.168.1.67:8000/api/';
  
 //  const baseUrl = 'http://127.0.0.1:8000/api/';
-//  const baseUrl = 'http://185.22.65.56/api/';
+// const baseUrl = 'http://185.22.65.56/api/';
 
 const primaryColor = Color(0xFF0288d1);
 const accentColor = Color(0xFF0288d1);

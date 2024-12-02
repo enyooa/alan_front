@@ -10,49 +10,7 @@ class OperationsBloc extends Bloc<OperationsEvent, OperationsState> {
   OperationsBloc() : super(OperationsInitial()) {
     on<FetchOperationsHistoryEvent>(_fetchOperationsHistory);
 
-    on<UpdateOperationEvent>((event, emit) async {
-  emit(OperationsLoading());
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-
-    final response = await http.put(
-      Uri.parse('$baseUrl/operations/${event.id}/edit'),
-      headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
-      body: jsonEncode({'operation': event.operation, 'type': event.type}),
-    );
-
-    if (response.statusCode == 200) {
-      add(FetchOperationsHistoryEvent());
-    } else {
-      emit(OperationsError(message: 'Failed to update operation.'));
-    }
-  } catch (e) {
-    emit(OperationsError(message: e.toString()));
-  }
-});
-
-on<DeleteOperationEvent>((event, emit) async {
-  emit(OperationsLoading());
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-
-    final response = await http.delete(
-      Uri.parse('$baseUrl/operations/${event.id}/delete'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
-
-    if (response.statusCode == 200) {
-      add(FetchOperationsHistoryEvent());
-    } else {
-      emit(OperationsError(message: 'Failed to delete operation.'));
-    }
-  } catch (e) {
-    emit(OperationsError(message: e.toString()));
-  }
-});
-
+    
   }
 
   Future<void> _fetchOperationsHistory(

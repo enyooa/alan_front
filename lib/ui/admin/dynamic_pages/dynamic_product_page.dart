@@ -96,7 +96,7 @@ class _DynamicProductPageState extends State<DynamicProductPage> {
       case 'Продажа':
         return ProductSalePage();
       case 'Ценовое предложение':
-        return ProductPricingPage();
+        return ProductOfferPage();
       case 'Склад':
         return ProductInventoryPage();
       case 'Поступление товара':

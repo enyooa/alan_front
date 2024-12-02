@@ -7,17 +7,13 @@ abstract class OperationsEvent extends Equatable {
 
 class UpdateOperationEvent extends OperationsEvent {
   final int id;
-  final String type;
   final String operation;
+  final String date;
 
-  UpdateOperationEvent({required this.id, required this.type, required this.operation});
-}
+  UpdateOperationEvent({required this.id, required this.operation, required this.date});
 
-class DeleteOperationEvent extends OperationsEvent {
-  final int id;
-  final String type;
-
-  DeleteOperationEvent({required this.id, required this.type});
+  @override
+  List<Object?> get props => [id, operation, date];
 }
 
 
