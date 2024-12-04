@@ -1,4 +1,5 @@
 import 'package:cash_control/constant.dart';
+import 'package:cash_control/ui/admin/form_pages/address_page.dart';
 import 'package:cash_control/ui/admin/form_pages/provider_form_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -24,6 +25,8 @@ class _DynamicFormPageState extends State<DynamicFormPage> {
     {'label': 'Поставщик', 'icon': FontAwesomeIcons.truckArrowRight},
 
     {'label': 'Ед изм', 'icon': FontAwesomeIcons.balanceScale},
+    {'label': 'Адрес', 'icon': FontAwesomeIcons.addressBook},
+    
   ];
 
   @override
@@ -117,6 +120,8 @@ class _DynamicFormPageState extends State<DynamicFormPage> {
         return ProviderPage();
       case 'Ед изм':
         return UnitFormPage();
+      case 'Адрес':
+        return AddressPage();
       default:
         return const Center(
           child: Text(

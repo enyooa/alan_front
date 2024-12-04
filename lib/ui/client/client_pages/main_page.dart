@@ -12,7 +12,7 @@ class _MainPageState extends State<MainPage> {
   bool isSearching = false;
   TextEditingController searchController = TextEditingController();
   String searchQuery = "";
-  List<String> filters = ['Овощи', 'Фрукты', 'Молочные', 'Мясо'];
+  List<String> filters = ['Овощи', 'Фрукты'];
   String selectedFilter = 'Овощи';
 
   void _searchProduct(String query) {

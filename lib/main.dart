@@ -20,17 +20,44 @@ import 'package:cash_control/ui/client/profile.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Retrieve whether it's the first launch from SharedPreferences
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool isFirstLaunch = prefs.getBool('isFirstLaunch') ?? true;
+  String? token = prefs.getString('token');
+  List<String>? roles = prefs.getStringList('roles');
 
-  runApp(StartApp(isFirstLaunch: isFirstLaunch));
+  String initialRoute;
+
+  if (isFirstLaunch) {
+    initialRoute = '/onboarding';
+  } else if (token != null && token.isNotEmpty) {
+    // Check the role to decide the initial dashboard
+    if (roles?.contains('admin') ?? false) {
+      initialRoute = '/admin_dashboard';
+    } else if (roles?.contains('cashbox') ?? false) {
+      initialRoute = '/cashbox_dashboard';
+    } else if (roles?.contains('client') ?? false) {
+      initialRoute = '/client_dashboard';
+    } else if (roles?.contains('storage') ?? false) {
+      initialRoute = '/storage_dashboard';
+    } else if (roles?.contains('packer') ?? false) {
+      initialRoute = '/packer_dashboard';
+    } else if (roles?.contains('courier') ?? false) {
+      initialRoute = '/courier_dashboard';
+    } else {
+      initialRoute = '/login';
+    }
+  } else {
+    initialRoute = '/login';
+  }
+
+  runApp(StartApp(initialRoute: initialRoute));
 }
 
-class StartApp extends StatelessWidget {
-  final bool isFirstLaunch;
 
-  const StartApp({super.key, required this.isFirstLaunch});
+class StartApp extends StatelessWidget {
+  final String initialRoute;
+
+  const StartApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -45,15 +72,15 @@ class StartApp extends StatelessWidget {
       ],
       child: MaterialApp(
         supportedLocales: const [
-        Locale('en', 'US'), // English
-        Locale('ru', 'RU'), // Russian
-      ],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      locale: const Locale('ru', 'RU'),
+          Locale('en', 'US'), // English
+          Locale('ru', 'RU'), // Russian
+        ],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        locale: const Locale('ru', 'RU'),
         theme: ThemeData(
           fontFamily: 'Raleway',
           textTheme: const TextTheme(
@@ -64,7 +91,7 @@ class StartApp extends StatelessWidget {
         ),
         debugShowCheckedModeBanner: false,
         title: 'Cash Control',
-        initialRoute: isFirstLaunch ? '/onboarding' : '/login',
+        initialRoute: initialRoute,
         routes: {
           '/onboarding': (context) => const Onboarding(),
           '/login': (context) => const Login(),
@@ -77,61 +104,62 @@ class StartApp extends StatelessWidget {
           '/courier_dashboard': (context) => CourierDashboardScreen(),
         },
         builder: (context, child) {
-  return MultiBlocListener(
-    listeners: [
-      BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) async {
-          if (state is AuthAuthenticated) {
-            final roles = state.roles;
+          return MultiBlocListener(
+            listeners: [
+              BlocListener<AuthBloc, AuthState>(
+                listener: (context, state) async {
+                  if (state is AuthAuthenticated) {
+                    final roles = state.roles;
 
-            if (roles.contains('admin')) {
-              Navigator.pushReplacementNamed(context, '/admin_dashboard');
-            } else if (roles.contains('cashbox')) {
-              Navigator.pushReplacementNamed(context, '/cashbox_dashboard');
-            } else if (roles.contains('client')) {
-              Navigator.pushReplacementNamed(context, '/client_dashboard');
-            } else if (roles.contains('storage')) {
-              Navigator.pushReplacementNamed(context, '/storage_dashboard');
-            } else if (roles.contains('packer')) {
-              Navigator.pushReplacementNamed(context, '/packer_dashboard');
-            } else if (roles.contains('courier')) {
-              Navigator.pushReplacementNamed(context, '/courier_dashboard');
-            } else {
-              Navigator.pushReplacementNamed(context, '/login');
-            }
-          } else if (state is AuthUnauthenticated) {
-            Navigator.pushReplacementNamed(context, '/login');
-          } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          }
+                    if (roles.contains('admin')) {
+                      Navigator.pushReplacementNamed(context, '/admin_dashboard');
+                    } else if (roles.contains('cashbox')) {
+                      Navigator.pushReplacementNamed(context, '/cashbox_dashboard');
+                    } else if (roles.contains('client')) {
+                      Navigator.pushReplacementNamed(context, '/client_dashboard');
+                    } else if (roles.contains('storage')) {
+                      Navigator.pushReplacementNamed(context, '/storage_dashboard');
+                    } else if (roles.contains('packer')) {
+                      Navigator.pushReplacementNamed(context, '/packer_dashboard');
+                    } else if (roles.contains('courier')) {
+                      Navigator.pushReplacementNamed(context, '/courier_dashboard');
+                    } else {
+                      Navigator.pushReplacementNamed(context, '/login');
+                    }
+                  } else if (state is AuthUnauthenticated) {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  } else if (state is AuthError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message)),
+                    );
+                  }
+                },
+              ),
+              BlocListener<ConnectivityBloc, ConnectivityState>(
+                listener: (context, state) {
+                  if (state is ConnectivityLost) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Нет соединение с интернетом!'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  } else if (state is ConnectivityRestored) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Соединение с интернетом восстановлено'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
+            child: child ?? const SizedBox.shrink(),
+          );
         },
       ),
-      BlocListener<ConnectivityBloc, ConnectivityState>(
-        listener: (context, state) {
-          if (state is ConnectivityLost) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('нет соединение с интернетом!'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          } else if (state is ConnectivityRestored) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Соединение с интернетом востановлена'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-        },
-      ),
-    ],
-    child: child ?? const SizedBox.shrink(),
-  );
-},
-),
     );
   }
 }
+

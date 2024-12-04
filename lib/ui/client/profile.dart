@@ -47,33 +47,49 @@ class _AccountViewState extends State<AccountView> {
 
   // Upload the selected image to the server
   Future<void> _uploadImage() async {
-    if (_image == null) return;
+    if (_image == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Выберите фото для загрузки')),
+      );
+      return;
+    }
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('https://yourapi.com/upload-photo'),
-    );
-    request.files.add(await http.MultipartFile.fromPath('photo', _image!.path));
-    request.headers['Authorization'] = 'Bearer $token';
-
-    var response = await request.send();
-
-    if (response.statusCode == 200) {
-      final responseBody = await response.stream.bytesToString();
-      final data = jsonDecode(responseBody);
-      setState(() {
-        photoUrl = data['photo'];
-      });
-      prefs.setString('photo', photoUrl!);
+    if (token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile picture updated successfully')),
+        const SnackBar(content: Text('Ошибка авторизации')),
       );
-    } else {
+      return;
+    }
+
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://yourapi.com/upload-photo'),
+      );
+      request.files.add(await http.MultipartFile.fromPath('photo', _image!.path));
+      request.headers['Authorization'] = 'Bearer $token';
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        final data = jsonDecode(responseBody);
+        setState(() {
+          photoUrl = data['photo'];
+        });
+        prefs.setString('photo', photoUrl!);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Фото профиля успешно обновлено')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Не удалось загрузить фото')),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to upload image')),
+        SnackBar(content: Text('Ошибка: $e')),
       );
     }
   }
@@ -82,7 +98,10 @@ class _AccountViewState extends State<AccountView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Настройки',style: TextStyle(color: Colors.white),),
+        title: const Text(
+          'Настройки',
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         backgroundColor: Colors.black87,
         elevation: 0,
@@ -136,7 +155,7 @@ class _AccountViewState extends State<AccountView> {
                 value: true,
                 onChanged: (value) {
                   setState(() {
-                    // Toggle logic
+                    // Toggle logic here
                   });
                 },
               ),

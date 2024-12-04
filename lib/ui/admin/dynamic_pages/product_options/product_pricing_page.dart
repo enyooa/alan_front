@@ -23,9 +23,11 @@ class ProductOfferPage extends StatefulWidget {
 
 class _ProductOfferPageState extends State<ProductOfferPage> {
   String? selectedClient;
-  List<Map<String, dynamic>> priceOfferRows = [];
   DateTime? startDate;
   DateTime? endDate;
+
+  List<Map<String, dynamic>> clientRows = [];
+  List<Map<String, dynamic>> productRows = [];
 
   @override
   void initState() {
@@ -44,7 +46,8 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
             SnackBar(content: Text(state.message), backgroundColor: Colors.green),
           );
           setState(() {
-            priceOfferRows.clear();
+            clientRows.clear();
+            productRows.clear();
             startDate = null;
             endDate = null;
             selectedClient = null;
@@ -61,17 +64,25 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
           backgroundColor: primaryColor,
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: pagePadding,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildClientDropdown(),
-              const SizedBox(height: 20),
+              _buildClientTable(),
+              const SizedBox(height: verticalPadding),
               _buildDatePickers(),
-              const SizedBox(height: 20),
-              _buildPriceOfferTable(),
-              const SizedBox(height: 20),
+              const SizedBox(height: verticalPadding),
+              Expanded(
+                child: _buildProductTable(),
+              ),
+              const SizedBox(height: verticalPadding),
               ElevatedButton(
                 onPressed: _submitPriceOffer,
+                style: ElevatedButton.styleFrom(
+                  padding: buttonPadding,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                  backgroundColor: primaryColor,
+                ),
                 child: const Text('Сохранить', style: buttonTextStyle),
               ),
             ],
@@ -81,25 +92,54 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
     );
   }
 
-  Widget _buildClientDropdown() {
+  Widget _buildClientTable() {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is AuthLoading) {
           return const Center(child: CircularProgressIndicator());
         } else if (state is ClientUsersLoaded) {
-          return DropdownButtonFormField<String>(
-            decoration: const InputDecoration(labelText: 'Клиент'),
-            items: state.clientUsers.map((client) {
-              return DropdownMenuItem(
-                value: client['id'].toString(),
-                child: Text(client['name']),
-              );
-            }).toList(),
-            onChanged: (value) => setState(() => selectedClient = value),
-            value: selectedClient,
+          return Table(
+            border: TableBorder.all(color: borderColor),
+            children: [
+              const TableRow(
+                decoration: BoxDecoration(color: primaryColor),
+                children: [
+                  Padding(padding: EdgeInsets.all(8.0), child: Text('Клиент', style: tableHeaderStyle)),
+                  Padding(padding: EdgeInsets.all(8.0), child: Text('Адрес', style: tableHeaderStyle)),
+                  Padding(padding: EdgeInsets.all(8.0), child: Text('Выбрать', style: tableHeaderStyle)),
+                ],
+              ),
+              ...state.clientUsers.map((client) {
+                return TableRow(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(client['name'], style: bodyTextStyle),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(client['address'] ?? 'N/A', style: bodyTextStyle),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        selectedClient == client['id'].toString()
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
+                        color: selectedClient == client['id'].toString() ? Colors.green : Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          selectedClient = client['id'].toString();
+                        });
+                      },
+                    ),
+                  ],
+                );
+              }).toList(),
+            ],
           );
         } else {
-          return const Text('Ошибка загрузки клиентов');
+          return const Text('Ошибка загрузки клиентов', style: bodyTextStyle);
         }
       },
     );
@@ -115,7 +155,7 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
             onDateSelected: (date) => setState(() => startDate = date),
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: horizontalPadding / 2),
         Expanded(
           child: _buildDatePicker(
             label: 'Конечная дата',
@@ -142,40 +182,110 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
         );
         if (pickedDate != null) onDateSelected(pickedDate);
       },
-      child: InputDecorator(
-        decoration: InputDecoration(labelText: label),
-        child: Text(
-          selectedDate != null ? DateFormat('yyyy-MM-dd').format(selectedDate) : 'Выберите дату',
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                selectedDate != null ? DateFormat('yyyy-MM-dd').format(selectedDate) : label,
+                style: bodyTextStyle,
+              ),
+              const Icon(Icons.calendar_today, color: Colors.grey),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildPriceOfferTable() {
-    return BlocBuilder<ProductSubCardBloc, ProductSubCardState>(
-      builder: (context, subcardState) {
-        if (subcardState is ProductSubCardLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (subcardState is ProductSubCardsLoaded) {
-          return BlocBuilder<UnitBloc, UnitState>(
-            builder: (context, unitState) {
-              if (unitState is UnitLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (unitState is UnitSuccess) {
-                final units = unitState.message.split(',');
+ Widget _buildProductTable() {
+  return BlocBuilder<ProductSubCardBloc, ProductSubCardState>(
+    builder: (context, subcardState) {
+      if (subcardState is ProductSubCardLoading) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (subcardState is ProductSubCardsLoaded) {
+        return BlocBuilder<UnitBloc, UnitState>(
+          builder: (context, unitState) {
+            if (unitState is UnitLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (unitState is UnitSuccess) {
+              final units = unitState.message.split(',');
 
-                return Column(
-                  children: [
-                    ...priceOfferRows.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final row = entry.value;
-                      return _buildPriceOfferRow(row, subcardState.productSubCards, units, index);
-                    }),
-                    IconButton(
-                      icon: const Icon(Icons.add),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Table(
+                    border: TableBorder.all(color: borderColor),
+                    children: [
+                      const TableRow(
+                        decoration: BoxDecoration(color: primaryColor),
+                        children: [
+                          Padding(padding: EdgeInsets.all(8.0), child: Text('Подкарточка', style: tableHeaderStyle)),
+                          Padding(padding: EdgeInsets.all(8.0), child: Text('Ед. изм.', style: tableHeaderStyle)),
+                          Padding(padding: EdgeInsets.all(8.0), child: Text('Кол-во', style: tableHeaderStyle)),
+                          Padding(padding: EdgeInsets.all(8.0), child: Text('Цена', style: tableHeaderStyle)),
+                          Padding(padding: EdgeInsets.all(8.0), child: Text('Удалить', style: tableHeaderStyle)),
+                        ],
+                      ),
+                      ...productRows.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final row = entry.value;
+                        return TableRow(
+                          children: [
+                            DropdownButtonFormField<int>(
+                              value: row['product_subcard_id'],
+                              items: subcardState.productSubCards.map((subcard) {
+                                return DropdownMenuItem<int>(
+                                  value: subcard['id'],
+                                  child: Text(subcard['name'], style: bodyTextStyle),
+                                );
+                              }).toList(),
+                              onChanged: (value) => setState(() => row['product_subcard_id'] = value),
+                              decoration: const InputDecoration(border: InputBorder.none),
+                            ),
+                            DropdownButtonFormField<String>(
+                              value: row['unit_measurement'],
+                              items: units.map((unit) {
+                                return DropdownMenuItem<String>(
+                                  value: unit,
+                                  child: Text(unit, style: bodyTextStyle),
+                                );
+                              }).toList(),
+                              onChanged: (value) => setState(() => row['unit_measurement'] = value),
+                              decoration: const InputDecoration(border: InputBorder.none),
+                            ),
+                            TextField(
+                              onChanged: (value) => setState(() => row['amount'] = int.tryParse(value)),
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(border: InputBorder.none),
+                            ),
+                            TextField(
+                              onChanged: (value) => setState(() => row['price'] = int.tryParse(value)),
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(border: InputBorder.none),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => setState(() => productRows.removeAt(index)),
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      icon: const Icon(Icons.add, color: primaryColor),
+                      label: const Text('Добавить строку', style: TextStyle(color: primaryColor)),
                       onPressed: () {
                         setState(() {
-                          priceOfferRows.add({
+                          productRows.add({
                             'product_subcard_id': null,
                             'unit_measurement': null,
                             'amount': 0,
@@ -184,85 +294,30 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
                         });
                       },
                     ),
-                  ],
-                );
-              } else {
-                return const Text('Ошибка при загрузке единиц измерения');
-              }
-            },
-          );
-        } else {
-          return const Text('Ошибка при загрузке подкарточек');
-        }
-      },
-    );
-  }
-
-  Widget _buildPriceOfferRow(
-    Map<String, dynamic> row,
-    List<Map<String, dynamic>> productSubcards,
-    List<String> units,
-    int index,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: DropdownButtonFormField<int>(
-            decoration: const InputDecoration(labelText: 'Подкарточка'),
-            value: row['product_subcard_id'],
-            items: productSubcards.map((subcard) {
-              return DropdownMenuItem<int>(
-                value: subcard['id'],
-                child: Text(subcard['name']),
+                  ),
+                ],
               );
-            }).toList(),
-            onChanged: (value) => setState(() => row['product_subcard_id'] = value),
-          ),
-        ),
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            decoration: const InputDecoration(labelText: 'Ед. изм.'),
-            value: row['unit_measurement'],
-            items: units.map((unit) {
-              return DropdownMenuItem<String>(
-                value: unit,
-                child: Text(unit),
-              );
-            }).toList(),
-            onChanged: (value) => setState(() => row['unit_measurement'] = value),
-          ),
-        ),
-        Expanded(
-          child: TextField(
-            decoration: const InputDecoration(labelText: 'Кол-во'),
-            keyboardType: TextInputType.number,
-            onChanged: (value) => setState(() => row['amount'] = int.tryParse(value)),
-          ),
-        ),
-        Expanded(
-          child: TextField(
-            decoration: const InputDecoration(labelText: 'Цена'),
-            keyboardType: TextInputType.number,
-            onChanged: (value) => setState(() => row['price'] = int.tryParse(value)),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.delete, color: Colors.red),
-          onPressed: () => setState(() => priceOfferRows.removeAt(index)),
-        ),
-      ],
-    );
-  }
+            } else {
+              return const Text('Ошибка при загрузке единиц измерения', style: bodyTextStyle);
+            }
+          },
+        );
+      } else {
+        return const Text('Ошибка при загрузке подкарточек', style: bodyTextStyle);
+      }
+    },
+  );
+}
 
   void _submitPriceOffer() {
-    if (selectedClient == null || startDate == null || endDate == null || priceOfferRows.isEmpty) {
+    if (selectedClient == null || startDate == null || endDate == null || productRows.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Заполните все поля')),
       );
       return;
     }
 
-    final rows = priceOfferRows.map((row) {
+    final rows = productRows.map((row) {
       return {
         'product_subcard_id': row['product_subcard_id'],
         'unit_measurement': row['unit_measurement'],

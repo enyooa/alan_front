@@ -13,12 +13,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginEvent>(_onLoginEvent);
     on<RegisterEvent>(_onRegisterEvent);
     on<LogoutEvent>(_onLogoutEvent);
+    on<AppStartedEvent>(_onAppStarted);
 
     // для склада и ценового предложения
     on<FetchStorageUsersEvent>(_onFetchStorageUsers);
     on<FetchClientUsersEvent>(_onFetchClientUsers);
     // для склада и ценового предложения
 
+  }
+
+  Future<void> _onAppStarted(AppStartedEvent event, Emitter<AuthState> emit) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final roles = prefs.getStringList('roles');
+
+    if (token != null && token.isNotEmpty) {
+      emit(AuthAuthenticated(roles: roles ?? []));
+    } else {
+      emit(AuthUnauthenticated());
+    }
   }
 
   Future<void> _onLoginEvent(LoginEvent event, Emitter<AuthState> emit) async {

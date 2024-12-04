@@ -4,6 +4,8 @@ import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_b
 import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_card_event.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_sale_event.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/favorite_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,6 +18,12 @@ class ClientHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider<BasketBloc>(
+      create: (context) => BasketBloc(),
+    ),
+    BlocProvider<FavoritesBloc>(
+      create: (context) => FavoritesBloc(),
+    ),
         BlocProvider<ProductSubCardBloc>(
           create: (context) => ProductSubCardBloc()..add(FetchProductSubCardsEvent()),
         ),

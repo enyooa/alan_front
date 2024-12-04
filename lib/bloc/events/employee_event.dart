@@ -5,10 +5,11 @@ abstract class UserEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-// Event to fetch all users
-class FetchUsersEvent extends UserEvent {}
+class FetchUsersEvent extends UserEvent {
+  @override
+  List<Object?> get props => [];
+}
 
-// Event to assign a role to a user
 class AssignRoleEvent extends UserEvent {
   final int userId;
   final String role;

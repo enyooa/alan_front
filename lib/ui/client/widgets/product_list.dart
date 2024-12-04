@@ -1,11 +1,16 @@
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_card_state.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_sale_state.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/events/basket_event.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/events/favorite_event.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/states/basket_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
-import '../../../bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
-import '../../../bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
-import '../../../bloc/blocs/admin_page_blocs/states/product_card_state.dart';
-import '../../../bloc/blocs/admin_page_blocs/states/product_sale_state.dart';
-import '../../../bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
+
 
 class ProductList extends StatelessWidget {
   final String searchQuery;
@@ -39,27 +44,20 @@ class ProductList extends StatelessWidget {
                       final combinedData = sales.map((sale) {
                         final subcard = subcards.firstWhere(
                           (sub) => sub['id'] == sale['product_subcard_id'],
-                          orElse: () => Map<String,dynamic>(),
+                          orElse: () => <String, dynamic>{},
                         );
 
-                        final productCard = subcard != null
-    ? productCards.firstWhere(
-        (card) => card['id'] == subcard['product_card_id'],
-
-        orElse: () => <String, dynamic>{}, // Default to empty map
-      )
-    : null;
-
-// Debugging print to check if productCard is loaded correctly
-print('Subcard: $subcard');
-print('ProductCard: $productCard');
-
+                        final productCard = productCards.firstWhere(
+                          (card) => card['id'] == subcard['product_card_id'],
+                          orElse: () => <String, dynamic>{},
+                        );
 
                         return {
                           'sale': sale,
-                          'subcard_name': subcard?['name'] ?? 'Unnamed Subcard',
+                          'subcard_name': subcard['name'] ?? 'Unnamed Subcard',
                           'product_card': productCard,
-                          'photo_url': productCard?['photo_url'] ?? '',
+                          'photo_url': productCard['photo_url'] ?? '',
+                          'is_favorite': productCard['is_favorite'] ?? false,
                         };
                       }).toList();
 
@@ -71,68 +69,155 @@ print('ProductCard: $productCard');
                       }).toList();
 
                       return ListView.builder(
-  itemCount: filteredData.length,
-  itemBuilder: (context, index) {
-    final item = filteredData[index];
-    final productCard = item['product_card'] ?? {}; // Default to empty map if null
-    final photoUrl = productCard['photo_url'] ?? ''; // Handle null photo_url
-    final description = productCard['description'] ?? 'No description available'; // Handle null description
+                        itemCount: filteredData.length,
+                        itemBuilder: (context, index) {
+                          final item = filteredData[index];
+                          final productCard = item['product_card'] ?? {};
+                          final photoUrl = productCard['photo_url'] ?? '';
+                          final description = productCard['description'] ?? '';
+                          final price = item['sale']['price'];
+                          final productId = item['sale']['id'];
+                          bool isFavorite = item['is_favorite'];
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Row(
-        children: [
-          // Product Image
-          photoUrl.isNotEmpty
-              ? Image.network(
-                  photoUrl,
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.broken_image, size: 80),
-                )
-              : const Icon(Icons.image_not_supported, size: 80),
-          const SizedBox(width: 8),
-          // Product Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item['subcard_name'] ?? 'Unnamed Subcard',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  description,
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Amount: ${item['sale']['amount']}',
-                  style: const TextStyle(fontSize: 14),
-                ),
-                Text(
-                  'Unit: ${item['sale']['unit_measurement']}',
-                  style: const TextStyle(fontSize: 14),
-                ),
-                Text(
-                  'Price: ${item['sale']['price']}',
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  // Product Image
+                                  photoUrl.isNotEmpty
+                                      ? Image.network(
+                                          photoUrl,
+                                          width: 80,
+                                          height: 80,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error,
+                                                  stackTrace) =>
+                                              const Icon(Icons.broken_image,
+                                                  size: 80),
+                                        )
+                                      : const Icon(Icons.image_not_supported,
+                                          size: 80),
+                                  const SizedBox(width: 8),
+                                  // Product Details
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item['subcard_name'] ??
+                                              'Unnamed Subcard',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          description,
+                                          style: const TextStyle(
+                                              color: Colors.grey),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '$price ₸',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Counter, Favorites, and Add Button
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.remove),
+                                            onPressed: () {
+                                              context
+                                                  .read<BasketBloc>()
+                                                  .add(RemoveFromBasketEvent(
+                                                      productId));
+                                            },
+                                          ),
+                                          BlocBuilder<BasketBloc, BasketState>(
+                                            builder: (context, basketState) {
+                                              final count = basketState
+                                                      .basketItems[productId]?[
+                                                  'quantity'] ??
+                                                  0;
+                                              return Text(
+                                                '$count',
+                                                style: const TextStyle(
+                                                    fontSize: 16),
+                                              );
+                                            },
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.add),
+                                            onPressed: () {
+                                              context
+                                                  .read<BasketBloc>()
+                                                  .add(AddToBasketEvent(
+                                                      item['sale']));
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          isFavorite
+                                              ? Icons.favorite
+                                              : Icons.favorite_border,
+                                          color: isFavorite
+                                              ? Colors.red
+                                              : Colors.grey,
+                                        ),
+                                        onPressed: () {
+                                          // Toggle favorite status
+                                          isFavorite = !isFavorite;
+                                          context.read<BasketBloc>().add(
+                                              ToggleFavoriteEvent(productId) as BasketEvent);
+                                        },
+                                      ),
+                                      ElevatedButton(
+  onPressed: () {
+    final product = {
+      'id': item['sale']['id'], // Ensure the product ID exists
+      'name': item['subcard_name'], // Name of the product
+      'price': item['sale']['price'], // Product price
+      'description': item['product_card']['description'] ?? '', // Description
+      'photo_url': item['photo_url'] ?? '', // Photo URL
+      'quantity': 1, // Default quantity when adding
+    };
+    context.read<BasketBloc>().add(AddToBasketEvent(product));
   },
-);
-} else {
-                      return const Center(child: Text('Failed to load product cards.'));
+  child: const Text('В корзину'),
+),
+
+
+
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    } else {
+                      return const Center(
+                          child: Text('Failed to load product cards.'));
                     }
                   },
                 );

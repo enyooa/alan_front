@@ -1,9 +1,12 @@
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/states/basket_state.dart';
+import 'package:cash_control/ui/client/client_pages/basket_page.dart';
+import 'package:cash_control/ui/client/client_pages/calculations_page.dart';
+import 'package:cash_control/ui/client/client_pages/favorites_page.dart';
+import 'package:cash_control/ui/client/client_pages/main_page.dart';
+import 'package:cash_control/ui/client/profile.dart';
 import 'package:flutter/material.dart';
-import '../client_pages/main_page.dart'; // Main Page
-import '../client_pages/basket_page.dart'; // Basket Page
-import '../client_pages/favorites_page.dart'; // Favorites Page
-import '../client_pages/calculations_page.dart'; // Calculations Page
-import '../profile.dart'; // Profile Page
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({Key? key}) : super(key: key);
@@ -16,8 +19,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    const MainPage(), // Main/Home Page without BottomNavBar inside
-    const BasketPage(), // Basket Page
+    const MainPage(), // Home Page
+    ShoppingCartScreen(), // Basket Page
     const FavoritesPage(), // Favorites Page
     const CalculationsPage(), // Calculations Page
     const AccountView(), // Profile Page
@@ -35,30 +38,55 @@ class _BottomNavBarState extends State<BottomNavBar> {
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue, // Customize selected icon color
-        unselectedItemColor: Colors.grey, // Customize unselected icon color
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.storefront),
             label: 'Главная',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.shopping_cart),
+                BlocBuilder<BasketBloc, BasketState>(
+                  builder: (context, state) {
+                    final totalCount = state.totalItems;
+                    return totalCount > 0
+                        ? Positioned(
+                            right: -6,
+                            top: -6,
+                            child: CircleAvatar(
+                              radius: 10,
+                              backgroundColor: Colors.blue,
+                              child: Text(
+                                '$totalCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink();
+                  },
+                ),
+              ],
+            ),
             label: 'Корзина',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
             label: 'Избранное',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.calculate),
             label: 'Расчеты',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Профиль',
           ),
