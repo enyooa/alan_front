@@ -15,7 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cash_control/ui/client/profile.dart';
+import 'package:cash_control/ui/main/widgets/profile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

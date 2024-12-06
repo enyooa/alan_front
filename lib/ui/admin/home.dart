@@ -13,6 +13,7 @@ import 'package:cash_control/ui/admin/dynamic_pages/dynamic_report_page.dart';
 import 'package:cash_control/ui/admin/dynamic_pages/reference_page.dart';
 import 'package:cash_control/ui/admin/form_pages/product_card_page.dart';
 import 'package:cash_control/ui/admin/form_pages/subproduct_card_page.dart';
+import 'package:cash_control/ui/main/widgets/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cash_control/bloc/blocs/unit_bloc.dart';
@@ -38,6 +39,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     DynamicProductPage(),
     DynamicFormPage(),
     OperationHistoryPage(),
+    const AccountView(),
   ];
 
   @override
@@ -79,6 +81,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             BottomNavigationBarItem(icon: Icon(Icons.shopping_bag), label: 'Товары'),
             BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Справка'),
             BottomNavigationBarItem(icon: Icon(Icons.history),label: 'Справочная'),
+            BottomNavigationBarItem(icon: Icon(Icons.person),label: 'Профиль'),
+
+
           ],
         ),
       ),

@@ -4,7 +4,7 @@ import 'package:cash_control/ui/client/client_pages/basket_page.dart';
 import 'package:cash_control/ui/client/client_pages/calculations_page.dart';
 import 'package:cash_control/ui/client/client_pages/favorites_page.dart';
 import 'package:cash_control/ui/client/client_pages/main_page.dart';
-import 'package:cash_control/ui/client/profile.dart';
+import 'package:cash_control/ui/main/widgets/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

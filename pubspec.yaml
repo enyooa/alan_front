@@ -48,6 +48,7 @@ dependencies:
   flutter_svg_provider:
   get: ^4.6.5
   cached_network_image: ^3.2.3
+  web_socket_channel: ^2.0.0
 
   provider:
   flutter_feather_icons:

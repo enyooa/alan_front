@@ -1,103 +1,80 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:cupertino_icons/cupertino_icons.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/chat_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/events/chat_event.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/states/chat_state.dart';
 
+class ChatScreen extends StatefulWidget {
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
 
-class ChatScreen extends StatelessWidget {
+class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<ChatBloc>().add(ConnectWebSocket());
+  }
+
+  void _sendMessage() {
+    if (_controller.text.isNotEmpty) {
+      context.read<ChatBloc>().add(SendMessageEvent(_controller.text));
+      _controller.clear();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-
-          icon: Icon(CupertinoIcons.arrow_left_circle),
-          onPressed: () {},
-        ),
-        title: Text('Чат'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {},
+      appBar: AppBar(title: const Text('Чат')),
+      body: Column(
+        children: [
+          Expanded(
+            child: BlocBuilder<ChatBloc, ChatState>(
+              builder: (context, state) {
+                if (state is ChatLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is ChatMessageReceived) {
+                  return ListView.builder(
+                    itemCount: state.messages.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(state.messages[index]),
+                      );
+                    },
+                  );
+                } else if (state is ChatError) {
+                  return Center(child: Text('Error: ${state.error}'));
+                } else {
+                  return const Center(child: Text('Connecting to chat...'));
+                }
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      labelText: 'Написать сообщение...',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: _sendMessage,
+                ),
+              ],
+            ),
           ),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: ElevatedButton(
-                onPressed: () {},
-                child: Text('Создать'),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.black, backgroundColor: Colors.blue[100],
-                  padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 16.0),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'накладная выбор',
-                suffixIcon: Icon(Icons.arrow_drop_down),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
-              ),
-            ),
-            SizedBox(height: 16.0),
-            Container(
-              height: 100.0,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  '',
-                  style: TextStyle(fontSize: 16.0),
-                ),
-              ),
-            ),
-            SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {},
-              child: Text('Загрузить'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black, backgroundColor: Colors.blue[100],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                minimumSize: Size(double.infinity, 40.0),
-              ),
-            ),
-            SizedBox(height: 8.0),
-            ElevatedButton(
-              onPressed: () {},
-              child: Text('Отправить'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black, backgroundColor: Colors.blue[100],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                minimumSize: Size(double.infinity, 40.0),
-              ),
-            ),
-            Spacer(),
-            Text(
-              'история чатов удаляется в течение 30 дней',
-              style: TextStyle(fontSize: 14.0, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-      );
+    );
   }
 }

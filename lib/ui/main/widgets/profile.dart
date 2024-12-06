@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:cash_control/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -66,7 +67,7 @@ class _AccountViewState extends State<AccountView> {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('https://yourapi.com/upload-photo'),
+        Uri.parse(baseUrl + 'upload-photo'),
       );
       request.files.add(await http.MultipartFile.fromPath('photo', _image!.path));
       request.headers['Authorization'] = 'Bearer $token';
@@ -97,37 +98,41 @@ class _AccountViewState extends State<AccountView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Настройки',
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.black87,
-        elevation: 0,
-      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header with profile picture
+            // Header with profile picture and full name
             Stack(
               alignment: Alignment.center,
               children: [
                 Container(
-                  height: 180,
+                  height: 200,
                   color: Colors.black87,
                 ),
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundImage: _image != null
-                        ? FileImage(_image!)
-                        : (photoUrl != null ? NetworkImage(photoUrl!) : null),
-                    child: _image == null && photoUrl == null
-                        ? const Icon(Icons.person, size: 50, color: Colors.white)
-                        : null,
-                  ),
+                Column(
+                  children: [
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundImage: _image != null
+                            ? FileImage(_image!)
+                            : (photoUrl != null ? NetworkImage(photoUrl!) : null),
+                        child: _image == null && photoUrl == null
+                            ? const Icon(Icons.person, size: 50, color: Colors.white)
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      fullName,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
                 Positioned(
                   bottom: 20,
@@ -195,8 +200,8 @@ class _AccountViewState extends State<AccountView> {
               child: ElevatedButton(
                 onPressed: () async {
                   SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.clear(); // Clear all saved data
-                  Navigator.pushReplacementNamed(context, '/login'); // Navigate to login screen
+                  await prefs.clear(); // Clear the token
+                  Navigator.pushReplacementNamed(context, '/login'); // Navigate to login page
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade50,

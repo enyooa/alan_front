@@ -1,7 +1,11 @@
-import 'package:cash_control/constant.dart';
-import 'package:cash_control/ui/courier/chat.dart';
 import 'package:cash_control/ui/courier/consignment.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/chat_bloc.dart';
+import 'package:cash_control/ui/courier/chat.dart';
+import 'package:cash_control/ui/main/widgets/profile.dart';
+import 'package:cash_control/constant.dart';
+import 'package:cash_control/ui/courier/widgets/chat_service.dart';
 
 class CourierDashboardScreen extends StatefulWidget {
   @override
@@ -11,10 +15,13 @@ class CourierDashboardScreen extends StatefulWidget {
 class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   int _currentIndex = 0;
 
+  
+
   final List<Widget> _screens = [
     DeliveryHomeScreen(),
     InvoiceScreen(),
     ChatScreen(),
+    const AccountView(),
   ];
 
   void _onItemTapped(int index) {
@@ -25,44 +32,55 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: primaryColor,
-        title: const Text(
-          'Кабинет курьера',
-          style: TextStyle(color: Colors.white),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => ChatBloc(ChatService(baseUrl: baseUrl),),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {},
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: primaryColor,
+          title: const Text(
+            'Кабинет курьера',
+            style: TextStyle(color: Colors.white),
           ),
-        ],
-      ),
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'главная',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.document_scanner),
-            label: 'Документ',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: 'Чат',
-          ),
-        ],
+        ),
+        body: _screens[_currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          selectedItemColor: Colors.blue,
+          unselectedItemColor: Colors.grey,
+          onTap: _onItemTapped,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'главная',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.document_scanner),
+              label: 'Документ',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat),
+              label: 'Чат',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Профиль',
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 }
+
 
 // Example placeholder screen for Delivery home (Главная)
 class DeliveryHomeScreen extends StatelessWidget {
