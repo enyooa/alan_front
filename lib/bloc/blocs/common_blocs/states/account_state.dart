@@ -29,6 +29,7 @@ class AccountLoaded extends AccountState {
   List<Object?> get props => [userData];
 }
 
+
 class AccountError extends AccountState {
   final String message;
 

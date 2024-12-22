@@ -49,35 +49,48 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   }
 
   Future<void> _onUploadPhoto(UploadPhoto event, Emitter<AccountState> emit) async {
-    if (state is! AccountLoaded) return;
+  final previousState = state;
+  emit(AccountLoading());
 
-    emit(AccountLoading());
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-      if (token == null) throw Exception('Unauthorized');
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) throw Exception('Unauthorized');
 
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse(baseUrl+'uploadPhoto'),
-      );
-      request.headers['Authorization'] = 'Bearer $token';
-      request.files.add(await http.MultipartFile.fromPath('photo', event.photo.path));
+    // Upload photo via API
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse(baseUrl + 'uploadPhoto'),
+    );
+    request.headers['Authorization'] = 'Bearer $token';
+    request.files.add(await http.MultipartFile.fromPath('photo', event.photo.path));
 
-      var response = await request.send();
-      if (response.statusCode == 200) {
-        final responseBody = await response.stream.bytesToString();
-        final photoUrl = jsonDecode(responseBody)['photo'];
-        prefs.setString('photo', photoUrl);
+    var response = await request.send();
+    if (response.statusCode == 200) {
+      final responseBody = await response.stream.bytesToString();
+      final photoUrl = jsonDecode(responseBody)['photo'];
+      prefs.setString('photo', photoUrl);
 
-        emit((state as AccountLoaded).copyWith(photoUrl: photoUrl));
+      // Restore the previous state and update photoUrl if it was AccountLoaded
+      if (previousState is AccountLoaded) {
+        emit(previousState.copyWith(photoUrl: photoUrl));
       } else {
-        throw Exception('Failed to upload photo');
+        // Fallback: emit a new AccountLoaded state with updated photo URL
+        emit(AccountLoaded({
+          'id': '', // Populate with actual user data or make it nullable
+          'fullName': '', // Populate with actual user data
+          'whatsappNumber': '', // Populate with actual user data
+          'photoUrl': photoUrl,
+          'notifications': prefs.getBool('notifications') ?? true,
+        }));
       }
-    } catch (e) {
-      emit(AccountError('Error uploading photo: ${e.toString()}'));
+    } else {
+      throw Exception('Failed to upload photo');
     }
+  } catch (e) {
+    emit(AccountError('Error uploading photo: ${e.toString()}'));
   }
+}
 
   Future<void> _onToggleNotification(ToggleNotification event, Emitter<AccountState> emit) async {
     if (state is! AccountLoaded) return;

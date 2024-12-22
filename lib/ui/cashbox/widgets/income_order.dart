@@ -87,30 +87,34 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
 
   // Function to save the financial order
   void _saveFinancialOrder(BuildContext context) {
-    if (selectedCashAccount == null ||
-        selectedContractor == null ||
-        selectedMovementType == null ||
-        amountController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Заполните все поля', style: bodyTextStyle)),
-      );
-      return;
-    }
-
-    // Prepare the data to submit
-    final orderData = {
-      'type': 'income',
-      'admin_cash_id': selectedCashAccount,
-      'user_id': selectedContractor,
-      'financial_element_id': selectedMovementType,
-      'summary_cash': int.tryParse(amountController.text) ?? 0,
-      'date_of_check': DateTime.now().toIso8601String(),
-      'photo_of_check': selectedPhoto?.path ?? '',
-    };
-
-    // Dispatch the event to the bloc
-    context.read<FinancialOrderBloc>().add(AddFinancialOrderEvent(orderData));
+  if (selectedCashAccount == null ||
+      selectedContractor == null ||
+      selectedMovementType == null ||
+      amountController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Заполните все поля', style: bodyTextStyle)),
+    );
+    return;
   }
+
+  // Prepare the data to submit
+  final orderData = {
+    'type': 'income',
+    'admin_cash_id': selectedCashAccount,
+    'user_id': selectedContractor,
+    'financial_element_id': selectedMovementType,
+    'summary_cash': int.tryParse(amountController.text) ?? 0,
+    'date_of_check': DateTime.now().toIso8601String(),
+  };
+
+  // Add the photo_of_check field only if a photo is selected
+  if (selectedPhoto != null) {
+    orderData['photo_of_check'] = selectedPhoto!.path;
+  }
+
+  // Dispatch the event to the bloc
+  context.read<FinancialOrderBloc>().add(AddFinancialOrderEvent(orderData));
+}
 
   @override
   Widget build(BuildContext context) {

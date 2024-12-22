@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart'; // For capturing or selecting photos
-import 'dart:io'; // For File handling
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
 import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
 import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/admin_cash_bloc.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/admin_cash_state.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/events/auth_event.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_element.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_element.dart';
 import 'package:cash_control/constant.dart';
 
 class ExpenseOrderWidget extends StatefulWidget {
@@ -17,17 +25,16 @@ class _ExpenseOrderWidgetState extends State<ExpenseOrderWidget> {
   String? selectedContractor;
   String? selectedExpenseType;
   TextEditingController amountController = TextEditingController();
-  File? selectedPhoto; // To hold the selected or captured photo
-  final ImagePicker _imagePicker = ImagePicker(); // Image picker instance
+  File? selectedPhoto;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    // Fetch necessary data (e.g., cash accounts, contractors, etc.)
-    context.read<FinancialOrderBloc>().add(FetchFinancialOrdersEvent());
+    context.read<AuthBloc>().add(FetchClientUsersEvent());
+    context.read<ReferenceBloc>().add(FetchReferencesEvent());
   }
 
-  // Function to capture or select a photo
   Future<void> _choosePhoto() async {
     showModalBottomSheet(
       context: context,
@@ -71,32 +78,36 @@ class _ExpenseOrderWidgetState extends State<ExpenseOrderWidget> {
     );
   }
 
-  // Function to save the expense order
   void _saveExpenseOrder(BuildContext context) {
-    if (selectedCashAccount == null ||
-        selectedContractor == null ||
-        selectedExpenseType == null ||
-        amountController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Заполните все поля', style: bodyTextStyle)),
-      );
-      return;
-    }
-
-    // Prepare the data to submit
-    final orderData = {
-      'type': 'expense',
-      'admin_cash_id': selectedCashAccount,
-      'user_id': selectedContractor,
-      'financial_element_id': selectedExpenseType,
-      'summary_cash': int.tryParse(amountController.text) ?? 0,
-      'date_of_check': DateTime.now().toIso8601String(),
-      'photo_of_check': selectedPhoto?.path ?? '',
-    };
-
-    // Dispatch the event to the bloc
-    context.read<FinancialOrderBloc>().add(AddFinancialOrderEvent(orderData));
+  if (selectedCashAccount == null ||
+      selectedContractor == null ||
+      selectedExpenseType == null ||
+      amountController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Заполните все поля', style: bodyTextStyle)),
+    );
+    return;
   }
+
+  // Prepare the data to submit
+  final orderData = {
+    'type': 'expense',
+    'admin_cash_id': selectedCashAccount,
+    'user_id': selectedContractor,
+    'financial_element_id': selectedExpenseType,
+    'summary_cash': int.tryParse(amountController.text) ?? 0,
+    'date_of_check': DateTime.now().toIso8601String(),
+  };
+
+  // Include the photo only if it exists
+  if (selectedPhoto != null) {
+    orderData['photo_of_check'] = selectedPhoto!.path;
+  }
+
+  // Dispatch the event to the bloc
+  context.read<FinancialOrderBloc>().add(AddFinancialOrderEvent(orderData));
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +122,7 @@ class _ExpenseOrderWidgetState extends State<ExpenseOrderWidget> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Расходный ордер сохранен', style: bodyTextStyle)),
             );
-            Navigator.pop(context); // Close the modal after saving
+            Navigator.pop(context);
           } else if (state is FinancialOrderError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Ошибка: ${state.message}', style: bodyTextStyle)),
@@ -124,81 +135,125 @@ class _ExpenseOrderWidgetState extends State<ExpenseOrderWidget> {
             child: Column(
               children: [
                 // Cash Account Dropdown
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: 'счет кассы . (выбор)',
-                    labelStyle: bodyTextStyle,
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  value: selectedCashAccount,
-                  items: ['Счет 1', 'Счет 2', 'Счет 3']
-                      .map((String account) => DropdownMenuItem<String>(
-                            value: account,
-                            child: Text(account, style: bodyTextStyle),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedCashAccount = value;
-                    });
+                BlocBuilder<AdminCashBloc, AdminCashState>(
+                  builder: (context, state) {
+                    if (state.isLoading) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    if (state.errorMessage != null) {
+                      return Center(
+                        child: Text(
+                          state.errorMessage!,
+                          style: bodyTextStyle,
+                        ),
+                      );
+                    }
+                    return DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Счет кассы (выбор)',
+                        labelStyle: bodyTextStyle,
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      value: selectedCashAccount,
+                      items: state.cashAccounts.map((cashAccount) {
+                        return DropdownMenuItem<String>(
+                          value: cashAccount['id'],
+                          child: Text(cashAccount['name']!, style: bodyTextStyle),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedCashAccount = value;
+                        });
+                      },
+                    );
                   },
                 ),
                 SizedBox(height: verticalPadding),
 
                 // Contractor Dropdown
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: 'Контрагент (выбор)',
-                    labelStyle: bodyTextStyle,
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  value: selectedContractor,
-                  items: ['Контрагент 1', 'Контрагент 2', 'Контрагент 3']
-                      .map((String contractor) => DropdownMenuItem<String>(
-                            value: contractor,
-                            child: Text(contractor, style: bodyTextStyle),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedContractor = value;
-                    });
+                BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, state) {
+                    if (state is AuthLoading) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    if (state is ClientUsersLoaded) {
+                      return DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: 'Контрагент (выбор)',
+                          labelStyle: bodyTextStyle,
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        value: selectedContractor,
+                        items: state.clientUsers.map((contractor) {
+                          return DropdownMenuItem<String>(
+                            value: contractor['id'].toString(),
+                            child: Text(contractor['name'], style: bodyTextStyle),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedContractor = value;
+                          });
+                        },
+                      );
+                    } else if (state is AuthError) {
+                      return Center(
+                          child: Text('Ошибка: ${state.message}', style: bodyTextStyle));
+                    } else {
+                      return SizedBox.shrink();
+                    }
                   },
                 ),
                 SizedBox(height: verticalPadding),
 
                 // Expense Type Dropdown
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: 'Статья расхода',
-                    labelStyle: bodyTextStyle,
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  value: selectedExpenseType,
-                  items: ['Тип расхода 1', 'Тип расхода 2', 'Тип расхода 3']
-                      .map((String type) => DropdownMenuItem<String>(
-                            value: type,
-                            child: Text(type, style: bodyTextStyle),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedExpenseType = value;
-                    });
+                BlocBuilder<ReferenceBloc, ReferenceState>(
+                  builder: (context, state) {
+                    if (state.isLoading) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    if (state.errorMessage != null) {
+                      return Center(
+                        child: Text('Ошибка: ${state.errorMessage}', style: bodyTextStyle),
+                      );
+                    }
+                    // Fetching expense types from the references
+                    final expenseTypes = state.references['Статья расходов'] ?? [];
+                    return DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Тип расхода', // Expense Type label
+                        labelStyle: bodyTextStyle,
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      value: selectedExpenseType, // Currently selected expense type
+                      items: expenseTypes.map((type) {
+                        return DropdownMenuItem<String>(
+                          value: type['id'].toString(),
+                          child: Text(type['name'], style: bodyTextStyle), // Display name
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedExpenseType = value; // Update selected value
+                        });
+                      },
+                    );
                   },
                 ),
+
                 SizedBox(height: verticalPadding),
 
                 // Amount Text Field
@@ -233,7 +288,7 @@ class _ExpenseOrderWidgetState extends State<ExpenseOrderWidget> {
                               children: [
                                 Icon(Icons.upload_file, color: primaryColor, size: 40),
                                 SizedBox(height: 8),
-                                Text('здесь фото чека', style: bodyTextStyle),
+                                Text('Загрузить фото', style: bodyTextStyle),
                               ],
                             ),
                     ),

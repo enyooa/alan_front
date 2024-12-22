@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
 import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -51,25 +52,45 @@ class FinancialOrderBloc extends Bloc<FinancialOrderEvent, FinancialOrderState> 
 }
 
 
-
 Future<void> _addFinancialOrder(
     AddFinancialOrderEvent event, Emitter<FinancialOrderState> emit) async {
   emit(FinancialOrderLoading());
   try {
     final headers = await _getHeaders();
-    final response = await http.post(
+    final request = http.MultipartRequest(
+      'POST',
       Uri.parse(baseUrl + 'financial-order'),
-      headers: headers,
-      body: jsonEncode(event.orderData),
     );
 
+    // Add headers
+    request.headers.addAll(headers);
+
+    // Add fields
+    event.orderData.forEach((key, value) {
+      request.fields[key] = value.toString();
+    });
+
+    // Add the photo if available
+    if (event.orderData['photo_of_check'] != null &&
+        event.orderData['photo_of_check'] is String) {
+      final photoPath = event.orderData['photo_of_check'] as String;
+      request.files.add(await http.MultipartFile.fromPath(
+        'photo_of_check',
+        photoPath,
+      ));
+    }
+
+    // Send the request
+    final response = await request.send();
+
     if (response.statusCode == 201) {
-      // Fetch the updated list of orders after creation
+      // Fetch updated orders after successful creation
       add(FetchFinancialOrdersEvent());
       emit(FinancialOrderSaved());
     } else {
-      final errorMessage =
-          jsonDecode(response.body)['message'] ?? 'Failed to save financial order';
+      final responseBody = await response.stream.bytesToString();
+      final errorMessage = jsonDecode(responseBody)['message'] ??
+          'Failed to save financial order';
       emit(FinancialOrderError(errorMessage));
     }
   } catch (e) {

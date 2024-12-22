@@ -1,9 +1,12 @@
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
 import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
-import 'package:cash_control/ui/cashbox/widgets/expense_order.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
+import 'package:cash_control/ui/cashbox/widgets/expense_order.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/events/auth_event.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
 import 'package:cash_control/constant.dart';
 
 class ExpenseOrderScreen extends StatefulWidget {
@@ -12,21 +15,21 @@ class ExpenseOrderScreen extends StatefulWidget {
 }
 
 class _ExpenseOrderScreenState extends State<ExpenseOrderScreen> {
-  DateTime? startDate;
-  DateTime? endDate;
+  Map<int, String> userIdToNameMap = {};
 
   @override
   void initState() {
     super.initState();
-    // Trigger fetching expense orders on page load
     context.read<FinancialOrderBloc>().add(FetchFinancialOrdersEvent());
+    context.read<AuthBloc>().add(FetchClientUsersEvent());
   }
 
-  Future<void> _pickDateRange() async {
-    // Placeholder for future date range logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Дата выбора временно недоступна')),
-    );
+  void _populateUserIdToNameMap(AuthState state) {
+    if (state is ClientUsersLoaded) {
+      userIdToNameMap = {
+        for (var user in state.clientUsers) int.parse(user['id'].toString()): user['name']
+      };
+    }
   }
 
   @override
@@ -37,35 +40,18 @@ class _ExpenseOrderScreenState extends State<ExpenseOrderScreen> {
         padding: pagePadding,
         child: Column(
           children: [
-            // Filter Row
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _pickDateRange,
-                    child: Text(
-                      startDate != null && endDate != null
-                          ? '${startDate!.toLocal().toString().split(' ')[0]} - ${endDate!.toLocal().toString().split(' ')[0]}'
-                          : 'дата с по',
-                      style: bodyTextStyle.copyWith(color: textColor),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: textColor,
-                      backgroundColor: Colors.grey[200],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: horizontalPadding / 2),
-                Expanded(
-                  child: ElevatedButton(
                     onPressed: () {
-                      // Handle supplier filter action
+                      // Placeholder for date picker
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Функция даты будет добавлена')),
+                      );
                     },
                     child: Text(
-                      'поставщик',
+                      'Дата с по',
                       style: bodyTextStyle.copyWith(color: textColor),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -80,7 +66,6 @@ class _ExpenseOrderScreenState extends State<ExpenseOrderScreen> {
                 SizedBox(width: horizontalPadding / 2),
                 ElevatedButton(
                   onPressed: () {
-                    // Navigate to the create expense order widget
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
@@ -95,55 +80,61 @@ class _ExpenseOrderScreenState extends State<ExpenseOrderScreen> {
                       ),
                     );
                   },
-                  child: Text(
-                    'Создать',
-                    style: buttonTextStyle,
-                  ),
+                  child: Text('Создать', style: buttonTextStyle),
                   style: elevatedButtonStyle,
                 ),
               ],
             ),
             SizedBox(height: verticalPadding),
-
-            // Expense List
-            Expanded(
-              child: BlocBuilder<FinancialOrderBloc, FinancialOrderState>(
-                builder: (context, state) {
-                  if (state is FinancialOrderLoading) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  if (state is FinancialOrderError) {
-                    return Center(
-                      child: Text(
-                        'Ошибка: ${state.message}',
-                        style: bodyTextStyle,
-                      ),
-                    );
-                  }
-                  if (state is FinancialOrderLoaded) {
-                    final expenses = state.financialOrders;
-                    if (expenses.isEmpty) {
+            BlocListener<AuthBloc, AuthState>(
+              listener: (context, state) {
+                if (state is ClientUsersLoaded) {
+                  _populateUserIdToNameMap(state);
+                }
+              },
+              child: Expanded(
+                child: BlocBuilder<FinancialOrderBloc, FinancialOrderState>(
+                  builder: (context, state) {
+                    if (state is FinancialOrderLoading) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    if (state is FinancialOrderError) {
                       return Center(
                         child: Text(
-                          'Нет данных для отображения',
+                          'Ошибка: ${state.message}',
                           style: bodyTextStyle,
                         ),
                       );
                     }
-                    return ListView.builder(
-                      itemCount: expenses.length,
-                      itemBuilder: (context, index) {
-                        final expense = expenses[index];
-                        return expense['type']=='expense'? ExpenseItem(
-                          date: expense['date_of_check'] ?? '',
-                          supplier: expense['user_id']?.toString() ?? 'Неизвестный поставщик',
-                          amount: expense['summary_cash'].toString(),
-                        ):null;
-                      },
-                    );
-                  }
-                  return SizedBox.shrink();
-                },
+                    if (state is FinancialOrderLoaded) {
+                      final expenses = state.financialOrders
+                          .where((order) => order['type'] == 'expense')
+                          .toList();
+                      if (expenses.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'Нет данных для отображения',
+                            style: bodyTextStyle,
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        itemCount: expenses.length,
+                        itemBuilder: (context, index) {
+                          final expense = expenses[index];
+                          final supplierName = userIdToNameMap[int.parse(expense['user_id'].toString())] ??
+                              'Неизвестный поставщик';
+                          return ExpenseItem(
+                            date: expense['date_of_check'] ?? '',
+                            supplier: supplierName,
+                            amount: expense['summary_cash'].toString(),
+                          );
+                        },
+                      );
+                    }
+                    return SizedBox.shrink();
+                  },
+                ),
               ),
             ),
           ],
@@ -159,10 +150,11 @@ class ExpenseItem extends StatelessWidget {
   final String amount;
 
   const ExpenseItem({
+    Key? key,
     required this.date,
     required this.supplier,
     required this.amount,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -171,42 +163,28 @@ class ExpenseItem extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Date
-          Text(
-            date,
-            style: subheadingStyle.copyWith(fontWeight: FontWeight.bold),
-          ),
-          // Supplier
+          Text(date, style: subheadingStyle.copyWith(fontWeight: FontWeight.bold)),
           Expanded(
-            child: Text(
-              supplier,
-              style: subheadingStyle,
-              textAlign: TextAlign.center,
-            ),
+            child: Text(supplier, style: subheadingStyle, textAlign: TextAlign.center),
           ),
-          // Amount
-          Text(
-            amount,
-            style: subheadingStyle.copyWith(fontWeight: FontWeight.bold),
-          ),
-          // Action Buttons
+          Text(amount, style: subheadingStyle.copyWith(fontWeight: FontWeight.bold)),
           Row(
             children: [
               IconButton(
                 icon: Icon(Icons.edit, color: primaryColor),
                 onPressed: () {
-                  // Handle edit action
+                  // Edit functionality placeholder
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Edit action for $supplier')),
+                    SnackBar(content: Text('Редактировать $supplier')),
                   );
                 },
               ),
               IconButton(
                 icon: Icon(Icons.delete, color: errorColor),
                 onPressed: () {
-                  // Handle delete action
+                  // Delete functionality placeholder
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Delete action for $supplier')),
+                    SnackBar(content: Text('Удалить $supplier')),
                   );
                 },
               ),
