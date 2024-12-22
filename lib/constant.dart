@@ -5,16 +5,20 @@ const baseUrl = 'http://192.168.1.67:8000/api/';
 // const websocketIp = '192.168.1.67';
 
 //  const baseUrl = 'http://127.0.0.1:8000/api/';
-// const baseUrl = 'http://185.22.65.56/api/';
-// const webSocketUrl = '185.22.65.56';
-const webSocketUrl = '192.168.1.67';
+//  const baseUrl = 'http://185.22.65.56/api/';
+const basePhotoUrl = 'http://185.22.65.56/';
 
+// const webSocketUrl = '185.22.65.56';
+// const webSocketUrl = '192.168.1.67';
+// const basePhotoUrl = 'http://192.168.1.67:8000/';
 
 const primaryColor = Color(0xFF0288d1);
 const accentColor = Color(0xFF0288d1);
 const backgroundColor = Color(0xFFF1F3F8);
 const borderColor = Color(0xFFD1D9E6);
 const unselectednavbar = Colors.grey;
+const Color errorColor = Color(0xFFB00020); // Red
+const Color textColor = Colors.black87; // Default text color
 
 // Define text styles
 const TextStyle headingStyle = TextStyle(
@@ -84,3 +88,11 @@ const EdgeInsets buttonPadding = EdgeInsets.symmetric(horizontal: 24.0, vertical
 // Border styles
 const BorderSide tableBorderSide = BorderSide(color: borderColor, width: 1.0);
 
+final ButtonStyle elevatedButtonStyle = ElevatedButton.styleFrom(
+  backgroundColor: primaryColor,
+  foregroundColor: Colors.white,
+  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(8),
+  ),
+);

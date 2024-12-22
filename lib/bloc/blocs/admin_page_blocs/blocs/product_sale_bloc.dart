@@ -9,46 +9,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SalesBloc extends Bloc<SalesEvent, SalesState> {
   SalesBloc() : super(SalesInitial()) {
-    on<FetchSalesEvent>(_fetchSales);
     on<CreateSalesEvent>(_createSales);
     on<CreateMultipleSalesEvent>(_createBulkSales);
-
+    on<FetchSalesWithDetailsEvent>(_fetchSalesWithDetails);
+    on<UpdateSalesEvent>(_updateSales);
+    on<DeleteSalesEvent>(_deleteSales);
   }
 
-  Future<void> _fetchSales(
-      FetchSalesEvent event, Emitter<SalesState> emit) async {
-    emit(SalesLoading());
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-
-      if (token == null) {
-        emit(SalesError(message: "Authentication token not found."));
-        return;
-      }
-
-      final response = await http.get(
-        Uri.parse(baseUrl + 'sales'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> rawData = jsonDecode(response.body);
-        emit(SalesLoaded(
-          salesList: rawData.map((item) => item as Map<String, dynamic>).toList(),
-        ));
-      } else {
-        emit(SalesError(message: "Failed to fetch sales data."));
-      }
-    } catch (e) {
-      emit(SalesError(message: e.toString()));
-    }
-  }
-
-  Future<void> _createSales(
+  
+   Future<void> _createSales(
       CreateSalesEvent event, Emitter<SalesState> emit) async {
     emit(SalesLoading());
 
@@ -87,7 +56,43 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
     }
   }
 
-  Future<void> _createBulkSales(CreateMultipleSalesEvent event, Emitter<SalesState> emit) async {
+ Future<void> _createBulkSales(
+    CreateMultipleSalesEvent event, Emitter<SalesState> emit) async {
+  emit(SalesLoading());
+
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      emit(SalesError(message: "Authentication token not found."));
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse(baseUrl + 'bulk_sales'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'sales': event.sales}),
+    );
+
+    if (response.statusCode == 201) {
+      emit(SalesCreated(message: "Продажи успешно созданы!"));
+    } else {
+      final errorData = jsonDecode(response.body);
+      emit(SalesError(
+          message: errorData['message'] ?? "Ошибка при создании продаж."));
+    }
+  } catch (error) {
+    emit(SalesError(message: "Ошибка: $error"));
+  }
+}
+
+
+  Future<void> _fetchSalesWithDetails(
+      FetchSalesWithDetailsEvent event, Emitter<SalesState> emit) async {
     emit(SalesLoading());
 
     try {
@@ -99,23 +104,91 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
         return;
       }
 
-      final response = await http.post(
-        Uri.parse(baseUrl + 'bulk_sales'),
+      final response = await http.get(
+        Uri.parse(baseUrl + 'getSalesWithDetails'),
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({'sales': event.sales}),
       );
 
-      if (response.statusCode == 201) {
-        emit(SalesCreated(message: "Продажи успешно созданы!"));
+      if (response.statusCode == 200) {
+        final List<dynamic> rawData = jsonDecode(response.body);
+        emit(SalesLoadedWithDetails(
+          salesDetails: rawData
+              .map((item) => item as Map<String, dynamic>)
+              .toList(),
+        ));
       } else {
-        final errorData = jsonDecode(response.body);
-        emit(SalesError(message: errorData['message'] ?? "Ошибка при создании продаж."));
+        emit(SalesError(message: "Failed to fetch sales details."));
       }
-    } catch (error) {
-      emit(SalesError(message: "Ошибка: $error"));
+    } catch (e) {
+      emit(SalesError(message: e.toString()));
     }
   }
+
+
+
+Future<void> _updateSales(UpdateSalesEvent event, Emitter<SalesState> emit) async {
+  emit(SalesLoading());
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) {
+      emit(SalesError(message: "Authentication token not found."));
+      return;
+    }
+
+    final response = await http.put(
+      Uri.parse('{$baseUrl}sales/${event.id}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(event.updatedFields),
+    );
+
+    if (response.statusCode == 200) {
+      emit(SalesUpdated(message: "Sale updated successfully."));
+    } else {
+      final errorData = jsonDecode(response.body);
+      emit(SalesError(message: errorData['message'] ?? "Failed to update sale."));
+    }
+  } catch (error) {
+    emit(SalesError(message: "Error: $error"));
+  }
+}
+
+
+
+
+Future<void> _deleteSales(DeleteSalesEvent event, Emitter<SalesState> emit) async {
+  emit(SalesLoading());
+
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      emit(SalesError(message: "Authentication token not found."));
+      return;
+    }
+
+    final response = await http.delete(
+      Uri.parse('{$baseUrl}sales/${event.id}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      emit(SalesCreated(message: "Продажи успешно удалены!"));
+    } else {
+      final errorData = jsonDecode(response.body);
+      emit(SalesError(message: errorData['message'] ?? "Failed to delete sale."));
+    }
+  } catch (error) {
+    emit(SalesError(message: "Error: $error"));
+  }
+}
+
 }

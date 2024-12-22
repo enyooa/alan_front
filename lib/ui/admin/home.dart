@@ -6,7 +6,8 @@ import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_receiving_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
-import 'package:cash_control/bloc/blocs/provider_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/storage_address_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/provider_bloc.dart';
 import 'package:cash_control/constant.dart';
 import 'package:cash_control/ui/admin/dynamic_pages/dynamic_product_page.dart';
 import 'package:cash_control/ui/admin/dynamic_pages/dynamic_report_page.dart';
@@ -16,8 +17,8 @@ import 'package:cash_control/ui/admin/form_pages/subproduct_card_page.dart';
 import 'package:cash_control/ui/main/widgets/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/unit_bloc.dart';
-import 'package:cash_control/bloc/blocs/employee_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/employee_bloc.dart';
 import 'package:cash_control/ui/admin/dynamic_pages/dynamic_form_page.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -61,6 +62,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         BlocProvider(create: (context) => OperationsBloc()),
 
         BlocProvider(create: (context) => AddressBloc()),
+        BlocProvider(create: (_) => StorageAddressBloc()),
 
 
 

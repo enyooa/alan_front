@@ -9,19 +9,28 @@ class SalesInitial extends SalesState {}
 
 class SalesLoading extends SalesState {}
 
-class SalesLoaded extends SalesState {
-  final List<Map<String, dynamic>> salesList;
+class SalesLoadedWithDetails extends SalesState {
+  final List<Map<String, dynamic>> salesDetails;
 
-  SalesLoaded({required this.salesList});
+  SalesLoadedWithDetails({required this.salesDetails});
 
   @override
-  List<Object?> get props => [salesList];
+  List<Object?> get props => [salesDetails];
 }
 
 class SalesCreated extends SalesState {
   final String message;
 
   SalesCreated({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class SalesUpdated extends SalesState { // Define SalesUpdated
+  final String message;
+
+  SalesUpdated({required this.message});
 
   @override
   List<Object?> get props => [message];

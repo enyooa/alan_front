@@ -1,6 +1,6 @@
-import 'package:cash_control/bloc/blocs/employee_bloc.dart';
-import 'package:cash_control/bloc/events/employee_event.dart';
-import 'package:cash_control/bloc/states/employee_state.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/employee_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/events/employee_event.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/employee_state.dart';
 import 'package:cash_control/ui/main/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

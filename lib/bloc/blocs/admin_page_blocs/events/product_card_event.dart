@@ -25,3 +25,23 @@ class CreateProductCardEvent extends ProductCardEvent {
   @override
   List<Object?> get props => [nameOfProducts, description, country, type, photoProduct];
 }
+
+
+class UpdateProductCardEvent extends ProductCardEvent {
+  final int id;
+  final Map<String, dynamic> updatedFields;
+
+  UpdateProductCardEvent({required this.id, required this.updatedFields});
+
+  @override
+  List<Object?> get props => [id, updatedFields];
+}
+
+class DeleteProductCardEvent extends ProductCardEvent {
+  final int id;
+
+  DeleteProductCardEvent({required this.id});
+
+  @override
+  List<Object?> get props => [id];
+}

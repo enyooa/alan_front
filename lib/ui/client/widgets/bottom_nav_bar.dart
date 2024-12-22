@@ -1,9 +1,10 @@
 import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/events/basket_event.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/states/basket_state.dart';
-import 'package:cash_control/ui/client/client_pages/basket_page.dart';
-import 'package:cash_control/ui/client/client_pages/calculations_page.dart';
-import 'package:cash_control/ui/client/client_pages/favorites_page.dart';
-import 'package:cash_control/ui/client/client_pages/main_page.dart';
+import 'package:cash_control/ui/client/pages/basket_page.dart';
+import 'package:cash_control/ui/client/pages/calculations_page.dart';
+import 'package:cash_control/ui/client/pages/favorites_page.dart';
+import 'package:cash_control/ui/client/pages/main_page.dart';
 import 'package:cash_control/ui/main/widgets/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,12 +26,17 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const CalculationsPage(), // Calculations Page
     const AccountView(), // Profile Page
   ];
+void _onItemTapped(int index) {
+  setState(() {
+    _selectedIndex = index;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+    // Trigger FetchBasketEvent when Basket tab is selected
+    if (_selectedIndex == 1) { // Basket Page index
+      context.read<BasketBloc>().add(FetchBasketEvent());
+    }
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {

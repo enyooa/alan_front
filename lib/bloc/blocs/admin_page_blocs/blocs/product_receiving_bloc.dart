@@ -54,12 +54,7 @@ class ProductReceivingBloc extends Bloc<ProductReceivingEvent, ProductReceivingS
   try {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-    final userId = prefs.getInt('user_id'); // Fetch admin's ID
-
-    if (token == null || userId == null) {
-      emit(ProductReceivingError(message: "Authentication token or user ID not found."));
-      return;
-    }
+    
 
     final response = await http.post(
       Uri.parse(baseUrl + 'admin_warehouses'),
@@ -68,7 +63,7 @@ class ProductReceivingBloc extends Bloc<ProductReceivingEvent, ProductReceivingS
         'Authorization': 'Bearer $token',
       },
       body: jsonEncode({
-        'organization_id': userId,
+        
         'product_card_id': event.productCardId,
         'unit_measurement': event.unitMeasurement,
         'quantity': event.quantity,

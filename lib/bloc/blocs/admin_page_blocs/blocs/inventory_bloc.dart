@@ -45,39 +45,43 @@ class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
   }
 
   Future<void> _onSubmitInventory(
-      SubmitInventoryEvent event, Emitter<InventoryState> emit) async {
-    emit(InventoryLoading());
+    SubmitInventoryEvent event, Emitter<InventoryState> emit) async {
+  emit(InventoryLoading());
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
 
-      if (token == null) {
-        emit(InventoryError(message: "Authentication token not found."));
-        return;
-      }
-
-      final response = await http.post(
-        Uri.parse(baseUrl + 'bulkStoreInventory'), // Replace with your endpoint
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'storager_id': event.storageUserId,
-          'inventory': event.inventoryRows,
-        }),
-      );
-
-      if (response.statusCode == 201) {
-        emit(InventorySubmitted(message: "Инвентаризация успешно сохранена."));
-      } else {
-        final errorData = jsonDecode(response.body);
-        emit(InventoryError(
-            message: errorData['message'] ?? "Ошибка при сохранении инвентаризации."));
-      }
-    } catch (error) {
-      emit(InventoryError(message: "Ошибка: $error"));
+    if (token == null) {
+      emit(InventoryError(message: "Токен авторизации отсутствует."));
+      return;
     }
+
+    final payload = {
+      'storager_id': event.storageUserId,
+      'address_id': event.addressId,
+      'date': event.date,
+      'inventory': event.inventoryRows,
+    };
+
+    final response = await http.post(
+      Uri.parse(baseUrl + 'bulkStoreInventory'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(payload),
+    );
+
+    if (response.statusCode == 201) {
+      emit(InventorySubmitted(message: "Инвентаризация успешно сохранена."));
+    } else {
+      final errorData = jsonDecode(response.body);
+      emit(InventoryError(
+          message: errorData['message'] ?? "Ошибка при сохранении инвентаризации."));
+    }
+  } catch (error) {
+    emit(InventoryError(message: "Ошибка: $error"));
   }
+}
 }

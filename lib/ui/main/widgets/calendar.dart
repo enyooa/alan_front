@@ -15,13 +15,16 @@ class RussianCalendar {
       lastDate: lastDate,
       locale: const Locale('ru', 'RU'),
       builder: (BuildContext context, Widget? child) {
-        return Localizations(
-          locale: const Locale('ru', 'RU'),
-          delegates: [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-          ],
-          child: child!,
+        return Theme(
+          data: Theme.of(context).copyWith(
+            primaryColor: Colors.blue,
+            textTheme: Theme.of(context).textTheme.apply(fontFamily: 'Raleway'),
+          ),
+          child: Localizations.override(
+            context: context,
+            locale: const Locale('ru', 'RU'),
+            child: child!,
+          ),
         );
       },
     );

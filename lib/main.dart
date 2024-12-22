@@ -1,8 +1,17 @@
-import 'package:cash_control/bloc/blocs/auth_bloc.dart';
-import 'package:cash_control/bloc/blocs/connectivity_bloc.dart';
-import 'package:cash_control/bloc/events/connectivity_event.dart';
-import 'package:cash_control/bloc/states/auth_state.dart';
-import 'package:cash_control/bloc/states/connectivity_state.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/account_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/admin_cash_bloc.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_element.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/admin_cash_event.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/connectivity_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/user_photo_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/events/connectivity_event.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/connectivity_state.dart';
+import 'package:cash_control/constant.dart';
 import 'package:cash_control/ui/admin/home.dart';
 import 'package:cash_control/ui/cashbox/home.dart';
 import 'package:cash_control/ui/client/home.dart';
@@ -69,6 +78,16 @@ class StartApp extends StatelessWidget {
         BlocProvider(
           create: (context) => AuthBloc(),
         ),
+        BlocProvider(
+          create: (context) => ReferenceBloc()..add(FetchReferencesEvent()),
+        ),
+        BlocProvider(
+          create: (context) => FinancialOrderBloc()..add(FetchFinancialOrdersEvent()),
+        ),
+        BlocProvider(
+          create: (context) => AdminCashBloc()..add(FetchAdminCashesEvent()),
+        ),
+        BlocProvider(create: (context) => AccountBloc(baseUrl: baseUrl)),
       ],
       child: MaterialApp(
         supportedLocales: const [
@@ -100,7 +119,7 @@ class StartApp extends StatelessWidget {
           '/cashbox_dashboard': (context) => CashboxDashboardScreen(),
           '/client_dashboard': (context) => const ClientHome(),
           '/packer_dashboard': (context) => PackerScreen(),
-          '/storage_dashboard': (context) => const StorageScreen(),
+          '/storage_dashboard': (context) => const StoragePage(),
           '/courier_dashboard': (context) => CourierDashboardScreen(),
         },
         builder: (context, child) {

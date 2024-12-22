@@ -5,17 +5,17 @@ import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_card_eve
 import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_receiving_event.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_card_state.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_receiving_state.dart';
-import 'package:cash_control/bloc/blocs/provider_bloc.dart';
-import 'package:cash_control/bloc/blocs/unit_bloc.dart';
-import 'package:cash_control/bloc/events/unit_event.dart';
-import 'package:cash_control/bloc/states/provider_state.dart';
-import 'package:cash_control/bloc/states/unit_state.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/provider_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/events/unit_event.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/provider_state.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/unit_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cash_control/constant.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../bloc/events/provider_event.dart';
+import '../../../../bloc/blocs/common_blocs/events/provider_event.dart';
 
 class ProductReceivingPage extends StatefulWidget {
   @override
@@ -304,53 +304,38 @@ class _ProductReceivingPageState extends State<ProductReceivingPage> {
   );
 }
 
-  void _submitReceivingData() {
-    if (selectedDate == null || selectedProviderId == null || productRows.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Заполните все поля')),
-      );
-      return;
-    }
+void _submitReceivingData() {
+  // Allow null values but provide defaults where necessary
+  List<Map<String, dynamic>> formattedRows = productRows.map((row) {
+    return {
+      'organization_id': selectedProviderId ?? 1, // Default provider ID if null
+      'product_card_id': row['product_card_id'] ?? 0, // Default to 0 if null
+      'unit_measurement': row['unit_measurement'] ?? 'шт', // Default unit if null
+      'quantity': row['quantity'] ?? 0.0, // Default to 0 if null
+      'price': row['price'] ?? 0.0, // Default to 0 if null
+      'total_sum': row['total_sum'] ?? 0.0, // Default to 0 if null
+      'date': selectedDate != null
+          ? DateFormat('yyyy-MM-dd').format(selectedDate!)
+          : DateFormat('yyyy-MM-dd').format(DateTime.now()), // Use current date if null
+    };
+  }).toList();
 
-    for (var row in productRows) {
-      context.read<ProductReceivingBloc>().add(
-            CreateProductReceivingEvent(
-              productCardId: row['product_card_id'],
-              unitMeasurement: row['unit_measurement'],
-              quantity: row['quantity'],
-              price: row['price'],
-              totalSum: row['total_sum'],
-              date: DateFormat('yyyy-MM-dd').format(selectedDate!),
-            ),
-          );
-    }
-  }
-
-  void _submitBulkReceivingData() {
-  if (selectedDate == null || selectedProviderId == null || productRows.isEmpty) {
+  // Check if the formattedRows contains valid data
+  if (formattedRows.isEmpty || formattedRows.every((row) => row['quantity'] == 0.0)) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Fill all fields before submission.')),
+      const SnackBar(content: Text('No valid rows to submit')),
     );
     return;
   }
-
-  // Prepare data for submission
-  List<Map<String, dynamic>> formattedRows = productRows.map((row) {
-    return {
-      'organization_id': selectedProviderId,
-      'product_card_id': row['product_card_id'],
-      'unit_measurement': row['unit_measurement'],
-      'quantity': row['quantity'],
-      'price': row['price'],
-      'total_sum': row['total_sum'],
-      'date': DateFormat('yyyy-MM-dd').format(selectedDate!),
-    };
-  }).toList();
 
   // Trigger the bulk submission event
   context.read<ProductReceivingBloc>().add(
         CreateBulkProductReceivingEvent(receivings: formattedRows),
       );
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Submitting data...')),
+  );
 }
 
 }

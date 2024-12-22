@@ -1,5 +1,8 @@
+import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/address_bloc.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/events/address_event.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
-import 'package:cash_control/bloc/events/unit_event.dart';
+import 'package:cash_control/bloc/blocs/admin_page_blocs/states/address_state.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/events/unit_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -9,11 +12,11 @@ import 'package:cash_control/bloc/blocs/admin_page_blocs/events/price_offer_even
 import 'package:cash_control/bloc/blocs/admin_page_blocs/states/price_offer_state.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
-import 'package:cash_control/bloc/blocs/unit_bloc.dart';
-import 'package:cash_control/bloc/states/unit_state.dart';
-import 'package:cash_control/bloc/blocs/auth_bloc.dart';
-import 'package:cash_control/bloc/events/auth_event.dart';
-import 'package:cash_control/bloc/states/auth_state.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/unit_state.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/events/auth_event.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
 import 'package:cash_control/constant.dart';
 
 class ProductOfferPage extends StatefulWidget {
@@ -35,6 +38,8 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
     context.read<AuthBloc>().add(FetchClientUsersEvent());
     context.read<ProductSubCardBloc>().add(FetchProductSubCardsEvent());
     context.read<UnitBloc>().add(FetchUnitsEvent());
+    context.read<AddressBloc>().add(FetchAddressesEvent());
+
   }
 
   @override
@@ -91,59 +96,108 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
       ),
     );
   }
+Widget _buildClientTable() {
+  return BlocBuilder<AddressBloc, AddressState>(
+    builder: (context, addressState) {
+      if (addressState is AddressLoading) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (addressState is AddressesFetched) {
+        return Table(
+          border: TableBorder.all(color: borderColor),
+          children: [
+            const TableRow(
+              decoration: BoxDecoration(color: primaryColor),
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text('Клиент', style: tableHeaderStyle),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text('Адрес', style: tableHeaderStyle),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text('Выбрать', style: tableHeaderStyle),
+                ),
+              ],
+            ),
+            ...addressState.addresses.map((client) {
+              Map<String, dynamic>? selectedAddress = client['addresses'].isNotEmpty
+                  ? client['addresses'][0]
+                  : null;
 
-  Widget _buildClientTable() {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        if (state is AuthLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is ClientUsersLoaded) {
-          return Table(
-            border: TableBorder.all(color: borderColor),
-            children: [
-              const TableRow(
-                decoration: BoxDecoration(color: primaryColor),
+              return TableRow(
                 children: [
-                  Padding(padding: EdgeInsets.all(8.0), child: Text('Клиент', style: tableHeaderStyle)),
-                  Padding(padding: EdgeInsets.all(8.0), child: Text('Адрес', style: tableHeaderStyle)),
-                  Padding(padding: EdgeInsets.all(8.0), child: Text('Выбрать', style: tableHeaderStyle)),
-                ],
-              ),
-              ...state.clientUsers.map((client) {
-                return TableRow(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(client['name'], style: bodyTextStyle),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(client['address'] ?? 'N/A', style: bodyTextStyle),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        selectedClient == client['id'].toString()
-                            ? Icons.check_circle
-                            : Icons.radio_button_unchecked,
-                        color: selectedClient == client['id'].toString() ? Colors.green : Colors.grey,
-                      ),
-                      onPressed: () {
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: DropdownButton<String>(
+                      value: selectedClient,
+                      items: [
+                        const DropdownMenuItem<String>(
+                          value: null,
+                          child: Text('Выберите клиента', style: bodyTextStyle),
+                        ),
+                        ...addressState.addresses.map<DropdownMenuItem<String>>((address) {
+                          return DropdownMenuItem<String>(
+                            value: address['client_id'].toString(),
+                            child: Text(address['client_name'], style: bodyTextStyle),
+                          );
+                        }).toList(),
+                      ],
+                      onChanged: (value) {
                         setState(() {
-                          selectedClient = client['id'].toString();
+                          selectedClient = value;
                         });
                       },
+                      hint: const Text("Выберите клиента", style: bodyTextStyle),
                     ),
-                  ],
-                );
-              }).toList(),
-            ],
-          );
-        } else {
-          return const Text('Ошибка загрузки клиентов', style: bodyTextStyle);
-        }
-      },
-    );
-  }
+                  ),
+                  DropdownButton<Map<String, dynamic>>(
+                    value: selectedAddress,
+                    items: client['addresses']
+                        .map<DropdownMenuItem<Map<String, dynamic>>>((address) {
+                      return DropdownMenuItem<Map<String, dynamic>>(
+                        value: address,
+                        child: Text(address['name'], style: bodyTextStyle),
+                      );
+                    }).toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        selectedAddress = newValue;
+                        client['selectedAddress'] = newValue; // Store the selection
+                      });
+                    },
+                    hint: const Text("Выберите адрес", style: bodyTextStyle),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      selectedClient == client['client_id'].toString()
+                          ? Icons.check_circle
+                          : Icons.radio_button_unchecked,
+                      color: selectedClient == client['client_id'].toString()
+                          ? Colors.green
+                          : Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        selectedClient = client['client_id'].toString();
+                      });
+                    },
+                  ),
+                ],
+              );
+            }).toList(),
+          ],
+        );
+      } else if (addressState is AddressError) {
+        return Text('Ошибка загрузки адресов: ${addressState.error}', style: bodyTextStyle);
+      } else {
+        return const Text('Нет данных для адресов', style: bodyTextStyle);
+      }
+    },
+  );
+}
 
   Widget _buildDatePickers() {
     return Row(
@@ -202,7 +256,7 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
     );
   }
 
- Widget _buildProductTable() {
+Widget _buildProductTable() {
   return BlocBuilder<ProductSubCardBloc, ProductSubCardState>(
     builder: (context, subcardState) {
       if (subcardState is ProductSubCardLoading) {
@@ -228,12 +282,15 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
                           Padding(padding: EdgeInsets.all(8.0), child: Text('Ед. изм.', style: tableHeaderStyle)),
                           Padding(padding: EdgeInsets.all(8.0), child: Text('Кол-во', style: tableHeaderStyle)),
                           Padding(padding: EdgeInsets.all(8.0), child: Text('Цена', style: tableHeaderStyle)),
+                          Padding(padding: EdgeInsets.all(8.0), child: Text('Сумма', style: tableHeaderStyle)),
                           Padding(padding: EdgeInsets.all(8.0), child: Text('Удалить', style: tableHeaderStyle)),
                         ],
                       ),
                       ...productRows.asMap().entries.map((entry) {
                         final index = entry.key;
                         final row = entry.value;
+                        final sum = ((row['amount'] ?? 0) * (row['price'] ?? 0)).toInt();
+
                         return TableRow(
                           children: [
                             DropdownButtonFormField<int>(
@@ -259,14 +316,29 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
                               decoration: const InputDecoration(border: InputBorder.none),
                             ),
                             TextField(
-                              onChanged: (value) => setState(() => row['amount'] = int.tryParse(value)),
+                              onChanged: (value) {
+                                setState(() {
+                                  row['amount'] = int.tryParse(value) ?? 0;
+                                });
+                              },
                               keyboardType: TextInputType.number,
                               decoration: const InputDecoration(border: InputBorder.none),
                             ),
                             TextField(
-                              onChanged: (value) => setState(() => row['price'] = int.tryParse(value)),
+                              onChanged: (value) {
+                                setState(() {
+                                  row['price'] = int.tryParse(value) ?? 0;
+                                });
+                              },
                               keyboardType: TextInputType.number,
                               decoration: const InputDecoration(border: InputBorder.none),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                sum.toString(),
+                                style: bodyTextStyle.copyWith(fontWeight: FontWeight.bold),
+                              ),
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
@@ -309,30 +381,64 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
   );
 }
 
-  void _submitPriceOffer() {
-    if (selectedClient == null || startDate == null || endDate == null || productRows.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Заполните все поля')),
-      );
-      return;
-    }
 
-    final rows = productRows.map((row) {
-      return {
-        'product_subcard_id': row['product_subcard_id'],
-        'unit_measurement': row['unit_measurement'],
-        'amount': row['amount'],
-        'price': row['price'],
-      };
-    }).toList();
-
-    context.read<PriceOfferBloc>().add(
-          SubmitPriceOfferEvent(
-            clientId: int.parse(selectedClient!),
-            startDate: DateFormat('yyyy-MM-dd').format(startDate!),
-            endDate: DateFormat('yyyy-MM-dd').format(endDate!),
-            priceOfferRows: rows,
-          ),
-        );
+void _submitPriceOffer() {
+  if (selectedClient == null || startDate == null || endDate == null || productRows.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Заполните все поля')),
+    );
+    return;
   }
+
+  final client = context.read<AddressBloc>().state is AddressesFetched
+    ? (context.read<AddressBloc>().state as AddressesFetched)
+        .addresses
+        .firstWhere(
+          (c) => c['client_id'].toString() == selectedClient,
+          orElse: () => <String, dynamic>{}, // Return an empty map instead of null
+        )
+    : null;
+
+
+  if (client == null || client['selectedAddress'] == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Выберите клиента и адрес')),
+    );
+    return;
+  }
+
+  // Calculate total sum for all products
+  final double totalSum = productRows.fold<double>(
+    0.0,
+    (sum, row) => sum + ((row['amount'] ?? 0.0) * (row['price'] ?? 0.0)),
+  );
+
+  // Map rows into the required format
+  final List<Map<String, dynamic>> rows = productRows.map((row) {
+    return {
+      'product_subcard_id': row['product_subcard_id'],
+      'unit_measurement': row['unit_measurement'],
+      'amount': row['amount'],
+      'price': row['price'],
+      'address_id': client['selectedAddress']['id'], // Use the selected address ID
+    };
+  }).toList();
+
+  // Dispatch the event with total sum
+  context.read<PriceOfferBloc>().add(
+        SubmitPriceOfferEvent(
+          clientId: int.parse(selectedClient!),
+          startDate: DateFormat('yyyy-MM-dd').format(startDate!),
+          endDate: DateFormat('yyyy-MM-dd').format(endDate!),
+          priceOfferRows: rows,
+          totalSum: totalSum,
+        ),
+      );
+
+  // Show success message
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Итоговая сумма: ${totalSum.toStringAsFixed(2)} отправлена!')),
+  );
+}
+
 }

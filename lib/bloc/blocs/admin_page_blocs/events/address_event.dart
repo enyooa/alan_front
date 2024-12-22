@@ -14,3 +14,12 @@ class CreateAddressEvent extends AddressEvent {
   @override
   List<Object?> get props => [userId, name];
 }
+class FetchAddressesEvent extends AddressEvent {
+  
+
+  FetchAddressesEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+

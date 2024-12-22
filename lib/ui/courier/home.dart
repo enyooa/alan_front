@@ -1,7 +1,9 @@
+import 'package:cash_control/bloc/blocs/courier_page_blocs/blocs/courier_document_bloc.dart';
 import 'package:cash_control/ui/courier/consignment.dart';
+import 'package:cash_control/ui/courier/pages/delivery_homescreen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/chat_bloc.dart';
+import 'package:cash_control/bloc/blocs/courier_page_blocs/blocs/chat_bloc.dart';
 import 'package:cash_control/ui/courier/chat.dart';
 import 'package:cash_control/ui/main/widgets/profile.dart';
 import 'package:cash_control/constant.dart';
@@ -36,6 +38,9 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
       providers: [
         BlocProvider(
           create: (_) => ChatBloc(ChatService(baseUrl: baseUrl),),
+        ),
+        BlocProvider(
+          create: (_) => CourierDocumentBloc(),
         ),
       ],
       child: Scaffold(
@@ -83,57 +88,4 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
 
 
 // Example placeholder screen for Delivery home (Главная)
-class DeliveryHomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: 5, // Number of items
-      itemBuilder: (context, index) {
-        return DeliveryItem();
-      },
-    );
-  }
-}
 
-// Example delivery item widget
-class DeliveryItem extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.location_on, color: Colors.blue),
-              SizedBox(width: 8.0),
-              Text('склад №1 Кажымуханова 55', style: TextStyle(fontSize: 16.0)),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 24.0),
-            child: Column(
-              children: [
-                Icon(Icons.arrow_downward, color: Colors.blue),
-                Row(
-                  children: [
-                    Icon(Icons.store, color: Colors.blue),
-                    SizedBox(width: 8.0),
-                    Expanded(
-                      child: Text(
-                        'магазин Магнум Есильский район ул.Сауран 5г',
-                        style: TextStyle(fontSize: 16.0),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

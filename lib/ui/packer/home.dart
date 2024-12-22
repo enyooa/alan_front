@@ -1,21 +1,24 @@
+import 'package:cash_control/ui/main/widgets/profile.dart';
+import 'package:cash_control/ui/packer/pages/courier.dart';
+import 'package:cash_control/ui/packer/pages/main_page.dart';
+import 'package:cash_control/ui/packer/pages/packaging.dart';
+import 'package:cash_control/ui/packer/pages/requests.dart';
 import 'package:flutter/material.dart';
-
-
 
 class PackerScreen extends StatefulWidget {
   @override
-  _OrderScreenState createState() => _OrderScreenState();
+  _PackerScreenState createState() => _PackerScreenState();
 }
 
-class _OrderScreenState extends State<PackerScreen> {
+class _PackerScreenState extends State<PackerScreen> {
   int _selectedIndex = 0;
 
-  final List<Map<String, dynamic>> orders = [
-    {'name': 'Магнум Сагындык 44', 'status': ''},
-    {'name': 'Магнум Турган 55', 'status': ''},
-    {'name': 'Ресторан Мята', 'status': 'в работе'},
-    {'name': 'Ресторан Пинта', 'status': 'передано курьеру'},
-    {'name': 'Магазин Сакен', 'status': 'Доставлено'},
+  final List<Widget> _screens = [
+    const HomeScreen(), // Заявка Page
+    const RequestsScreen(), // Накладная Page
+    const PackagingScreen(), // Склад Page
+    const CourierScreen(), // Курьеры Page
+    const AccountView(),
   ];
 
   void _onItemTapped(int index) {
@@ -27,69 +30,35 @@ class _OrderScreenState extends State<PackerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Заявки', style: TextStyle(color: Colors.blue)),
-        backgroundColor: Colors.white,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.blue),
-          onPressed: () {},
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications, color: Colors.blue),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: ListView.builder(
-        itemCount: orders.length,
-        itemBuilder: (context, index) {
-          final order = orders[index];
-          return ListTile(
-            title: Text(
-              order['name'],
-              style: TextStyle(
-                fontWeight: order['status'].isEmpty ? FontWeight.bold : FontWeight.normal,
-                fontSize: order['status'].isEmpty ? 18 : 16,
-              ),
-            ),
-            trailing: Text(
-              order['status'],
-              style: TextStyle(
-                color: order['status'] == 'в работе'
-                    ? Colors.orange
-                    : order['status'] == 'передано курьеру'
-                        ? Colors.blue
-                        : order['status'] == 'Доставлено'
-                            ? Colors.red
-                            : Colors.black,
-              ),
-            ),
-          );
-        },
-      ),
+      body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        onTap: _onItemTapped,
         items: [
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.shopping_bag),
             label: 'Заявка',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long),
             label: 'Накладная',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.warehouse),
             label: 'Склад',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.people),
             label: 'Курьеры',
           ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Профиль',
+          ),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        onTap: _onItemTapped,
       ),
     );
   }

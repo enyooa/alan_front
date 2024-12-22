@@ -26,3 +26,12 @@ class AddressError extends AddressState {
   @override
   List<Object?> get props => [error];
 }
+class AddressesFetched extends AddressState {
+  final List<Map<String, dynamic>> addresses;
+
+  AddressesFetched(this.addresses);
+
+  @override
+  List<Object?> get props => [addresses];
+}
+

@@ -16,6 +16,19 @@ class ProductSubCardCreated extends ProductSubCardState {
   ProductSubCardCreated(this.message);
 }
 
+class ProductSubCardUpdated extends ProductSubCardState {
+  final String message;
+
+  ProductSubCardUpdated({required this.message});
+}
+
+class ProductSubCardDeleted extends ProductSubCardState {
+  final String message;
+
+  ProductSubCardDeleted({required this.message});
+}
+
+
 class ProductSubCardError extends ProductSubCardState {
   final String message;
 

@@ -1,83 +1,108 @@
 import 'package:bloc/bloc.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/events/basket_event.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/states/basket_state.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/repositories/basket_repository.dart';
 import 'package:equatable/equatable.dart';
 
 class BasketBloc extends Bloc<BasketEvent, BasketState> {
-  BasketBloc() : super(BasketState.initial()) {
+  final BasketRepository repository;
+
+  BasketBloc({required this.repository}) : super(BasketState.initial()) {
+    // Event handlers
+    on<FetchBasketEvent>(_onFetchBasket);
     on<AddToBasketEvent>(_onAddToBasket);
     on<RemoveFromBasketEvent>(_onRemoveFromBasket);
     on<ClearBasketEvent>(_onClearBasket);
+    on<PlaceOrderEvent>(_onPlaceOrder);
+
   }
 
-  void _onAddToBasket(AddToBasketEvent event, Emitter<BasketState> emit) {
-    final currentBasket = state.basketItems;
-    final productId = event.product['id'].toString(); // Ensure productId is String
+  /// Handle fetching the basket from the backend
+  Future<void> _onFetchBasket(
+    FetchBasketEvent event, Emitter<BasketState> emit) async {
+  emit(BasketLoading());
 
-    // If the product is already in the basket, increment its quantity
-    if (currentBasket.containsKey(productId)) {
-      final updatedBasket = Map<String, Map<String, dynamic>>.from(currentBasket)
-        ..update(productId, (existingProduct) {
-          return {
-            ...existingProduct,
-            'quantity': existingProduct['quantity'] + 1,
-          };
-        });
+  try {
+    final basketItems = await repository.getBasket();
+    final totalItems = basketItems.values.fold<int>(
+      0,
+      (sum, item) => sum + (item['quantity'] as int? ?? 0),
+    );
 
-      emit(state.copyWith(
-        basketItems: updatedBasket,
-        totalItems: state.totalItems + 1,
-      ));
-    } else {
-      // Add the product to the basket with an initial quantity of 1
-      final updatedBasket = Map<String, Map<String, dynamic>>.from(currentBasket)
-        ..[productId] = {
-          ...event.product,
-          'quantity': 1,
-        };
+    emit(state.copyWith(basketItems: basketItems, totalItems: totalItems));
+  } catch (e) {
+    print('Error fetching basket: $e');
+    emit(BasketError("Failed to fetch basket: ${e.toString()}"));
+  }
+}
 
-      emit(state.copyWith(
-        basketItems: updatedBasket,
-        totalItems: state.totalItems + 1,
-      ));
+  /// Handle adding a product to the basket
+  Future<void> _onAddToBasket(
+    AddToBasketEvent event, Emitter<BasketState> emit) async {
+  emit(BasketLoading());
+
+  try {
+    await repository.addToBasket(event.product);
+
+    // Fetch the updated basket from the backend
+    final updatedBasket = await repository.getBasket();
+    final totalItems = updatedBasket.values.fold<int>(
+      0,
+      (sum, item) => sum + (item['quantity'] as int? ?? 0),
+    );
+
+    emit(state.copyWith(basketItems: updatedBasket, totalItems: totalItems));
+  } catch (e) {
+    print('Error in _onAddToBasket: $e');
+    emit(BasketError("Failed to add product to basket: ${e.toString()}"));
+  }
+}
+
+  /// Handle removing a product from the basket
+  Future<void> _onRemoveFromBasket(
+      RemoveFromBasketEvent event, Emitter<BasketState> emit) async {
+    emit(BasketLoading());
+
+    try {
+      await repository.removeFromBasket(event.productId);
+
+      // Fetch the updated basket from the backend
+      final updatedBasket = await repository.getBasket();
+      final totalItems = updatedBasket.values.fold<int>(
+        0,
+        (sum, item) => sum + (item['quantity'] as int? ?? 0),
+      );
+
+      emit(state.copyWith(basketItems: updatedBasket, totalItems: totalItems));
+    } catch (e) {
+      emit(BasketError("Failed to remove product from basket: ${e.toString()}"));
     }
   }
 
-  void _onRemoveFromBasket(RemoveFromBasketEvent event, Emitter<BasketState> emit) {
-    final currentBasket = state.basketItems;
-    final productId = event.productId.toString(); // Ensure productId is String
+  /// Handle clearing the basket
+  Future<void> _onClearBasket(
+      ClearBasketEvent event, Emitter<BasketState> emit) async {
+    emit(BasketLoading());
 
-    if (currentBasket.containsKey(productId)) {
-      final currentQuantity = currentBasket[productId]!['quantity'];
+    try {
+      await repository.clearBasket();
 
-      if (currentQuantity > 1) {
-        // Decrement the quantity if more than 1
-        final updatedBasket = Map<String, Map<String, dynamic>>.from(currentBasket)
-          ..update(productId, (existingProduct) {
-            return {
-              ...existingProduct,
-              'quantity': currentQuantity - 1,
-            };
-          });
-
-        emit(state.copyWith(
-          basketItems: updatedBasket,
-          totalItems: state.totalItems - 1,
-        ));
-      } else {
-        // Remove the product from the basket if quantity is 1
-        final updatedBasket = Map<String, Map<String, dynamic>>.from(currentBasket)
-          ..remove(productId);
-
-        emit(state.copyWith(
-          basketItems: updatedBasket,
-          totalItems: state.totalItems - 1,
-        ));
-      }
+      emit(state.copyWith(basketItems: {}, totalItems: 0));
+    } catch (e) {
+      emit(BasketError("Failed to clear basket: ${e.toString()}"));
     }
   }
 
-  void _onClearBasket(ClearBasketEvent event, Emitter<BasketState> emit) {
-    emit(state.copyWith(basketItems: {}, totalItems: 0));
+  Future<void> _onPlaceOrder(PlaceOrderEvent event, Emitter<BasketState> emit) async {
+    emit(BasketLoading());
+
+    try {
+      await repository.placeOrder(event.address);
+
+      emit(state.copyWith(basketItems: {}, totalItems: 0));
+      emit(OrderPlacedState(orderId: '12345')); // Replace with actual order ID
+    } catch (e) {
+      emit(BasketError("Failed to place order: $e"));
+    }
   }
 }

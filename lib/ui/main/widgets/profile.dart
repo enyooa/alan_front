@@ -1,10 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:cash_control/constant.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/account_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/events/account_event.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/account_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
+import 'package:cash_control/constant.dart';
 
 class AccountView extends StatefulWidget {
   const AccountView({Key? key}) : super(key: key);
@@ -14,227 +15,138 @@ class AccountView extends StatefulWidget {
 }
 
 class _AccountViewState extends State<AccountView> {
-  File? _image;
   final picker = ImagePicker();
-  String? photoUrl;
-  String fullName = 'User';
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    context.read<AccountBloc>().add(FetchUserData());
   }
 
-  // Load user data from SharedPreferences
-  Future<void> _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      photoUrl = prefs.getString('photo');
-      final firstName = prefs.getString('first_name') ?? '';
-      final lastName = prefs.getString('last_name') ?? '';
-      fullName = '$firstName $lastName'.trim();
-    });
-  }
-
-  // Pick an image from the gallery
-  Future<void> _pickImage() async {
+  Future<void> _pickAndUploadPhoto() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-    }
-  }
-
-  // Upload the selected image to the server
-  Future<void> _uploadImage() async {
-    if (_image == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Выберите фото для загрузки')),
-      );
-      return;
-    }
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    if (token == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ошибка авторизации')),
-      );
-      return;
-    }
-
-    try {
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse(baseUrl + 'upload-photo'),
-      );
-      request.files.add(await http.MultipartFile.fromPath('photo', _image!.path));
-      request.headers['Authorization'] = 'Bearer $token';
-
-      var response = await request.send();
-      if (response.statusCode == 200) {
-        final responseBody = await response.stream.bytesToString();
-        final data = jsonDecode(responseBody);
-        setState(() {
-          photoUrl = data['photo'];
-        });
-        prefs.setString('photo', photoUrl!);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Фото профиля успешно обновлено')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Не удалось загрузить фото')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка: $e')),
-      );
+      context.read<AccountBloc>().add(UploadPhoto(File(pickedFile.path)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header with profile picture and full name
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  height: 200,
-                  color: Colors.black87,
-                ),
-                Column(
-                  children: [
-                    GestureDetector(
-                      onTap: _pickImage,
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundImage: _image != null
-                            ? FileImage(_image!)
-                            : (photoUrl != null ? NetworkImage(photoUrl!) : null),
-                        child: _image == null && photoUrl == null
-                            ? const Icon(Icons.person, size: 50, color: Colors.white)
-                            : null,
+    return BlocBuilder<AccountBloc, AccountState>(
+      builder: (context, state) {
+        if (state is AccountLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is AccountLoaded) {
+          final userData = state.userData;
+          final photoUrl = userData['photoUrl'];
+          final fullName = userData['fullName'];
+          final whatsappNumber = userData['whatsappNumber'];
+          final isNotificationEnabled = userData['notifications'];
+
+          return Scaffold(
+            
+            body: SingleChildScrollView(
+              padding: pagePadding,
+              child: Column(
+                children: [
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        height: 200,
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [primaryColor, accentColor],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      fullName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      Column(
+                        children: [
+                          GestureDetector(
+                            onTap: _pickAndUploadPhoto,
+                            child: CircleAvatar(
+                              radius: 60,
+                              backgroundImage: photoUrl.isNotEmpty
+                                  ? NetworkImage(photoUrl)
+                                  : null,
+                              child: photoUrl.isEmpty
+                                  ? const Icon(Icons.person, size: 60, color: Colors.white)
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            fullName,
+                            style: headingStyle.copyWith(fontSize: 20),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'WhatsApp: $whatsappNumber',
+                            style: subheadingStyle.copyWith(color: Colors.white70),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                Positioned(
-                  bottom: 20,
-                  child: IconButton(
-                    onPressed: _pickImage,
-                    icon: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.red,
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  SettingsRow(
+                    title: "Push-уведомления",
+                    trailing: Switch(
+                      value: isNotificationEnabled,
+                      onChanged: (value) {
+                        context.read<AccountBloc>().add(ToggleNotification(value));
+                      },
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Settings Rows
-            SettingsRow(
-              title: "Добавить фото",
-              trailing: null,
-              onTap: _uploadImage,
-            ),
-            SettingsRow(
-              title: "Push-уведомления",
-              trailing: Switch(
-                value: true,
-                onChanged: (value) {
-                  setState(() {
-                    // Toggle logic here
-                  });
-                },
-              ),
-            ),
-            SettingsRow(
-              title: "Язык приложения",
-              subtitle: "Русский",
-              trailing: null,
-              onTap: () {
-                // Open language settings
-              },
-            ),
-            SettingsRow(
-              title: "Изменить пароль",
-              trailing: null,
-              onTap: () {
-                // Open password settings
-              },
-            ),
-            SettingsRow(
-              title: "Блокирование скриншотов",
-              subtitle: "Скриншоты разрешены для всех случаев",
-              trailing: Switch(
-                value: false,
-                onChanged: (value) {
-                  setState(() {
-                    // Toggle screenshot blocking
-                  });
-                },
-              ),
-            ),
-            const Divider(),
-
-            // Logout Button
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: ElevatedButton(
-                onPressed: () async {
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.clear(); // Clear the token
-                  Navigator.pushReplacementNamed(context, '/login'); // Navigate to login page
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade50,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                  SettingsRow(
+                    title: "Язык приложения",
+                    subtitle: "Русский",
+                    onTap: () {},
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.logout, color: Colors.red),
-                    SizedBox(width: 10),
-                    Text(
-                      "Выйти",
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                  SettingsRow(
+                    title: "Изменить пароль",
+                    onTap: () {},
+                  ),
+                  const Divider(height: 20, thickness: 1),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.read<AccountBloc>().add(Logout());
+                        Navigator.pushReplacementNamed(context, '/login');
+                      },
+                      style: elevatedButtonStyle.copyWith(
+                        backgroundColor: MaterialStateProperty.all(Colors.red.shade50),
+                        foregroundColor: MaterialStateProperty.all(Colors.red),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.logout),
+                          SizedBox(width: 10),
+                          Text(
+                            "Выйти",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
+          );
+        } else if (state is AccountError) {
+          return Center(child: Text(state.message, style: bodyTextStyle));
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 }
 
-// Settings Row Widget
 class SettingsRow extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -251,19 +163,27 @@ class SettingsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(
-        title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      subtitle: subtitle != null
-          ? Text(
-              subtitle!,
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-            )
-          : null,
-      trailing: trailing,
-      onTap: onTap,
+      child: ListTile(
+        title: Text(title, style: subheadingStyle),
+        subtitle: subtitle != null ? Text(subtitle!, style: captionStyle) : null,
+        trailing: trailing,
+        onTap: onTap,
+      ),
     );
   }
 }

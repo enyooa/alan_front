@@ -5,7 +5,7 @@ abstract class SalesEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class FetchSalesEvent extends SalesEvent {}
+class FetchSalesWithDetailsEvent extends SalesEvent {}
 
 class CreateSalesEvent extends SalesEvent {
   final int productSubcardId;
@@ -36,4 +36,21 @@ class CreateMultipleSalesEvent extends SalesEvent {
   @override
   List<Object?> get props => [sales];
 }
+class UpdateSalesEvent extends SalesEvent {
+  final int id;
+  final Map<String, dynamic> updatedFields;
 
+  UpdateSalesEvent({required this.id, required this.updatedFields});
+
+  @override
+  List<Object?> get props => [id, updatedFields];
+}
+
+class DeleteSalesEvent extends SalesEvent {
+  final int id;
+
+  DeleteSalesEvent({required this.id});
+
+  @override
+  List<Object?> get props => [id];
+}

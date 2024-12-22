@@ -1,6 +1,6 @@
-import 'package:cash_control/bloc/blocs/provider_bloc.dart';
-import 'package:cash_control/bloc/events/provider_event.dart';
-import 'package:cash_control/bloc/states/provider_state.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/provider_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/events/provider_event.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/provider_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

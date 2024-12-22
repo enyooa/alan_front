@@ -26,3 +26,29 @@ class PriceOfferError extends PriceOfferState {
   @override
   List<Object?> get props => [message];
 }
+
+class PriceOffersFetched extends PriceOfferState {
+  final List<Map<String, dynamic>> priceOffers;
+
+  PriceOffersFetched({required this.priceOffers});
+
+  @override
+  List<Object?> get props => [priceOffers];
+}
+class PriceOfferUpdated extends PriceOfferState {
+  final String message;
+
+  PriceOfferUpdated({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class PriceOfferDeleted extends PriceOfferState {
+  final String message;
+
+  PriceOfferDeleted({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}

@@ -11,7 +11,8 @@ class ProductSubCardBloc extends Bloc<ProductSubCardEvent, ProductSubCardState> 
   ProductSubCardBloc() : super(ProductSubCardInitial()) {
     on<CreateProductSubCardEvent>(_handleCreateProductSubCard);
     on<FetchProductSubCardsEvent>(_handleFetchProductSubCards);
-
+    on<UpdateProductSubCardEvent>(_updateProductSubCard);
+    on<DeleteProductSubCardEvent>(_deleteProductSubCard);
   }
 
   Future<void> _handleCreateProductSubCard(
@@ -86,4 +87,69 @@ class ProductSubCardBloc extends Bloc<ProductSubCardEvent, ProductSubCardState> 
     emit(ProductSubCardError('Error: $e'));
   }
 }
+
+Future<void> _updateProductSubCard(
+  UpdateProductSubCardEvent event,
+  Emitter<ProductSubCardState> emit,
+) async {
+  emit(ProductSubCardLoading());
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      emit(ProductSubCardError("Authentication token not found."));
+      return;
+    }
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/product_subcards/${event.id}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(event.updatedFields),
+    );
+
+    if (response.statusCode == 200) {
+      emit(ProductSubCardUpdated(message: "Подкарточка успешно обновлена!"));
+    } else {
+      final errorData = jsonDecode(response.body);
+      emit(ProductSubCardError(errorData['message'] ?? "Ошибка обновления."));
+    }
+  } catch (error) {
+    emit(ProductSubCardError("Ошибка: $error"));
+  }
+}
+
+
+  Future<void> _deleteProductSubCard(
+    DeleteProductSubCardEvent event,
+    Emitter<ProductSubCardState> emit,
+  ) async {
+    emit(ProductSubCardLoading());
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        emit(ProductSubCardError("Authentication token not found."));
+        return;
+      }
+
+      final response = await http.delete(
+        Uri.parse('{$baseUrl}product_subcards/${event.id}'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        emit(ProductSubCardDeleted(message: "Подкарточка успешно удалена!"));
+      } else {
+        final errorData = jsonDecode(response.body);
+        emit(ProductSubCardError( errorData['message'] ?? "Ошибка удаления."));
+      }
+    } catch (error) {
+      emit(ProductSubCardError("Ошибка: $error"));
+    }
+  }
 }

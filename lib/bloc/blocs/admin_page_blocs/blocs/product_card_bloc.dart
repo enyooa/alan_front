@@ -11,6 +11,8 @@ class ProductCardBloc extends Bloc<ProductCardEvent, ProductCardState> {
   ProductCardBloc() : super(ProductCardInitial()) {
     on<CreateProductCardEvent>(_handleCreateProductCard);
     on<FetchProductCardsEvent>(_handleFetchProductCards);
+    on<UpdateProductCardEvent>(_updateProductCard);
+    on<DeleteProductCardEvent>(_deleteProductCard);
 
   }
 
@@ -91,6 +93,71 @@ class ProductCardBloc extends Bloc<ProductCardEvent, ProductCardState> {
     }
   } catch (e) {
     emit(ProductCardError('Error: $e'));
+  }
+}
+
+
+Future<void> _updateProductCard(
+    UpdateProductCardEvent event, Emitter<ProductCardState> emit) async {
+  emit(ProductCardLoading());
+
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      emit(ProductCardError("Authentication token not found."));
+      return;
+    }
+
+    final response = await http.put(
+      Uri.parse('{$baseUrl}product_cards/${event.id}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(event.updatedFields),
+    );
+
+    if (response.statusCode == 200) {
+      emit(ProductCardCreated("Product card updated successfully."));
+    } else {
+      final errorData = jsonDecode(response.body);
+      emit(ProductCardError(errorData['message'] ?? "Failed to update product card."));
+    }
+  } catch (error) {
+    emit(ProductCardError("Error: $error"));
+  }
+}
+
+Future<void> _deleteProductCard(
+    DeleteProductCardEvent event, Emitter<ProductCardState> emit) async {
+  emit(ProductCardLoading());
+
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      emit(ProductCardError("Authentication token not found."));
+      return;
+    }
+
+    final response = await http.delete(
+      Uri.parse('{$baseUrl}product_cards/${event.id}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      emit(ProductCardCreated("Product card deleted successfully."));
+    } else {
+      final errorData = jsonDecode(response.body);
+      emit(ProductCardError(errorData['message'] ?? "Failed to delete product card."));
+    }
+  } catch (error) {
+    emit(ProductCardError("Error: $error"));
   }
 }
 
