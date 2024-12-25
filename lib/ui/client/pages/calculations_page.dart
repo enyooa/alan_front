@@ -1,8 +1,10 @@
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/price_offer_bloc.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/states/basket_state.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/states/price_offer_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/price_offer_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/price_offer_state.dart';
+// import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/price_offer_bloc.dart';
+// import 'package:cash_control/bloc/blocs/admin_page_blocs/states/price_offer_state.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/events/favorites_event.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';

@@ -1,18 +1,17 @@
+import 'package:cash_control/bloc/models/basket_item.dart';
 import 'package:equatable/equatable.dart';
 
 class BasketState extends Equatable {
-  final Map<String, Map<String, dynamic>> basketItems;
+  final List<BasketItem> basketItems; // Use List<BasketItem>
   final int totalItems;
 
-  const BasketState({this.basketItems = const {}, this.totalItems = 0});
-
-  // Factory method for the initial state
-  factory BasketState.initial() {
-    return const BasketState();
-  }
+  const BasketState({
+    this.basketItems = const [],
+    this.totalItems = 0,
+  });
 
   BasketState copyWith({
-    Map<String, Map<String, dynamic>>? basketItems,
+    List<BasketItem>? basketItems,
     int? totalItems,
   }) {
     return BasketState(
@@ -27,17 +26,17 @@ class BasketState extends Equatable {
 
 
 
-class BasketLoading extends BasketState {
-  BasketLoading() : super(basketItems: {}, totalItems: 0);
-}
+
+
+class BasketLoading extends BasketState {}
 
 class BasketUpdated extends BasketState {
-  BasketUpdated(Map<String, Map<String, dynamic>> basketItems)
+  BasketUpdated(List<BasketItem> basketItems)
       : super(
           basketItems: basketItems,
-          totalItems: basketItems.values.fold<int>(
+          totalItems: basketItems.fold<int>(
             0,
-            (sum, item) => sum + (item['quantity'] as int? ?? 0),
+            (sum, item) => sum + item.quantity,
           ),
         );
 }
@@ -46,7 +45,7 @@ class BasketUpdated extends BasketState {
 class BasketError extends BasketState {
   final String message;
 
-  BasketError(this.message) : super(basketItems: {}, totalItems: 0);
+  BasketError(this.message);
 
   @override
   List<Object?> get props => [message];

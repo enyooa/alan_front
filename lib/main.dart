@@ -1,3 +1,5 @@
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/repositories/basket_repository.dart';
 import 'package:cash_control/bloc/blocs/common_blocs/blocs/account_bloc.dart';
 import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
 import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/admin_cash_bloc.dart';
@@ -88,6 +90,9 @@ class StartApp extends StatelessWidget {
           create: (context) => AdminCashBloc()..add(FetchAdminCashesEvent()),
         ),
         BlocProvider(create: (context) => AccountBloc(baseUrl: baseUrl)),
+        BlocProvider(
+        create: (context) => BasketBloc(repository: BasketRepository(baseUrl: baseUrl)),
+      ),
       ],
       child: MaterialApp(
         supportedLocales: const [

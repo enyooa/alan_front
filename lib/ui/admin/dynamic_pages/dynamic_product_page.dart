@@ -68,17 +68,17 @@ class _DynamicProductPageState extends State<DynamicProductPage> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                if (selectedOption == 'Ценовое предложение')
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Add creation logic here
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                    ),
-                    icon: const Icon(Icons.add, color: Colors.white),
-                    label: const Text("Создать", style: buttonTextStyle),
-                  ),
+                // if (selectedOption == 'Ценовое предложение')
+                //   ElevatedButton.icon(
+                //     onPressed: () {
+                //       // Add creation logic here
+                //     },
+                //     style: ElevatedButton.styleFrom(
+                //       backgroundColor: primaryColor,
+                //     ),
+                //     icon: const Icon(Icons.add, color: Colors.white),
+                //     label: const Text("Создать", style: buttonTextStyle),
+                //   ),
               ],
             ),
             const SizedBox(height: 20),

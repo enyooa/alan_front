@@ -1,7 +1,8 @@
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/sales_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/states/sales_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_sale_state.dart';
+
 import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/events/basket_event.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/states/basket_state.dart';
@@ -143,7 +144,7 @@ class _ProductListPageState extends State<ProductListPage> {
                                 onPressed: () {
                                   context.read<BasketBloc>().add(
                                         AddToBasketEvent({
-                                          'product_subcard_id': productId,
+                                          'product_subcard_id': subCard['id'],
                                           'source_table': 'sales',
                                           'quantity': 1,
                                         }),

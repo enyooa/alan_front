@@ -43,59 +43,61 @@ class _ProductOfferPageState extends State<ProductOfferPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocListener<PriceOfferBloc, PriceOfferState>(
-      listener: (context, state) {
-        if (state is PriceOfferSubmitted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.green),
-          );
-          setState(() {
-            clientRows.clear();
-            productRows.clear();
-            startDate = null;
-            endDate = null;
-            selectedClient = null;
-          });
-        } else if (state is PriceOfferError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-          );
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Ценовое предложение', style: headingStyle),
-          backgroundColor: primaryColor,
-        ),
-        body: Padding(
-          padding: pagePadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildClientTable(),
-              const SizedBox(height: verticalPadding),
-              _buildDatePickers(),
-              const SizedBox(height: verticalPadding),
-              Expanded(
-                child: _buildProductTable(),
-              ),
-              const SizedBox(height: verticalPadding),
-              ElevatedButton(
-                onPressed: _submitPriceOffer,
-                style: ElevatedButton.styleFrom(
-                  padding: buttonPadding,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                  backgroundColor: primaryColor,
+Widget build(BuildContext context) {
+  return BlocListener<PriceOfferBloc, PriceOfferState>(
+    listener: (context, state) {
+      if (state is PriceOfferSubmitted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.message), backgroundColor: Colors.green),
+        );
+        setState(() {
+          clientRows.clear();
+          productRows.clear();
+          startDate = null;
+          endDate = null;
+          selectedClient = null;
+        });
+      } else if (state is PriceOfferError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+        );
+      }
+    },
+    child: Scaffold(
+      body: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
+          child: Padding(
+            padding: pagePadding,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildClientTable(),
+                const SizedBox(height: verticalPadding),
+                _buildDatePickers(),
+                const SizedBox(height: verticalPadding),
+                _buildProductTable(),
+                const SizedBox(height: verticalPadding),
+                ElevatedButton(
+                  onPressed: _submitPriceOffer,
+                  style: ElevatedButton.styleFrom(
+                    padding: buttonPadding,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                    backgroundColor: primaryColor,
+                  ),
+                  child: const Text('Сохранить', style: buttonTextStyle),
                 ),
-                child: const Text('Сохранить', style: buttonTextStyle),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 Widget _buildClientTable() {
   return BlocBuilder<AddressBloc, AddressState>(
     builder: (context, addressState) {
@@ -271,6 +273,7 @@ Widget _buildProductTable() {
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                
                 children: [
                   Table(
                     border: TableBorder.all(color: borderColor),

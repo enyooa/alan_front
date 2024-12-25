@@ -1,3 +1,4 @@
+import 'package:cash_control/bloc/models/basket_item.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,38 +8,55 @@ class BasketRepository {
 
   BasketRepository({required this.baseUrl});
 
+// Future<Map<String, dynamic>> getBasket() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     final token = prefs.getString('token');
+
+//     if (token == null) {
+//       throw Exception('Token not found');
+//     }
+
+//     final response = await http.get(
+//       Uri.parse(baseUrl+'basket'),
+//       headers: {'Authorization': 'Bearer $token'},
+//     );
+
+//     if (response.statusCode == 200) {
+//       final basketList = List<Map<String, dynamic>>.from(jsonDecode(response.body)['basket']);
+//       return {for (var item in basketList) item['id'].toString(): item};
+//     } else {
+//       throw Exception('Failed to fetch basket');
+//     }
+//   }
+
   /// Fetch token from SharedPreferences
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token'); // Ensure you store the token with the key 'token'
   }
 
-  Future<Map<String, Map<String, dynamic>>> getBasket() async {
+Future<List<BasketItem>> getBasket() async {
   final token = await _getToken();
-
   if (token == null) {
     throw Exception('Authentication token not found');
   }
 
   final response = await http.get(
-    Uri.parse(baseUrl+'basket'),
+    Uri.parse(baseUrl + 'basket'),
     headers: {'Authorization': 'Bearer $token'},
   );
 
   if (response.statusCode == 200) {
     final jsonResponse = jsonDecode(response.body);
-
-    // Extract 'basket' as a List
     final basketList = List<Map<String, dynamic>>.from(jsonResponse['basket']);
-    return {
-      for (var item in basketList) item['id'].toString(): item,
-    };
+    return basketList.map((item) => BasketItem.fromJson(item)).toList();
   } else {
-    print('Failed to fetch basket. Response: ${response.body}');
     throw Exception('Failed to fetch basket');
   }
 }
 
+
+ 
  Future<void> addToBasket(Map<String, dynamic> product) async {
   final token = await _getToken();
 
@@ -69,7 +87,9 @@ class BasketRepository {
     throw Exception('Failed to add product. Status: ${response.statusCode}');
   }
 }
- /// Remove item from the basket
+
+
+
   Future<void> removeFromBasket(String productId) async {
     final token = await _getToken();
 
@@ -109,15 +129,16 @@ class BasketRepository {
     }
   }
 
-  Future<void> placeOrder(String address) async {
-  final token = await _getToken();
+  Future<String> placeOrder(String address) async {
+  final token = await _getToken(); // Fetch the token
 
   if (token == null) {
     throw Exception('Authentication token not found');
   }
 
+  final url = Uri.parse(baseUrl + 'basket/place-order');
   final response = await http.post(
-    Uri.parse(baseUrl+'basket/place-order'),
+    url,
     body: jsonEncode({'address': address}),
     headers: {
       'Content-Type': 'application/json',
@@ -126,12 +147,25 @@ class BasketRepository {
   );
 
   if (response.statusCode == 201) {
-    print('Order placed successfully: ${response.body}');
+    final jsonResponse = jsonDecode(response.body);
+    if (jsonResponse.containsKey('order_id')) {
+      return jsonResponse['order_id'].toString();
+    } else {
+      throw Exception('Order ID not found in the response');
+    }
+  } else if (response.statusCode == 400 || response.statusCode == 422) {
+    // Handle validation errors or bad requests
+    final jsonResponse = jsonDecode(response.body);
+    final errorMessage = jsonResponse['message'] ?? 'Invalid request';
+    throw Exception('Failed to place order: $errorMessage');
+  } else if (response.statusCode == 401) {
+    throw Exception('Authentication failed. Please log in again.');
   } else {
-    print('Failed to place order: ${response.body}');
-    throw Exception('Failed to place order');
+    throw Exception('Unexpected response: ${response.statusCode}, ${response.body}');
   }
 }
+
+
 
 Future<List<Map<String, dynamic>>> getPackerOrders() async {
   final token = await _getToken();

@@ -11,6 +11,7 @@ class FinancialOrderBloc extends Bloc<FinancialOrderEvent, FinancialOrderState> 
   FinancialOrderBloc() : super(FinancialOrderInitial()) {
     on<FetchFinancialOrdersEvent>(_fetchFinancialOrders);
     on<AddFinancialOrderEvent>(_addFinancialOrder);
+    on<DeleteFinancialOrderEvent>(_deleteFinancialOrder); 
   }
 
   Future<Map<String, String>> _getHeaders() async {
@@ -149,17 +150,21 @@ Future<void> _deleteFinancialOrder(
             .where((order) => order['id'] != event.orderId)
             .toList();
 
-        emit(FinancialOrderLoaded(updatedOrders));
+        emit(FinancialOrderLoaded(updatedOrders)); // Emit updated orders state
+      } else {
+        // If state isn't already loaded, re-fetch data
+        add(FetchFinancialOrdersEvent());
       }
     } else {
       final errorMessage =
           jsonDecode(response.body)['message'] ?? 'Failed to delete financial order';
-      emit(FinancialOrderError(errorMessage));
+      emit(FinancialOrderError(errorMessage)); // Emit error state
     }
   } catch (e) {
-    emit(FinancialOrderError('An error occurred: $e'));
+    emit(FinancialOrderError('An error occurred: $e')); // Emit error state
   }
 }
+
 
 
 }

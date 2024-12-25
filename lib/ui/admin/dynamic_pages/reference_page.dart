@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/operations_bloc.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/events/operations_event.dart';
 import 'package:cash_control/bloc/blocs/admin_page_blocs/states/operations_state.dart';
+import 'package:cash_control/constant.dart';
 
 class OperationHistoryPage extends StatefulWidget {
   @override
@@ -12,9 +13,8 @@ class OperationHistoryPage extends StatefulWidget {
 
 class _OperationHistoryPageState extends State<OperationHistoryPage> {
   final TextEditingController searchController = TextEditingController();
-List<Operation> allOperations = [];
-List<Operation> filteredOperations = [];
-
+  List<Operation> allOperations = [];
+  List<Operation> filteredOperations = [];
 
   @override
   void initState() {
@@ -22,99 +22,76 @@ List<Operation> filteredOperations = [];
     context.read<OperationsBloc>().add(FetchOperationsHistoryEvent());
   }
 
- void _filterOperations(String query) {
+  void _filterOperations(String query) {
   setState(() {
-    if (query.isEmpty) {
-      filteredOperations = allOperations;
-    } else {
-      filteredOperations = allOperations
-          .where((operation) =>
-              operation.operation.toLowerCase().contains(query.toLowerCase()) ||
-              operation.type.toLowerCase().contains(query.toLowerCase()))
-          .toList();
-    }
+    filteredOperations = allOperations.where((operation) {
+      final operationLower = operation.operation.toLowerCase();
+      final typeLower = operation.type.toLowerCase();
+      return operationLower.contains(query.toLowerCase()) || typeLower.contains(query.toLowerCase());
+    }).toList();
   });
 }
+
 
   void _editOperation(BuildContext context, Map<String, dynamic> operation) {
     final type = operation['type'];
     switch (type) {
       case 'Продажа':
-        _showEditDialog(
-          context,
-          operation,
-          ['количество', 'цена'],
-          (fields) {
-            context.read<OperationsBloc>().add(
-              EditOperationEvent(
-                id: int.tryParse(operation['id'].toString()) ?? 0,
-                type: 'Продажа',
-                updatedFields: {
-                  'amount': int.tryParse(fields['amount'] ?? '0') ?? 0,
-                  'price': double.tryParse(fields['price'] ?? '0.0') ?? 0.0,
-                },
-              ),
-            );
-          },
-        );
+        _showEditDialog(context, operation, ['количество', 'цена'], (fields) {
+          context.read<OperationsBloc>().add(
+                EditOperationEvent(
+                  id: int.tryParse(operation['id'].toString()) ?? 0,
+                  type: 'Продажа',
+                  updatedFields: {
+                    'amount': int.tryParse(fields['amount'] ?? '0') ?? 0,
+                    'price': double.tryParse(fields['price'] ?? '0.0') ?? 0.0,
+                  },
+                ),
+              );
+        });
         break;
       case 'Карточка товара':
-        _showEditDialog(
-          context,
-          operation,
-          ['Наименование продукта', 'описание'],
-          (fields) {
-            context.read<OperationsBloc>().add(
-              EditOperationEvent(
-                id: int.tryParse(operation['id'].toString()) ?? 0,
-                type: 'Карточка товара',
-                updatedFields: {
-                  'name_of_products': fields['name_of_products'] ?? '',
-                  'description': fields['description'] ?? '',
-                },
-              ),
-            );
-          },
-        );
+        _showEditDialog(context, operation, ['Наименование продукта', 'описание'], (fields) {
+          context.read<OperationsBloc>().add(
+                EditOperationEvent(
+                  id: int.tryParse(operation['id'].toString()) ?? 0,
+                  type: 'Карточка товара',
+                  updatedFields: {
+                    'name_of_products': fields['name_of_products'] ?? '',
+                    'description': fields['description'] ?? '',
+                  },
+                ),
+              );
+        });
         break;
       case 'Подкарточка товара':
-        _showEditDialog(
-          context,
-          operation,
-          ['название подкарточки', 'брутто', 'нетто'],
-          (fields) {
-            context.read<OperationsBloc>().add(
-              EditOperationEvent(
-                id: int.tryParse(operation['id'].toString()) ?? 0,
-                type: 'Подкарточка товара',
-                updatedFields: {
-                  'name': fields['name'] ?? '',
-                  'brutto': double.tryParse(fields['brutto'] ?? '0.0') ?? 0.0,
-                  'netto': double.tryParse(fields['netto'] ?? '0.0') ?? 0.0,
-                },
-              ),
-            );
-          },
-        );
+        _showEditDialog(context, operation, ['название подкарточки', 'брутто', 'нетто'], (fields) {
+          context.read<OperationsBloc>().add(
+                EditOperationEvent(
+                  id: int.tryParse(operation['id'].toString()) ?? 0,
+                  type: 'Подкарточка товара',
+                  updatedFields: {
+                    'name': fields['name'] ?? '',
+                    'brutto': double.tryParse(fields['brutto'] ?? '0.0') ?? 0.0,
+                    'netto': double.tryParse(fields['netto'] ?? '0.0') ?? 0.0,
+                  },
+                ),
+              );
+        });
         break;
       case 'Ценовое предложение':
-        _showEditDialog(
-          context,
-          operation,
-          ['количество', 'цена'],
-          (fields) {
-            context.read<OperationsBloc>().add(
-              EditOperationEvent(
-                id: int.tryParse(operation['id'].toString()) ?? 0,
-                type: 'Ценовое предложение',
-                updatedFields: {
-                  'amount': int.tryParse(fields['amount'] ?? '0') ?? 0,
-                  'price': double.tryParse(fields['price'] ?? '0.0') ?? 0.0,
-                },
-              ),
-            );
-          },
-        );
+        _showEditDialog(context, operation, ['количество', 'цена'], (fields) {
+          context.read<OperationsBloc>().add(
+                EditOperationEvent(
+                  id: int.tryParse(operation['id'].toString()) ?? 0,
+                  type: 'Ценовое предложение',
+                  updatedFields: {
+                    'amount': int.tryParse(fields['amount'] ?? '0') ?? 0,
+                    'price': double.tryParse(fields['price'] ?? '0.0') ?? 0.0,
+                  },
+                ),
+              );
+        });
         break;
     }
   }
@@ -122,11 +99,11 @@ List<Operation> filteredOperations = [];
   void _deleteOperation(BuildContext context, Map<String, dynamic> operation) {
     final type = operation['type'];
     context.read<OperationsBloc>().add(
-      DeleteOperationEvent(
-        id: int.tryParse(operation['id'].toString()) ?? 0,
-        type: type,
-      ),
-    );
+          DeleteOperationEvent(
+            id: int.tryParse(operation['id'].toString()) ?? 0,
+            type: type,
+          ),
+        );
   }
 
   void _showEditDialog(
@@ -144,20 +121,23 @@ List<Operation> filteredOperations = [];
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Редактировать ${operation['type']}'),
+          title: Text('Редактировать ${operation['type']}', style: titleStyle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: fields.map((field) {
               return TextField(
                 controller: controllers[field],
-                decoration: InputDecoration(labelText: field),
+                decoration: InputDecoration(
+                  labelText: field,
+                  labelStyle: formLabelStyle,
+                ),
               );
             }).toList(),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Отмена'),
+              child: Text('Отмена', style: buttonTextStyle.copyWith(color: errorColor)),
             ),
             TextButton(
               onPressed: () {
@@ -167,7 +147,7 @@ List<Operation> filteredOperations = [];
                 onSave(updatedFields);
                 Navigator.pop(context);
               },
-              child: Text('Сохранить'),
+              child: Text('Сохранить', style: buttonTextStyle),
             ),
           ],
         );
@@ -176,85 +156,103 @@ List<Operation> filteredOperations = [];
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text('История операций'),
-    ),
-    body: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: searchController,
-            decoration: InputDecoration(
-              hintText: 'Поиск...',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.search),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        title: Text('История операций', style: headingStyle),
+        backgroundColor: primaryColor,
+      ),
+      body: Padding(
+        padding: pagePadding,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: verticalPadding),
+              child: TextField(
+                controller: searchController,
+                style: bodyTextStyle,
+                decoration: InputDecoration(
+                  hintText: 'Поиск...',
+                  hintStyle: captionStyle,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(color: borderColor),
+                  ),
+                  prefixIcon: const Icon(Icons.search, color: textColor),
+                ),
+                onChanged: _filterOperations,
+              ),
             ),
-            onChanged: _filterOperations,
-          ),
+            Expanded(
+              child: BlocConsumer<OperationsBloc, OperationsState>(
+                listener: (context, state) {
+                  if (state is OperationsSuccess) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message, style: bodyTextStyle), backgroundColor: primaryColor),
+                    );
+                  } else if (state is OperationsError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message, style: bodyTextStyle), backgroundColor: errorColor),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                if (state is OperationsLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is OperationsLoaded) {
+                  if (allOperations.isEmpty) {
+                    allOperations = state.operations;
+                    filteredOperations = state.operations;
+                  }
+
+                  if (filteredOperations.isEmpty) {
+                    return Center(
+                      child: Text('Нет данных для отображения.', style: bodyTextStyle),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: filteredOperations.length,
+                    itemBuilder: (context, index) {
+                      final operation = filteredOperations[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ListTile(
+                          tileColor: Colors.white,
+                          title: Text(operation.operation, style: titleStyle),
+                          subtitle: Text(operation.type, style: captionStyle),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: primaryColor),
+                                onPressed: () => _editOperation(context, operation.toJson()),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: errorColor),
+                                onPressed: () => _deleteOperation(context, operation.toJson()),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                } else if (state is OperationsError) {
+                  return Center(
+                    child: Text(state.message, style: bodyTextStyle),
+                  );
+                }
+                return Center(
+                  child: Text('Нет данных.', style: bodyTextStyle),
+                );
+              },
+              ),
+            ),
+          ],
         ),
-        Expanded(
-          child: BlocConsumer<OperationsBloc, OperationsState>(
-  listener: (context, state) {
-    if (state is OperationsSuccess) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.message)),
-      );
-    } else if (state is OperationsError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.message)),
-      );
-    }
-  },
-  builder: (context, state) {
-    if (state is OperationsLoading) {
-      return Center(child: CircularProgressIndicator());
-    } else if (state is OperationsLoaded) {
-      allOperations = state.operations;
-      filteredOperations = allOperations;
-
-      if (filteredOperations.isEmpty) {
-        return Center(child: Text('Нет данных для отображения.'));
-      }
-
-      return ListView.builder(
-        itemCount: filteredOperations.length,
-        itemBuilder: (context, index) {
-          final operation = filteredOperations[index];
-          return ListTile(
-            title: Text(operation.operation),
-            subtitle: Text(operation.type),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () => _editOperation(context, operation.toJson()),
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _deleteOperation(context, operation.toJson()),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    } else if (state is OperationsError) {
-      return Center(
-        child: Text(state.message),
-      );
-    }
-    return Center(
-      child: Text('Нет данных.'),
+      ),
     );
-  },
-)
-),
-      ],
-    ),
-  );
-}
+  }
 }

@@ -1,4 +1,6 @@
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_element.dart';
 import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
+import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
 import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
 import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
 import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
@@ -23,6 +25,7 @@ class _OrderScreenState extends State<OrderScreen> {
     // Fetch financial orders and client users
     context.read<FinancialOrderBloc>().add(FetchFinancialOrdersEvent());
     context.read<AuthBloc>().add(FetchClientUsersEvent());
+
   }
 
   void _populateUserIdToNameMap(AuthState state) {
@@ -144,19 +147,21 @@ class _OrderScreenState extends State<OrderScreen> {
                       );
                     }
                     return ListView.builder(
-                      itemCount: orders.length,
-                      itemBuilder: (context, index) {
-                        final order = orders[index];
-                        final supplierName = userIdToNameMap[int.parse(order['user_id'].toString())] ??
-                            'Неизвестный поставщик';
-                        return OrderItem(
-                          date: order['date_of_check'] ?? '',
-                          supplier: supplierName,
-                          amount: order['summary_cash'].toString(),
-                        );
-                      },
-                    );
-                  }
+  itemCount: orders.length,
+  itemBuilder: (context, index) {
+    final order = orders[index];
+    final supplierName = userIdToNameMap[int.parse(order['user_id'].toString())] ?? 'Неизвестный поставщик';
+
+    return OrderItem(
+      orderId: order['id'], // Pass the order ID
+      date: order['date_of_check'] ?? '', // Pass the date
+      supplier: supplierName, // Pass the supplier name
+      amount: order['summary_cash'].toString(), // Pass the amount
+      index: index, // Pass the index here
+    );
+  },
+);
+}
                   return SizedBox.shrink();
                     },
                   ),
@@ -169,17 +174,20 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 }
-
 class OrderItem extends StatelessWidget {
   final String date;
   final String supplier;
   final String amount;
+  final int orderId;
+  final int index; // Add the index parameter
 
   const OrderItem({
     Key? key,
     required this.date,
     required this.supplier,
     required this.amount,
+    required this.orderId,
+    required this.index, // Include the index as a required parameter
   }) : super(key: key);
 
   @override
@@ -212,12 +220,18 @@ class OrderItem extends StatelessWidget {
                   // Handle edit action
                 },
               ),
-              IconButton(
-                icon: Icon(Icons.delete, color: errorColor),
-                onPressed: () {
-                  // Handle delete action
-                },
-              ),
+             IconButton(
+              icon: Icon(Icons.delete, color: errorColor),
+              onPressed: () {
+                print('Dispatching DeleteFinancialOrderEvent for order ID: $orderId');
+                context.read<FinancialOrderBloc>().add(
+                  DeleteFinancialOrderEvent(orderId: orderId),
+                );
+              },
+            ),
+
+
+
             ],
           ),
         ],

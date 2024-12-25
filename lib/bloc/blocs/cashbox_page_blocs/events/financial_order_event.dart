@@ -16,7 +16,8 @@ class EditFinancialOrderEvent extends FinancialOrderEvent {
 }
 
 class DeleteFinancialOrderEvent extends FinancialOrderEvent {
-  final int orderId;
+  final int orderId; // Pass the ID of the financial order
 
-  DeleteFinancialOrderEvent(this.orderId);
+  DeleteFinancialOrderEvent({required this.orderId}); // Constructor with required ID
 }
+

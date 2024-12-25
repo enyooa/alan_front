@@ -21,9 +21,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   final List<Widget> _screens = [
     const MainPage(), // Home Page
-    ShoppingCartScreen(), // Basket Page
+    const BasketScreen(), // Basket Page
     const FavoritesPage(), // Favorites Page
-    const CalculationsPage(), // Calculations Page
+    const CalculationsPage(), // Calculations Page  
     const AccountView(), // Profile Page
   ];
 void _onItemTapped(int index) {
@@ -60,21 +60,16 @@ void _onItemTapped(int index) {
                 const Icon(Icons.shopping_cart),
                 BlocBuilder<BasketBloc, BasketState>(
                   builder: (context, state) {
-                    final totalCount = state.totalItems;
-                    return totalCount > 0
+                    return state.totalItems > 0
                         ? Positioned(
                             right: -6,
                             top: -6,
                             child: CircleAvatar(
                               radius: 10,
-                              backgroundColor: Colors.blue,
-                              child: Text(
-                                '$totalCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                ),
-                              ),
+                              backgroundColor: Colors.red,
+                              child: Text('${state.totalItems}',
+                                  style: const TextStyle(
+                                      fontSize: 10, color: Colors.white)),
                             ),
                           )
                         : const SizedBox.shrink();

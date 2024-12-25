@@ -54,13 +54,7 @@ class _AccountViewState extends State<AccountView> {
                     children: [
                       Container(
                         height: 200,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [primaryColor, accentColor],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
+                        
                       ),
                       Column(
                         children: [
@@ -79,12 +73,12 @@ class _AccountViewState extends State<AccountView> {
                           const SizedBox(height: 10),
                           Text(
                             fullName,
-                            style: headingStyle.copyWith(fontSize: 20),
+                            style: titleStyle.copyWith(fontSize: 20),
                           ),
                           const SizedBox(height: 5),
                           Text(
                             'WhatsApp: $whatsappNumber',
-                            style: subheadingStyle.copyWith(color: Colors.white70),
+                            style: titleStyle.copyWith(fontSize: 20),
                           ),
                         ],
                       ),

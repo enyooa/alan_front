@@ -17,6 +17,9 @@ class CashReportScreen extends StatefulWidget {
 }
 
 class _CashReportScreenState extends State<CashReportScreen> {
+  DateTime? startDate;
+  DateTime? endDate;
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +39,35 @@ class _CashReportScreenState extends State<CashReportScreen> {
         ),
       );
     }
+  }
+
+  Future<void> pickDateRange(BuildContext context) async {
+    final pickedRange = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      initialDateRange: startDate != null && endDate != null
+          ? DateTimeRange(start: startDate!, end: endDate!)
+          : null,
+    );
+
+    if (pickedRange != null) {
+      setState(() {
+        startDate = pickedRange.start;
+        endDate = pickedRange.end;
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> filterOrdersByDate(
+      List<Map<String, dynamic>> orders) {
+    if (startDate == null || endDate == null) return orders;
+
+    return orders.where((order) {
+      final orderDate = DateTime.parse(order['date_of_check']);
+      return orderDate.isAfter(startDate!.subtract(const Duration(days: 1))) &&
+          orderDate.isBefore(endDate!.add(const Duration(days: 1)));
+    }).toList();
   }
 
   Future<void> exportToExcel(
@@ -197,23 +229,29 @@ class _CashReportScreenState extends State<CashReportScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    'Дата с по',
-                    style: bodyTextStyle.copyWith(color: primaryColor),
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => pickDateRange(context),
+                    child: Text(
+                      startDate != null && endDate != null
+                          ? '${startDate!.toLocal()} - ${endDate!.toLocal()}'
+                          : 'Дата с по',
+                      style: bodyTextStyle.copyWith(color: primaryColor),
+                    ),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    context.read<FinancialOrderBloc>().add(FetchFinancialOrdersEvent());
-                  },
-                  style: elevatedButtonStyle,
-                  child: Text(
-                    'показать',
-                    style: buttonTextStyle,
-                  ),
-                ),
+                // Expanded(
+                //   child: ElevatedButton(
+                //     onPressed: () {
+                //       context.read<FinancialOrderBloc>().add(FetchFinancialOrdersEvent());
+                //     },
+                //     style: elevatedButtonStyle,
+                //     child: Text(
+                //       'показать',
+                //       style: buttonTextStyle,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
             const Divider(color: borderColor),
@@ -231,12 +269,12 @@ class _CashReportScreenState extends State<CashReportScreen> {
                   );
                 }
                 if (state is FinancialOrderLoaded) {
-                  final incomeOrders = state.financialOrders
+                  final incomeOrders = filterOrdersByDate(state.financialOrders
                       .where((order) => order['type'] == 'income')
-                      .toList();
-                  final expenseOrders = state.financialOrders
+                      .toList());
+                  final expenseOrders = filterOrdersByDate(state.financialOrders
                       .where((order) => order['type'] == 'expense')
-                      .toList();
+                      .toList());
                   final totalIncome = incomeOrders.fold<double>(
                     0,
                     (sum, order) => sum + (order['summary_cash'] ?? 0),

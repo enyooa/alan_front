@@ -1,13 +1,13 @@
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/price_offer_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/price_offer_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_card_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_sale_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
+
+
 import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/card_bloc.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/price_offer_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/sub_card_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/events/card_event.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/events/price_offer_event.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/events/sub_card_event.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/repositories/basket_repository.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/repositories/favorites_repository.dart';
 import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/packer_document_bloc.dart';
@@ -37,9 +37,7 @@ class ClientHome extends StatelessWidget {
         BlocProvider<ProductCardBloc>(
           create: (context) => ProductCardBloc()..add(FetchProductCardsEvent()),
         ),
-        BlocProvider<SalesBloc>(
-          create: (context) => SalesBloc()..add(FetchSalesWithDetailsEvent()),
-        ),
+        
         BlocProvider<PackerDocumentBloc>(
           create: (context) => PackerDocumentBloc()..add(FetchPackerDocumentsEvent()),
         ),
@@ -49,10 +47,7 @@ class ClientHome extends StatelessWidget {
             ..add(FetchPriceOffersEvent()),
         ),
       ],
-      child: const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: BottomNavBar(), // Point to the BottomNavBar for navigation
-      ),
+      child: BottomNavBar(),
     );
   }
 }

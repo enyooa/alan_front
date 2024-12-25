@@ -38,10 +38,10 @@ class _InventoryPageState extends State<InventoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Инвентаризация', style: headingStyle),
-        backgroundColor: primaryColor,
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Инвентаризация', style: headingStyle),
+      //   backgroundColor: primaryColor,
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

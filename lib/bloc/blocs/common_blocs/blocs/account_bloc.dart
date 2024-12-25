@@ -103,6 +103,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   Future<void> _onLogout(Logout event, Emitter<AccountState> emit) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    
     emit(AccountLoggedOut());
   }
 }
