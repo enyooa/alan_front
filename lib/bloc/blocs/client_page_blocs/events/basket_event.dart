@@ -8,12 +8,14 @@ abstract class BasketEvent extends Equatable {
 class FetchBasketEvent extends BasketEvent {}
 
 class AddToBasketEvent extends BasketEvent {
-  final Map<String, dynamic> product;
+  final Map<String, dynamic> product; // Contains price and other details
 
   AddToBasketEvent(this.product);
+
   @override
   List<Object?> get props => [product];
 }
+
 
 class RemoveFromBasketEvent extends BasketEvent {
   final String productId;

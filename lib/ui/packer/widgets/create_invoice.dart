@@ -1,13 +1,12 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/events/auth_event.dart';
+import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
 import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/packer_document_bloc.dart';
 import 'package:cash_control/bloc/blocs/packer_page_blocs/events/packer_document_event.dart';
 import 'package:cash_control/bloc/blocs/packer_page_blocs/states/packer_document_state.dart';
-
-import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/auth_event.dart';
 import 'package:cash_control/constant.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class InvoicePage extends StatefulWidget {
   final Map<String, dynamic> orderDetails;
@@ -17,42 +16,67 @@ class InvoicePage extends StatefulWidget {
   @override
   _InvoicePageState createState() => _InvoicePageState();
 }
+
 class _InvoicePageState extends State<InvoicePage> {
   String? selectedCourier;
-  Map<int, double> updatedQuantities = {}; // Store updated quantities for products
+  Map<int, double> updatedQuantities = {};
 
   @override
   void initState() {
     super.initState();
     context.read<AuthBloc>().add(FetchCourierUsersEvent());
 
-    // Initialize quantities with default values from order details
+    // Initialize quantities with default values
     final products = widget.orderDetails['order_products'] ?? [];
     for (var product in products) {
-      updatedQuantities[product['product_sub_card']['id']] = product['quantity'].toDouble();
+      final productId = product['product_sub_card']?['id'];
+      if (productId != null) {
+        updatedQuantities[productId] = product['quantity'].toDouble();
+      }
     }
   }
 
   void _submitDelivery(BuildContext context) {
-    final address = widget.orderDetails['address'] ?? 'Unknown Address';
+    final products = widget.orderDetails['order_products'];
 
-    if (selectedCourier == null) {
+    if (products == null || products.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Пожалуйста, выберите курьера')),
+        const SnackBar(content: Text('Нет доступных продуктов для доставки.')),
       );
       return;
     }
 
-    updatedQuantities.forEach((productSubcardId, quantity) {
-      context.read<PackerDocumentBloc>().add(
-            SubmitPackerDocumentEvent(
-              idCourier: int.parse(selectedCourier!),
-              deliveryAddress: address,
-              productSubcardId: productSubcardId,
-              amountOfProducts: quantity,
-            ),
-          );
-    });
+    final List<Map<String, dynamic>> orderProducts = products
+        .where((product) => product['product_sub_card'] != null)
+        .map<Map<String, dynamic>>((product) => {
+              'product_subcard_id': product['product_sub_card']['id'],
+              'quantity': updatedQuantities[product['product_sub_card']['id']] ?? 0.0,
+              'price': product['price'] ?? 0.0,
+              'source_table_id': product['source_table_id'],
+            })
+        .toList();
+
+    if (orderProducts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Нет допустимых продуктов для обработки.')),
+      );
+      return;
+    }
+
+    if (selectedCourier == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Пожалуйста, выберите курьера.')),
+      );
+      return;
+    }
+
+    context.read<PackerDocumentBloc>().add(
+          SubmitPackerDocumentEvent(
+            idCourier: int.parse(selectedCourier!),
+            deliveryAddress: widget.orderDetails['address'] ?? 'Неизвестный адрес',
+            orderProducts: orderProducts,
+          ),
+        );
   }
 
   @override
@@ -63,10 +87,7 @@ class _InvoicePageState extends State<InvoicePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Накладная',
-          style: headingStyle,
-        ),
+        title: const Text('Накладная', style: headingStyle),
         centerTitle: true,
         backgroundColor: primaryColor,
       ),
@@ -78,6 +99,7 @@ class _InvoicePageState extends State<InvoicePage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
                 );
+                Navigator.pop(context); // Return to the previous page
               } else if (state is PackerDocumentError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Ошибка: ${state.error}')),
@@ -91,15 +113,9 @@ class _InvoicePageState extends State<InvoicePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Клиент: $clientName',
-                style: subheadingStyle,
-              ),
+              Text('Клиент: $clientName', style: subheadingStyle),
               const SizedBox(height: verticalPadding),
-              Text(
-                'Адрес доставки: $address',
-                style: subheadingStyle,
-              ),
+              Text('Адрес доставки: $address', style: subheadingStyle),
               const SizedBox(height: verticalPadding),
               Expanded(
                 child: SingleChildScrollView(
@@ -136,39 +152,36 @@ class _InvoicePageState extends State<InvoicePage> {
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text(product['product_sub_card']['name'] ?? 'N/A', style: tableCellStyle),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(product['unit_measurement'] ?? 'N/A', style: tableCellStyle),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: TextFormField(
-                                initialValue: updatedQuantities[product['product_sub_card']['id']]?.toString() ?? '0',
-                                keyboardType: TextInputType.number,
+                              child: Text(
+                                product['product_sub_card']?['name'] ?? 'N/A',
                                 style: tableCellStyle,
-                                onChanged: (value) {
-                                  setState(() {
-                                    updatedQuantities[product['product_sub_card']['id']] =
-                                        double.tryParse(value) ?? 0;
-                                  });
-                                },
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                ),
                               ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text(product['price'].toString(), style: tableCellStyle),
+                              child: Text(
+                                product['source']?['unit_measurement'] ?? 'N/A',
+                                style: tableCellStyle,
+                              ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                (updatedQuantities[product['product_sub_card']['id']] ?? 0 *
-                                        product['price'])
-                                    .toStringAsFixed(2),
+                                product['quantity']?.toString() ?? '0',
+                                style: tableCellStyle,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                product['price']?.toString() ?? '0',
+                                style: tableCellStyle,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                ((product['quantity'] ?? 0) * (product['price'] ?? 0)).toStringAsFixed(2),
                                 style: tableCellStyle,
                               ),
                             ),
@@ -200,18 +213,21 @@ class _InvoicePageState extends State<InvoicePage> {
                       ),
                     );
                   } else {
-                    return const Text(
-                      'Не удалось загрузить курьеров.',
-                      style: bodyTextStyle,
-                    );
+                    return const Text('Не удалось загрузить курьеров.', style: bodyTextStyle);
                   }
                 },
               ),
               const SizedBox(height: verticalPadding),
-              ElevatedButton(
-                onPressed: () => _submitDelivery(context),
-                style: elevatedButtonStyle,
-                child: const Text('Отправить на доставку', style: buttonTextStyle),
+              BlocBuilder<PackerDocumentBloc, PackerDocumentState>(
+                builder: (context, state) {
+                  return ElevatedButton(
+                    onPressed: state is PackerDocumentLoading ? null : () => _submitDelivery(context),
+                    style: elevatedButtonStyle,
+                    child: state is PackerDocumentLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('Отправить на доставку', style: buttonTextStyle),
+                  );
+                },
               ),
             ],
           ),

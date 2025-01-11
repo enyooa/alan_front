@@ -51,60 +51,64 @@ class HomeScreen extends StatelessWidget {
                 }
 
                 return ListView.builder(
-                  itemCount: orders.length,
-                  itemBuilder: (context, index) {
-                    final order = orders[index];
+  itemCount: orders.length,
+  itemBuilder: (context, index) {
+    final order = orders[index];
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 8.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Адрес: ${order['address'] ?? 'Не указан'}',
-                              style: subheadingStyle.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Статус: ${_translateStatus(order['status'])}',
-                              style: bodyTextStyle.copyWith(
-                                color: _getStatusColor(order['status']),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            if (order['status'] == 'pending')
-                              ElevatedButton(
-                                style: elevatedButtonStyle,
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => OrderDetailsPage(
-                                          orderId: order['id']),
-                                    ),
-                                  );
-                                },
-                                child: const Text(
-                                  'Начать',
-                                  style: buttonTextStyle, // From constant.dart
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Адрес: ${order['address'] ?? 'Не указан'}',
+              style: subheadingStyle.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Статус: ${_translateStatus(order['status'])}',
+              style: bodyTextStyle.copyWith(
+                color: _getStatusColor(order['status']),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (order['order_products'].isNotEmpty)
+              Text(
+                'Количество продуктов: ${order['order_products'].length}',
+                style: bodyTextStyle,
+              ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              style: elevatedButtonStyle,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OrderDetailsPage(orderId: order['id']),
+                  ),
                 );
-              } else if (state is PackerOrdersError) {
+              },
+              child: const Text(
+                'Детали',
+                style: buttonTextStyle,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  },
+);
+} else if (state is PackerOrdersError) {
                 return Center(
                   child: Text(
                     'Ошибка: ${state.message}',

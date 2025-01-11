@@ -1,6 +1,13 @@
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/client_order_items_bloc.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/price_offer_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/events/client_order_items_event.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/states/basket_state.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/states/client_order_items_state.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/states/price_offer_state.dart';
+import 'package:cash_control/bloc/blocs/courier_page_blocs/blocs/courier_document_bloc.dart';
+import 'package:cash_control/bloc/blocs/courier_page_blocs/events/courier_document_event.dart';
+import 'package:cash_control/bloc/blocs/courier_page_blocs/states/courier_document_state.dart';
+import 'package:cash_control/bloc/blocs/packer_page_blocs/events/couriers_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/price_offer_bloc.dart';
@@ -28,6 +35,8 @@ class _CalculationsPageState extends State<CalculationsPage> {
   void initState() {
     super.initState();
     context.read<PackerDocumentBloc>().add(FetchPackerDocumentsEvent());
+    context.read<ClientOrderItemsBloc>().add(FetchClientOrderItemsEvent());
+
   }
 
   @override
@@ -165,14 +174,25 @@ class _CalculationsPageState extends State<CalculationsPage> {
                                           return IconButton(
                                             icon: const Icon(Icons.add_shopping_cart, color: primaryColor),
                                             onPressed: () {
+                                              final price = double.tryParse(offer['price'].toString()) ?? 0.0;
+                                              if (price <= 0) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Invalid price for the product')),
+                                                );
+                                                return;
+                                              }
+
                                               context.read<BasketBloc>().add(
                                                     AddToBasketEvent({
                                                       'product_subcard_id': productSubCard['id'],
                                                       'source_table': 'price_requests',
-                                                      'quantity': 1,
+                                                      'source_table_id': offer['id'], // Include source_table_id
+                                                      'quantity': 1, // Ensure a default valid quantity
+                                                      'price': price, // Pass the price explicitly
                                                     }),
                                                   );
                                             },
+
                                           );
                                         },
                                       ),
@@ -230,78 +250,95 @@ class _CalculationsPageState extends State<CalculationsPage> {
                 ),
               ),
               const SizedBox(height: 16),
+ Text(
+          'Документы курьера',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 300, // Fixed height for the scrollable list
+          child: BlocBuilder<ClientOrderItemsBloc, ClientOrderItemsState>(
+            builder: (context, state) {
+              if (state is ClientOrderItemsLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is ClientOrderItemsLoaded) {
+final documents = state.clientOrderItems.toSet().toList(); // Remove duplicates
+print('Documents: ${state.clientOrderItems}');
 
-              // Section: Packer Documents
-              const Text(
-                'Документы упаковщика',
-                style: subheadingStyle,
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 300, // Set a fixed height for the scrollable list
-                child: BlocBuilder<PackerDocumentBloc, PackerDocumentState>(
-                  builder: (context, state) {
-                    if (state is PackerDocumentLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is PackerDocumentsFetched) {
-                      final documents = state.documents;
+                if (documents.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'Нет доступных документов.',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  );
+                }
 
-                      if (documents.isEmpty) {
-                        return const Center(
-                          child: Text(
-                            'Нет доступных документов.',
-                            style: bodyTextStyle,
-                          ),
-                        );
-                      }
+                return ListView.builder(
+                  itemCount: documents.length,
+                  itemBuilder: (context, index) {
+                    final document = documents[index];
+                    final courierDocument = document['courier_document'];
+                    final deliveryAddress = document['order']?['address'] ?? 'Не указано';
+                    final courierDocumentId = courierDocument?['id'] ?? 0;
+                    final isConfirmed = courierDocument?['is_confirmed'] ?? false;
 
-                      return ListView.builder(
-                        itemCount: documents.length,
-                        itemBuilder: (context, index) {
-                          final document = documents[index];
-                          final courierId = document['id_courier'];
-                          final deliveryAddress = document['delivery_address'];
-                          final amount = document['amount_of_products'];
-
-                          return Card(
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            elevation: 4,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ListTile(
-                              title: Text('Курьер: $courierId', style: subheadingStyle),
-                              subtitle: Text(
-                                'Адрес: $deliveryAddress\nКол-во: $amount',
-                                style: bodyTextStyle,
-                              ),
-                              trailing: ElevatedButton(
-                                onPressed: () {
-                                  // Confirm logic here
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                ),
-                                child: const Text(
-                                  'Подтвердить',
-                                  style: buttonTextStyle,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    } else {
-                      return const Center(
-                        child: Text(
-                          'Нет данных.',
-                          style: bodyTextStyle,
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          'Адрес: $deliveryAddress',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
-                      );
-                    }
+                        subtitle: Text(
+                          'ID документа: $courierDocumentId',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        trailing: ElevatedButton(
+                          onPressed: isConfirmed
+                              ? null
+                              : () {
+                                  context.read<ClientOrderItemsBloc>().add(
+                                        ConfirmCourierDocumentEvent(
+                                          courierDocumentId: courierDocumentId,
+                                        ),
+                                      );
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isConfirmed ? Colors.grey : Colors.blue,
+                          ),
+                          child: Text(
+                            isConfirmed ? 'Подтверждено' : 'Подтвердить',
+                          ),
+                        ),
+                      ),
+                    );
                   },
-                ),
-              ),
+                );
+              } else if (state is ClientOrderItemsError) {
+                return Center(
+                  child: Text(
+                    'Ошибка: ${state.error}',
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                  ),
+                );
+              } else {
+                return const Center(
+                  child: Text(
+                    'Нет данных.',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+      
+
             ],
           ),
         ),

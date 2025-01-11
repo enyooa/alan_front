@@ -1,99 +1,110 @@
 import 'package:flutter/material.dart';
 import 'package:cash_control/constant.dart';
-import 'package:cash_control/ui/client/widgets/appbar.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class SalesReport extends StatefulWidget {
-  const SalesReport({super.key});
+class SalesReportPage extends StatefulWidget {
+  const SalesReportPage({Key? key}) : super(key: key);
 
   @override
-  _SalesReportAppState createState() => _SalesReportAppState();
+  State<SalesReportPage> createState() => _SalesReportPageState();
 }
 
-class _SalesReportAppState extends State<SalesReport> {
-  final List<List<String>> _tableData = []; // To store rows from Excel file
+class _SalesReportPageState extends State<SalesReportPage> {
+  List<dynamic> salesData = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSalesData();
+  }
+
+  Future<void> _fetchSalesData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Authentication token not found')),
+      );
+      return;
+    }
+
+    final url = Uri.parse(baseUrl + 'fetchSalesReport');
+    try {
+      final response = await http.get(url, headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      });
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          salesData = data['sales'];
+          isLoading = false;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка получения данных: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Отчет по продажам',
-              style: subheadingStyle, // Modern heading style
-            ),
-            const SizedBox(height: 16),
-            Expanded(child: _buildTable()), // Expand table to fit the screen
-          ],
-        ),
+      appBar: AppBar(
+        title: const Text('Отчет по продажам', style: headingStyle),
+        backgroundColor: primaryColor,
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildTable(),
     );
   }
 
-  // Function to build the DataTable
   Widget _buildTable() {
+    if (salesData.isEmpty) {
+      return const Center(child: Text('Нет данных для отображения.', style: tableHeaderStyle));
+    }
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: DataTable(
-          headingRowColor:
-              MaterialStateProperty.all(primaryColor), // Stylish header color
-          dataRowColor: MaterialStateProperty.all(Colors.white), // Clean row color
-          border: TableBorder.all(color: borderColor, width: 1), // Consistent border styling
-          headingTextStyle: tableHeaderStyle, // Use consistent header style
-          dataTextStyle: tableCellStyle, // Use consistent cell style
-          columns: _buildColumns(),
-          rows: _buildRows(),
+          headingRowColor: MaterialStateProperty.all(primaryColor),
+          dataRowColor: MaterialStateProperty.all(Colors.grey.shade100),
+          border: TableBorder.all(color: borderColor),
+          headingTextStyle: tableHeaderStyle,
+          dataTextStyle: tableCellStyle,
+          columns: const [
+            DataColumn(label: Text('Наименование', style: tableHeaderStyle)),
+            DataColumn(label: Text('Ед Изм', style: tableHeaderStyle)),
+            DataColumn(label: Text('Количество', style: tableHeaderStyle)),
+            DataColumn(label: Text('Цена', style: tableHeaderStyle)),
+            DataColumn(label: Text('Сумма', style: tableHeaderStyle)),
+          ],
+          rows: salesData.map((sale) {
+            return DataRow(
+              cells: [
+                DataCell(Text(sale['product'] ?? '', style: tableCellStyle)),
+                DataCell(Text(sale['unit'] ?? '', style: tableCellStyle)),
+                DataCell(Text(sale['quantity'].toString(), style: tableCellStyle)),
+                DataCell(Text(sale['price'].toString(), style: tableCellStyle)),
+                DataCell(Text(sale['total'].toString(), style: tableCellStyle)),
+              ],
+            );
+          }).toList(),
         ),
       ),
     );
-  }
-
-  // Function to dynamically generate columns
-  List<DataColumn> _buildColumns() {
-    if (_tableData.isNotEmpty) {
-      return _tableData[0]
-          .map((header) => DataColumn(label: Text(header, style: tableHeaderStyle)))
-          .toList();
-    } else {
-      return [
-        const DataColumn(label: Text('Наименование', style: tableHeaderStyle)),
-        const DataColumn(label: Text('Ед Изм', style: tableHeaderStyle)),
-        const DataColumn(label: Text('Количество', style: tableHeaderStyle)),
-        const DataColumn(label: Text('Цена', style: tableHeaderStyle)),
-        const DataColumn(label: Text('Сумма', style: tableHeaderStyle)),
-      ];
-    }
-  }
-
-  // Function to dynamically generate rows
-  List<DataRow> _buildRows() {
-    if (_tableData.length > 1) {
-      return _tableData
-          .sublist(1) // Skip the header row
-          .map(
-            (row) => DataRow(
-              cells: row.map((cell) => DataCell(Text(cell, style: tableCellStyle))).toList(),
-            ),
-          )
-          .toList();
-    } else {
-      // Default empty rows if no data is available
-      return List<DataRow>.generate(
-        10,
-        (index) => DataRow(
-          cells: [
-            DataCell(Text('Продукт#: $index', style: tableCellStyle)),
-            const DataCell(Text('Тг', style: tableCellStyle)),
-            DataCell(Text('${index * 2}', style: tableCellStyle)),
-            const DataCell(Text('100', style: tableCellStyle)),
-            DataCell(Text('${index * 2 * 100}', style: tableCellStyle)),
-          ],
-        ),
-      );
-    }
   }
 }

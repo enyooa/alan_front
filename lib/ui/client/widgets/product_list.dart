@@ -1,4 +1,6 @@
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/sales_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/events/favorites_event.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/states/sales_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -46,6 +48,7 @@ class _ProductListPageState extends State<ProductListPage> {
             itemCount: filteredData.length,
             itemBuilder: (context, index) {
               final item = filteredData[index];
+              
               final subCard = item['sub_card'];
               final productCard = subCard['product_card'];
               final relativePhotoPath = productCard['photo_product'] ?? '';
@@ -146,7 +149,10 @@ class _ProductListPageState extends State<ProductListPage> {
                                         AddToBasketEvent({
                                           'product_subcard_id': subCard['id'],
                                           'source_table': 'sales',
+                                          'source_table_id': item['id'],
                                           'quantity': 1,
+                                          'price': price, // Include the price
+
                                         }),
                                       );
                                 },
@@ -155,24 +161,37 @@ class _ProductListPageState extends State<ProductListPage> {
                           ),
 
                           // Favorite Button
-                          IconButton(
-                            icon: Icon(
-                              favoriteProducts.contains(productId)
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color: favoriteProducts.contains(productId) ? Colors.red : primaryColor,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                if (favoriteProducts.contains(productId)) {
-                                  favoriteProducts.remove(productId);
-                                } else {
-                                  favoriteProducts.add(productId);
-                                }
-                              });
-                            },
-                          ),
-                        ],
+                         IconButton(
+  icon: Icon(
+    favoriteProducts.contains(productId) ? Icons.favorite : Icons.favorite_border,
+    color: favoriteProducts.contains(productId) ? Colors.red : primaryColor,
+  ),
+  onPressed: () {
+    if (favoriteProducts.contains(productId)) {
+      context.read<FavoritesBloc>().add(
+  RemoveFromFavoritesEvent(productSubcardId: subCard['id'].toString()),
+);
+
+    } else {
+      context.read<FavoritesBloc>().add(
+  AddToFavoritesEvent(product: {
+    'product_subcard_id': subCard['id'],
+    'source_table': 'sales', // Example source_table
+  }),
+);
+
+    }
+    setState(() {
+      if (favoriteProducts.contains(productId)) {
+        favoriteProducts.remove(productId);
+      } else {
+        favoriteProducts.add(productId);
+      }
+    });
+  },
+),
+
+                          ],
                       ),
                     ],
                   ),

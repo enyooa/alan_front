@@ -48,7 +48,7 @@ void main() async {
       initialRoute = '/cashbox_dashboard';
     } else if (roles?.contains('client') ?? false) {
       initialRoute = '/client_dashboard';
-    } else if (roles?.contains('storage') ?? false) {
+    } else if (roles?.contains('storager') ?? false) {
       initialRoute = '/storage_dashboard';
     } else if (roles?.contains('packer') ?? false) {
       initialRoute = '/packer_dashboard';
@@ -141,7 +141,7 @@ class StartApp extends StatelessWidget {
                       Navigator.pushReplacementNamed(context, '/cashbox_dashboard');
                     } else if (roles.contains('client')) {
                       Navigator.pushReplacementNamed(context, '/client_dashboard');
-                    } else if (roles.contains('storage')) {
+                    } else if (roles.contains('storager')) {
                       Navigator.pushReplacementNamed(context, '/storage_dashboard');
                     } else if (roles.contains('packer')) {
                       Navigator.pushReplacementNamed(context, '/packer_dashboard');

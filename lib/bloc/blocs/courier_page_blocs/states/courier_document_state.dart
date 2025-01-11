@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 
 abstract class CourierDocumentState extends Equatable {
@@ -18,6 +17,8 @@ class CourierDocumentLoaded extends CourierDocumentState {
   @override
   List<Object?> get props => [documents];
 }
+
+class CourierDocumentSubmittedSuccess extends CourierDocumentState {}
 
 class CourierDocumentError extends CourierDocumentState {
   final String error;

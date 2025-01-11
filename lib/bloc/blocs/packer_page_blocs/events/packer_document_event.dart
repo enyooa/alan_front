@@ -7,18 +7,17 @@ abstract class PackerDocumentEvent extends Equatable {
 
 class SubmitPackerDocumentEvent extends PackerDocumentEvent {
   final int idCourier;
-  final String? deliveryAddress;
-  final int productSubcardId;
-  final double? amountOfProducts;
+  final String deliveryAddress;
+  final List<Map<String, dynamic>> orderProducts; // Add complete order products list
 
   SubmitPackerDocumentEvent({
     required this.idCourier,
-    this.deliveryAddress,
-    required this.productSubcardId,
-    this.amountOfProducts,
+    required this.deliveryAddress,
+    required this.orderProducts,
   });
 
   @override
-  List<Object?> get props => [idCourier, deliveryAddress, productSubcardId, amountOfProducts];
+  List<Object?> get props => [idCourier, deliveryAddress, orderProducts];
 }
+
 class FetchPackerDocumentsEvent extends PackerDocumentEvent {}

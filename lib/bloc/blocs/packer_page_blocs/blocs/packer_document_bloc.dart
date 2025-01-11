@@ -13,7 +13,7 @@ class PackerDocumentBloc extends Bloc<PackerDocumentEvent, PackerDocumentState> 
      on<FetchPackerDocumentsEvent>(_onFetchPackerDocuments);
   }
 
-  Future<void> _onSubmitPackerDocument(
+Future<void> _onSubmitPackerDocument(
       SubmitPackerDocumentEvent event, Emitter<PackerDocumentState> emit) async {
     emit(PackerDocumentLoading());
 
@@ -22,7 +22,7 @@ class PackerDocumentBloc extends Bloc<PackerDocumentEvent, PackerDocumentState> 
       final token = prefs.getString('token');
 
       if (token == null) {
-        emit(PackerDocumentError(error: "Authentication token not found."));
+        emit(PackerDocumentError(error: 'Authentication token not found.'));
         return;
       }
 
@@ -35,22 +35,22 @@ class PackerDocumentBloc extends Bloc<PackerDocumentEvent, PackerDocumentState> 
         body: jsonEncode({
           'id_courier': event.idCourier,
           'delivery_address': event.deliveryAddress,
-          'product_subcard_id': event.productSubcardId,
-          'amount_of_products': event.amountOfProducts,
+          'order_products': event.orderProducts,
         }),
       );
 
       if (response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        emit(PackerDocumentSubmitted(message: data['message'] ?? 'Document submitted successfully.'));
+        final responseData = jsonDecode(response.body);
+        emit(PackerDocumentSubmitted(message: responseData['message'] ?? 'Document created successfully.'));
       } else {
-        final errorData = jsonDecode(response.body);
-        emit(PackerDocumentError(error: errorData['error'] ?? 'Failed to submit document.'));
+        final responseData = jsonDecode(response.body);
+        emit(PackerDocumentError(error: responseData['error'] ?? 'Failed to create document.'));
       }
     } catch (e) {
       emit(PackerDocumentError(error: e.toString()));
     }
   }
+
 
   Future<void> _onFetchPackerDocuments(
       FetchPackerDocumentsEvent event, Emitter<PackerDocumentState> emit) async {
@@ -82,4 +82,10 @@ class PackerDocumentBloc extends Bloc<PackerDocumentEvent, PackerDocumentState> 
     } catch (e) {
       emit(PackerDocumentError(error: e.toString()));
     }
-  }}
+  }
+
+
+
+}
+
+  

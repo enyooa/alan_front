@@ -48,7 +48,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 } else if (state is ChatError) {
                   return Center(child: Text('Error: ${state.error}'));
                 } else {
-                  return const Center(child: Text('Connecting to chat...'));
+                  return const Center(child: Text('Подключение к чату...'));
                 }
               },
             ),

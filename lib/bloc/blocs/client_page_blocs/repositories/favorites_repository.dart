@@ -15,8 +15,10 @@ class FavoritesRepository {
     );
 
     if (response.statusCode == 200) {
+      print(response.body);
       return List<Map<String, dynamic>>.from(jsonDecode(response.body)['favorites']);
     } else {
+      print(response.body);
       throw Exception('Failed to fetch favorites');
     }
   }
@@ -26,7 +28,7 @@ class FavoritesRepository {
     final response = await http.post(
       Uri.parse(baseUrl+'addToFavorites'),
       body: jsonEncode(product),
-      headers: {'Authorization': 'Bearer $token'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode != 200) {
@@ -34,12 +36,12 @@ class FavoritesRepository {
     }
   }
 
-  Future<void> removeFromFavorites(String productId) async {
+  Future<void> removeFromFavorites(String productSubcardId) async {
     final token = await _getToken();
     final response = await http.post(
       Uri.parse(baseUrl+'removeFromFavorites'),
-      body: jsonEncode({'product_id': productId}),
-      headers: {'Authorization': 'Bearer $token'},
+      body: jsonEncode({'product_subcard_id': productSubcardId}),
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode != 200) {

@@ -18,7 +18,7 @@ class RequestsBloc extends Bloc<RequestsEvent, RequestsState> {
     emit(RequestsLoading());
 
     try {
-      final response = await http.get(Uri.parse(baseUrl+'packer_documents'));
+      final response = await http.get(Uri.parse(baseUrl+'get_packer_document'));
       if (response.statusCode == 200) {
         final data = List<Map<String, dynamic>>.from(
           jsonDecode(response.body)['documents'],

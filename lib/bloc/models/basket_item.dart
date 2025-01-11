@@ -3,6 +3,7 @@ class BasketItem {
   final int quantity;
   final int productSubcardId;
   final String sourceTable;
+  final double price; // Price included
   final ProductDetails? productDetails;
 
   BasketItem({
@@ -10,20 +11,25 @@ class BasketItem {
     required this.quantity,
     required this.productSubcardId,
     required this.sourceTable,
+    required this.price,
     this.productDetails,
   });
 
   factory BasketItem.fromJson(Map<String, dynamic> json) {
-    return BasketItem(
-      id: json['id'],
-      quantity: json['quantity'],
-      productSubcardId: json['product_subcard_id'],
-      sourceTable: json['source_table'],
-      productDetails: json['product_details'] != null
-          ? ProductDetails.fromJson(json['product_details'])
-          : null,
-    );
-  }
+  return BasketItem(
+    id: json['id'],
+    quantity: json['quantity'],
+    productSubcardId: json['product_subcard_id'],
+    sourceTable: json['source_table'],
+    price: double.tryParse(json['price'].toString()) ?? 0.0, // Parse as double from string or number
+    productDetails: json['product_details'] != null
+        ? ProductDetails.fromJson(json['product_details'])
+        : null,
+  );
+}
+
+
+
 }
 
 class ProductDetails {

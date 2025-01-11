@@ -36,7 +36,11 @@ void _onItemTapped(int index) {
     }
   });
 }
+@override
+  void initState() {
+          context.read<BasketBloc>().add(FetchBasketEvent());
 
+  }
 
   @override
   Widget build(BuildContext context) {

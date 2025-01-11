@@ -35,58 +35,43 @@ class BasketRepository {
     return prefs.getString('token'); // Ensure you store the token with the key 'token'
   }
 
-Future<List<BasketItem>> getBasket() async {
-  final token = await _getToken();
-  if (token == null) {
-    throw Exception('Authentication token not found');
-  }
+ Future<List<BasketItem>> getBasket() async {
+    final token = await _getToken();
+    if (token == null) throw Exception('Authentication token not found');
 
-  final response = await http.get(
-    Uri.parse(baseUrl + 'basket'),
-    headers: {'Authorization': 'Bearer $token'},
-  );
+    final response = await http.get(
+      Uri.parse(baseUrl+'basket'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
 
-  if (response.statusCode == 200) {
-    final jsonResponse = jsonDecode(response.body);
-    final basketList = List<Map<String, dynamic>>.from(jsonResponse['basket']);
-    return basketList.map((item) => BasketItem.fromJson(item)).toList();
-  } else {
-    throw Exception('Failed to fetch basket');
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      final basketList = List<Map<String, dynamic>>.from(jsonResponse['basket']);
+      return basketList.map((item) => BasketItem.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to fetch basket');
+    }
   }
-}
 
 
  
- Future<void> addToBasket(Map<String, dynamic> product) async {
-  final token = await _getToken();
+  Future<void> addToBasket(Map<String, dynamic> product) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('Authentication token not found');
 
-  if (token == null) {
-    throw Exception('Authentication token not found');
-  }
+    final response = await http.post(
+      Uri.parse(baseUrl+'basket/add'),
+      body: jsonEncode(product), // Include price in the payload
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
 
-  final response = await http.post(
-    Uri.parse(baseUrl+'basket/add'),
-    body: jsonEncode(product),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-  );
-
-  if (response.statusCode == 201) {
-    final jsonResponse = jsonDecode(response.body);
-
-    if (jsonResponse['success'] == true) {
-      final basketItem = jsonResponse['basket'];
-      print('Basket item added: $basketItem');
-    } else {
-      throw Exception('Failed to add product: ${jsonResponse['message']}');
+    if (response.statusCode != 201) {
+      throw Exception('Failed to add product to basket');
     }
-  } else {
-    print('Failed Response: ${response.body}');
-    throw Exception('Failed to add product. Status: ${response.statusCode}');
   }
-}
 
 
 
@@ -146,10 +131,12 @@ Future<List<BasketItem>> getBasket() async {
     },
   );
 
-  if (response.statusCode == 201) {
+  if (response.statusCode == 200 || response.statusCode == 201) {
+    // Handle success for both 200 and 201
     final jsonResponse = jsonDecode(response.body);
-    if (jsonResponse.containsKey('order_id')) {
-      return jsonResponse['order_id'].toString();
+    if (jsonResponse['success'] == true && jsonResponse.containsKey('order')) {
+      final orderId = jsonResponse['order']['id'].toString(); // Adjust key as per API response
+      return orderId;
     } else {
       throw Exception('Order ID not found in the response');
     }
@@ -164,6 +151,7 @@ Future<List<BasketItem>> getBasket() async {
     throw Exception('Unexpected response: ${response.statusCode}, ${response.body}');
   }
 }
+
 
 
 

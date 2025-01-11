@@ -17,6 +17,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController _whatsappNumberController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true; // Control password visibility
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,7 @@ class _LoginState extends State<Login> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            // Navigate based on the list of roles
+            // Navigate based on roles
             final roles = state.roles;
 
             if (roles.contains('admin')) {
@@ -39,7 +40,7 @@ class _LoginState extends State<Login> {
               Navigator.pushReplacementNamed(context, '/packer_dashboard');
             } else if (roles.contains('courier')) {
               Navigator.pushReplacementNamed(context, '/courier_dashboard');
-            } else if (roles.contains('storage')) {
+            } else if (roles.contains('storager')) {
               Navigator.pushReplacementNamed(context, '/storage_dashboard');
             } else {
               Navigator.pushReplacementNamed(context, '/home');
@@ -97,10 +98,10 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 const SizedBox(height: 30),
-                // Password Input
+                // Password Input with Eye Icon
                 TextField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obscurePassword, // Use the state variable
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: primaryColor,
@@ -108,21 +109,32 @@ class _LoginState extends State<Login> {
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.w400,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    labelStyle: TextStyle(
+                    labelStyle: const TextStyle(
                       color: primaryColor,
                       fontSize: 15,
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w600,
                     ),
-                    enabledBorder: OutlineInputBorder(
+                    enabledBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       borderSide: BorderSide(width: 1, color: primaryColor),
                     ),
-                    focusedBorder: OutlineInputBorder(
+                    focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       borderSide: BorderSide(width: 1, color: primaryColor),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        color: primaryColor,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword; // Toggle visibility
+                        });
+                      },
                     ),
                   ),
                 ),

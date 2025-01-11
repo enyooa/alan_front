@@ -13,38 +13,38 @@ class PackerOrdersBloc extends Bloc<PackerOrdersEvent, PackerOrdersState> {
     on<FetchSingleOrderEvent>(_fetchSingleOrder);
     on<UpdateOrderDetailsEvent>(_updateOrderDetails);
   }
+Future<void> _fetchPackerOrders(
+    FetchPackerOrdersEvent event, Emitter<PackerOrdersState> emit) async {
+  emit(PackerOrdersLoading());
 
-  Future<void> _fetchPackerOrders(
-      FetchPackerOrdersEvent event, Emitter<PackerOrdersState> emit) async {
-    emit(PackerOrdersLoading());
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-
-      if (token == null) {
-        emit(PackerOrdersError(message: "Authentication token not found."));
-        return;
-      }
-
-      final response = await http.get(
-        Uri.parse(baseUrl + 'packer/orders'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = List<Map<String, dynamic>>.from(
-            jsonDecode(response.body)['orders']);
-        emit(PackerOrdersLoaded(orders: data));
-      } else {
-        emit(PackerOrdersError(message: "Failed to fetch packer orders."));
-      }
-    } catch (e) {
-      emit(PackerOrdersError(message: e.toString()));
+    if (token == null) {
+      emit(PackerOrdersError(message: "Authentication token not found."));
+      return;
     }
+
+    final response = await http.get(
+      Uri.parse(baseUrl + 'packer/orders'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body)['orders'];
+      final orders = data.map((e) => Map<String, dynamic>.from(e)).toList();
+      emit(PackerOrdersLoaded(orders: orders));
+    } else {
+      emit(PackerOrdersError(message: "Failed to fetch packer orders."));
+    }
+  } catch (e) {
+    emit(PackerOrdersError(message: e.toString()));
   }
+}
+
 
   Future<void> _fetchSingleOrder(
       FetchSingleOrderEvent event, Emitter<PackerOrdersState> emit) async {

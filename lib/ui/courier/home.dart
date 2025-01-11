@@ -1,14 +1,16 @@
 import 'package:cash_control/bloc/blocs/courier_page_blocs/blocs/courier_document_bloc.dart';
-import 'package:cash_control/ui/courier/consignment.dart';
+import 'package:cash_control/bloc/blocs/courier_page_blocs/events/courier_document_event.dart';
+import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/packer_document_bloc.dart';
+import 'package:cash_control/bloc/blocs/packer_page_blocs/events/packer_document_event.dart';
+import 'package:cash_control/ui/courier/pages/consignment.dart';
 import 'package:cash_control/ui/courier/pages/delivery_homescreen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:cash_control/bloc/blocs/courier_page_blocs/blocs/chat_bloc.dart';
-import 'package:cash_control/ui/courier/chat.dart';
+import 'package:cash_control/ui/courier/pages/chat.dart';
 import 'package:cash_control/ui/main/widgets/profile.dart';
 import 'package:cash_control/constant.dart';
 import 'package:cash_control/ui/courier/widgets/chat_service.dart';
-
 class CourierDashboardScreen extends StatefulWidget {
   @override
   _CourierDashboardScreenState createState() => _CourierDashboardScreenState();
@@ -16,8 +18,6 @@ class CourierDashboardScreen extends StatefulWidget {
 
 class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   int _currentIndex = 0;
-
-  
 
   final List<Widget> _screens = [
     DeliveryHomeScreen(),
@@ -37,10 +37,14 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => ChatBloc(ChatService(baseUrl: baseUrl),),
+          create: (_) => ChatBloc(ChatService(baseUrl: baseUrl)),
         ),
         BlocProvider(
-          create: (_) => CourierDocumentBloc(),
+      create: (_) => CourierDocumentBloc()..add(FetchCourierDocumentsEvent()),
+      child: InvoiceScreen(),
+    ),
+        BlocProvider(
+          create: (_) => PackerDocumentBloc()..add(FetchPackerDocumentsEvent()),
         ),
       ],
       child: Scaffold(
@@ -79,13 +83,4 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
       ),
     );
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
-
-
-// Example placeholder screen for Delivery home (Главная)
-

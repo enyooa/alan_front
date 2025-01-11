@@ -23,10 +23,11 @@ class _EmployeeFormPageState extends State<EmployeeFormPage> {
     'packer': 'Упаковщик',
     'client': 'Клиент',
     'admin': 'Администратор',
+    'storager':'Кладовщик',
   };
 
   // Extract keys from the dictionary to use as actual values
-  final List<String> roles = ['cashbox', 'courier', 'packer', 'client', 'admin'];
+  final List<String> roles = ['cashbox', 'courier', 'packer', 'client', 'admin','storager'];
 
   @override
   void initState() {

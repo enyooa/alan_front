@@ -16,25 +16,24 @@ class BasketBloc extends Bloc<BasketEvent, BasketState> {
   }
 
   Future<void> _onFetchBasket(FetchBasketEvent event, Emitter<BasketState> emit) async {
-  emit(BasketLoading());
-  try {
-    final basketItems = await repository.getBasket(); // List<BasketItem>
-    final totalItems = basketItems.fold<int>(
-      0,
-      (sum, item) => sum + item.quantity,
-    );
+    emit(BasketLoading());
+    try {
+      final basketItems = await repository.getBasket();
+      final totalItems = basketItems.fold<int>(
+        0,
+        (sum, item) => sum + item.quantity,
+      );
 
-    emit(state.copyWith(basketItems: basketItems, totalItems: totalItems));
-  } catch (e) {
-    emit(BasketError("Failed to fetch basket: ${e.toString()}"));
+      emit(state.copyWith(basketItems: basketItems, totalItems: totalItems));
+    } catch (e) {
+      emit(BasketError("Failed to fetch basket: ${e.toString()}"));
+    }
   }
-}
 
   
-  Future<void> _onAddToBasket(
-      AddToBasketEvent event, Emitter<BasketState> emit) async {
+   Future<void> _onAddToBasket(AddToBasketEvent event, Emitter<BasketState> emit) async {
     try {
-      await repository.addToBasket(event.product);
+      await repository.addToBasket(event.product); // Pass product with price
       add(FetchBasketEvent());
     } catch (e) {
       emit(BasketError("Failed to add product: ${e.toString()}"));
