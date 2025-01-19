@@ -152,7 +152,7 @@ class _LoginState extends State<Login> {
 
                         if (whatsappNumber.isEmpty || password.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Please enter all fields')),
+                            const SnackBar(content: Text('Пожалуйста заполните все поля!')),
                           );
                         } else {
                           BlocProvider.of<AuthBloc>(context).add(

@@ -76,8 +76,8 @@ Widget build(BuildContext context) {
               children: [
                 _buildClientTable(),
                 const SizedBox(height: verticalPadding),
-                _buildDatePickers(),
-                const SizedBox(height: verticalPadding),
+                // _buildDatePickers(),
+                // const SizedBox(height: verticalPadding),
                 _buildProductTable(),
                 const SizedBox(height: verticalPadding),
                 ElevatedButton(
@@ -97,131 +97,232 @@ Widget build(BuildContext context) {
     ),
   );
 }
-
-Widget _buildClientTable() {
-  return BlocBuilder<AddressBloc, AddressState>(
-    builder: (context, addressState) {
-      if (addressState is AddressLoading) {
-        return const Center(child: CircularProgressIndicator());
-      } else if (addressState is AddressesFetched) {
-        return Table(
-          border: TableBorder.all(color: borderColor),
-          children: [
-            const TableRow(
-              decoration: BoxDecoration(color: primaryColor),
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text('Клиент', style: tableHeaderStyle),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text('Адрес', style: tableHeaderStyle),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text('Выбрать', style: tableHeaderStyle),
-                ),
-              ],
-            ),
-            ...addressState.addresses.map((client) {
-              Map<String, dynamic>? selectedAddress = client['addresses'].isNotEmpty
-                  ? client['addresses'][0]
-                  : null;
-
-              return TableRow(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: DropdownButton<String>(
-                      value: selectedClient,
-                      items: [
-                        const DropdownMenuItem<String>(
-                          value: null,
-                          child: Text('Выберите клиента', style: bodyTextStyle),
-                        ),
-                        ...addressState.addresses.map<DropdownMenuItem<String>>((address) {
-                          return DropdownMenuItem<String>(
-                            value: address['client_id'].toString(),
-                            child: Text(address['client_name'], style: bodyTextStyle),
-                          );
-                        }).toList(),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          selectedClient = value;
-                        });
-                      },
-                      hint: const Text("Выберите клиента", style: bodyTextStyle),
-                    ),
-                  ),
-                  DropdownButton<Map<String, dynamic>>(
-                    value: selectedAddress,
-                    items: client['addresses']
-                        .map<DropdownMenuItem<Map<String, dynamic>>>((address) {
-                      return DropdownMenuItem<Map<String, dynamic>>(
-                        value: address,
-                        child: Text(address['name'], style: bodyTextStyle),
-                      );
-                    }).toList(),
-                    onChanged: (newValue) {
-                      setState(() {
-                        selectedAddress = newValue;
-                        client['selectedAddress'] = newValue; // Store the selection
-                      });
-                    },
-                    hint: const Text("Выберите адрес", style: bodyTextStyle),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      selectedClient == client['client_id'].toString()
-                          ? Icons.check_circle
-                          : Icons.radio_button_unchecked,
-                      color: selectedClient == client['client_id'].toString()
-                          ? Colors.green
-                          : Colors.grey,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        selectedClient = client['client_id'].toString();
-                      });
-                    },
-                  ),
-                ],
-              );
-            }).toList(),
-          ],
-        );
-      } else if (addressState is AddressError) {
-        return Text('Ошибка загрузки адресов: ${addressState.error}', style: bodyTextStyle);
-      } else {
-        return const Text('Нет данных для адресов', style: bodyTextStyle);
-      }
-    },
+Widget _buildStyledDropdown<T>({
+  required String label,
+  required T? value,
+  required List<DropdownMenuItem<T>> items,
+  required ValueChanged<T?> onChanged,
+}) {
+  return Card(
+    elevation: 2,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(5), // Smaller radius for a compact look
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0), // Reduced padding
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          isDense: true, // Makes the dropdown more compact
+          isExpanded: false, // Prevents it from taking full width
+          value: value,
+          items: items.isEmpty
+              ? [
+                  DropdownMenuItem<T>(
+                    value: null,
+                    child: Text(label, style: bodyTextStyle.copyWith(fontSize: 12)), // Smaller font size
+                  )
+                ]
+              : items,
+          onChanged: onChanged,
+          hint: Text(label, style: bodyTextStyle.copyWith(fontSize: 12)), // Smaller font size
+          icon: const Icon(
+            Icons.arrow_drop_down,
+            size: 16, // Smaller icon size
+            color: Colors.grey,
+          ),
+          style: bodyTextStyle.copyWith(fontSize: 12), // Apply a smaller font size to items
+          dropdownColor: Colors.white, // Optional: dropdown background color
+          menuMaxHeight: 200, // Optional: max height of dropdown menu
+        ),
+      ),
+    ),
   );
 }
 
+Widget _buildClientTable() {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      // Client Dropdown
+      Expanded(
+        child: _buildStyledDropdown<String>(
+          label: 'Клиент',
+          value: selectedClient,
+          items: context.read<AddressBloc>().state is AddressesFetched
+              ? (context.read<AddressBloc>().state as AddressesFetched)
+                  .addresses
+                  .map<DropdownMenuItem<String>>((client) {
+                  return DropdownMenuItem<String>(
+                    value: client['client_id'].toString(),
+                    child: Text(client['client_name'], style: bodyTextStyle),
+                  );
+                }).toList()
+              : [],
+          onChanged: (value) {
+            setState(() {
+              selectedClient = value;
+            });
+          },
+        ),
+      ),
+      const SizedBox(width: 8.0),
+      // Address Dropdown
+      Expanded(
+        child: _buildStyledDropdown<Map<String, dynamic>>(
+          label: 'Адрес',
+          value: context.read<AddressBloc>().state is AddressesFetched &&
+                  selectedClient != null
+              ? (context.read<AddressBloc>().state as AddressesFetched)
+                  .addresses
+                  .firstWhere(
+                    (c) => c['client_id'].toString() == selectedClient,
+                    orElse: () => {},
+                  )['selectedAddress']
+              : null,
+          items: context.read<AddressBloc>().state is AddressesFetched &&
+                  selectedClient != null
+              ? (context.read<AddressBloc>().state as AddressesFetched)
+                  .addresses
+                  .firstWhere(
+                    (c) => c['client_id'].toString() == selectedClient,
+                    orElse: () => {},
+                  )['addresses']
+                  .map<DropdownMenuItem<Map<String, dynamic>>>((address) {
+                  return DropdownMenuItem<Map<String, dynamic>>(
+                    value: address,
+                    child: Text(address['name'], style: bodyTextStyle),
+                  );
+                }).toList()
+              : [],
+          onChanged: (newValue) {
+            setState(() {
+              if (context.read<AddressBloc>().state is AddressesFetched) {
+                final addressesFetched =
+                    context.read<AddressBloc>().state as AddressesFetched;
+                final client = addressesFetched.addresses.firstWhere(
+                  (c) => c['client_id'].toString() == selectedClient,
+                  orElse: () => {},
+                );
+                client['selectedAddress'] = newValue;
+              }
+            });
+          },
+        ),
+      ),
+      const SizedBox(width: 8.0),
+      // Date Picker
+      Expanded(
+        child: GestureDetector(
+          onTap: () async {
+            final pickedRange = await showDateRangePicker(
+              context: context,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+              initialDateRange: startDate != null && endDate != null
+                  ? DateTimeRange(start: startDate!, end: endDate!)
+                  : null,
+            );
+            if (pickedRange != null) {
+              setState(() {
+                startDate = pickedRange.start;
+                endDate = pickedRange.end;
+              });
+            }
+          },
+          child: Card(
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 8.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    startDate != null && endDate != null
+                        ? '${DateFormat('dd-MM').format(startDate!)} - ${DateFormat('dd-MM').format(endDate!)}'
+                        : 'дата',
+                    style: bodyTextStyle,
+                  ),
+                  const Icon(Icons.calendar_today, color: Colors.grey),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+
   Widget _buildDatePickers() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildDatePicker(
-            label: 'Начальная дата',
-            selectedDate: startDate,
-            onDateSelected: (date) => setState(() => startDate = date),
+  return GestureDetector(
+    onTap: () async {
+      final pickedRange = await showDateRangePicker(
+        context: context,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100),
+        initialDateRange: startDate != null && endDate != null
+            ? DateTimeRange(start: startDate!, end: endDate!)
+            : null,
+      );
+      if (pickedRange != null) {
+        setState(() {
+          startDate = pickedRange.start;
+          endDate = pickedRange.end;
+        });
+      }
+    },
+    child: Card(
+  elevation: 2, // Reduced elevation for a sleeker look
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(5), // Smaller radius for compactness
+  ),
+  child: Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0), // Reduced padding
+    child: GestureDetector(
+      onTap: () async {
+        final pickedRange = await showDateRangePicker(
+          context: context,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+          initialDateRange: startDate != null && endDate != null
+              ? DateTimeRange(start: startDate!, end: endDate!)
+              : null,
+        );
+        if (pickedRange != null) {
+          setState(() {
+            startDate = pickedRange.start;
+            endDate = pickedRange.end;
+          });
+        }
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            startDate != null && endDate != null
+                ? '${DateFormat('dd-MM').format(startDate!)} - ${DateFormat('dd-MM').format(endDate!)}'
+                : 'Выберите даты',
+            style: bodyTextStyle.copyWith(fontSize: 12), // Smaller font size
           ),
-        ),
-        const SizedBox(width: horizontalPadding / 2),
-        Expanded(
-          child: _buildDatePicker(
-            label: 'Конечная дата',
-            selectedDate: endDate,
-            onDateSelected: (date) => setState(() => endDate = date),
+          const Icon(
+            Icons.calendar_today,
+            size: 16, // Smaller icon size for a compact look
+            color: Colors.grey,
           ),
-        ),
-      ],
-    );
-  }
+        ],
+      ),
+    ),
+  ),
+),
+  );
+}
 
   Widget _buildDatePicker({
     required String label,
@@ -271,106 +372,128 @@ Widget _buildProductTable() {
             } else if (unitState is UnitSuccess) {
               final units = unitState.message.split(',');
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                
-                children: [
-                  Table(
-                    border: TableBorder.all(color: borderColor),
-                    children: [
-                      const TableRow(
-                        decoration: BoxDecoration(color: primaryColor),
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal, // Enables horizontal scrolling
+                child: Column(
+                  children: [
+                    SingleChildScrollView(
+                      child: Table(
+                        defaultColumnWidth: const IntrinsicColumnWidth(), // Adjusts column width dynamically
+                        border: TableBorder.all(color: borderColor),
                         children: [
-                          Padding(padding: EdgeInsets.all(8.0), child: Text('Подкарточка', style: tableHeaderStyle)),
-                          Padding(padding: EdgeInsets.all(8.0), child: Text('Ед. изм.', style: tableHeaderStyle)),
-                          Padding(padding: EdgeInsets.all(8.0), child: Text('Кол-во', style: tableHeaderStyle)),
-                          Padding(padding: EdgeInsets.all(8.0), child: Text('Цена', style: tableHeaderStyle)),
-                          Padding(padding: EdgeInsets.all(8.0), child: Text('Сумма', style: tableHeaderStyle)),
-                          Padding(padding: EdgeInsets.all(8.0), child: Text('Удалить', style: tableHeaderStyle)),
+                          const TableRow(
+                            decoration: BoxDecoration(color: primaryColor),
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Подкарточка', style: tableHeaderStyle),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Ед. изм.', style: tableHeaderStyle),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Кол-во', style: tableHeaderStyle),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Цена', style: tableHeaderStyle),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Сумма', style: tableHeaderStyle),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Удалить', style: tableHeaderStyle),
+                              ),
+                            ],
+                          ),
+                          ...productRows.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final row = entry.value;
+                            final sum = ((row['amount'] ?? 0) * (row['price'] ?? 0)).toInt();
+
+                            return TableRow(
+                              children: [
+                                DropdownButtonFormField<int>(
+                                  value: row['product_subcard_id'],
+                                  items: subcardState.productSubCards.map((subcard) {
+                                    return DropdownMenuItem<int>(
+                                      value: subcard['id'],
+                                      child: Text(subcard['name'], style: bodyTextStyle),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) => setState(() => row['product_subcard_id'] = value),
+                                  decoration: const InputDecoration(border: InputBorder.none),
+                                ),
+                                DropdownButtonFormField<String>(
+                                  value: row['unit_measurement'],
+                                  items: units.map((unit) {
+                                    return DropdownMenuItem<String>(
+                                      value: unit,
+                                      child: Text(unit, style: bodyTextStyle),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) => setState(() => row['unit_measurement'] = value),
+                                  decoration: const InputDecoration(border: InputBorder.none),
+                                ),
+                                TextField(
+                                  onChanged: (value) {
+                                    setState(() {
+                                      row['amount'] = int.tryParse(value) ?? 0;
+                                    });
+                                  },
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(border: InputBorder.none),
+                                ),
+                                TextField(
+                                  onChanged: (value) {
+                                    setState(() {
+                                      row['price'] = int.tryParse(value) ?? 0;
+                                    });
+                                  },
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(border: InputBorder.none),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    sum.toString(),
+                                    style: bodyTextStyle.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () => setState(() => productRows.removeAt(index)),
+                                ),
+                              ],
+                            );
+                          }).toList(),
                         ],
                       ),
-                      ...productRows.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final row = entry.value;
-                        final sum = ((row['amount'] ?? 0) * (row['price'] ?? 0)).toInt();
-
-                        return TableRow(
-                          children: [
-                            DropdownButtonFormField<int>(
-                              value: row['product_subcard_id'],
-                              items: subcardState.productSubCards.map((subcard) {
-                                return DropdownMenuItem<int>(
-                                  value: subcard['id'],
-                                  child: Text(subcard['name'], style: bodyTextStyle),
-                                );
-                              }).toList(),
-                              onChanged: (value) => setState(() => row['product_subcard_id'] = value),
-                              decoration: const InputDecoration(border: InputBorder.none),
-                            ),
-                            DropdownButtonFormField<String>(
-                              value: row['unit_measurement'],
-                              items: units.map((unit) {
-                                return DropdownMenuItem<String>(
-                                  value: unit,
-                                  child: Text(unit, style: bodyTextStyle),
-                                );
-                              }).toList(),
-                              onChanged: (value) => setState(() => row['unit_measurement'] = value),
-                              decoration: const InputDecoration(border: InputBorder.none),
-                            ),
-                            TextField(
-                              onChanged: (value) {
-                                setState(() {
-                                  row['amount'] = int.tryParse(value) ?? 0;
-                                });
-                              },
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(border: InputBorder.none),
-                            ),
-                            TextField(
-                              onChanged: (value) {
-                                setState(() {
-                                  row['price'] = int.tryParse(value) ?? 0;
-                                });
-                              },
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(border: InputBorder.none),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                sum.toString(),
-                                style: bodyTextStyle.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => setState(() => productRows.removeAt(index)),
-                            ),
-                          ],
-                        );
-                      }).toList(),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      icon: const Icon(Icons.add, color: primaryColor),
-                      label: const Text('Добавить строку', style: TextStyle(color: primaryColor)),
-                      onPressed: () {
-                        setState(() {
-                          productRows.add({
-                            'product_subcard_id': null,
-                            'unit_measurement': null,
-                            'amount': 0,
-                            'price': 0,
-                          });
-                        });
-                      },
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        icon: const Icon(Icons.add, color: primaryColor),
+                        label: const Text('Добавить строку', style: TextStyle(color: primaryColor)),
+                        onPressed: () {
+                          setState(() {
+                            productRows.add({
+                              'product_subcard_id': null,
+                              'unit_measurement': null,
+                              'amount': 0,
+                              'price': 0,
+                            });
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               );
             } else {
               return const Text('Ошибка при загрузке единиц измерения', style: bodyTextStyle);

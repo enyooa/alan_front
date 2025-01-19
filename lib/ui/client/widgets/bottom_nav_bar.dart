@@ -1,6 +1,8 @@
 import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/events/basket_event.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/states/basket_state.dart';
+import 'package:cash_control/bloc/blocs/client_page_blocs/states/favorites_state.dart';
 import 'package:cash_control/ui/client/pages/basket_page.dart';
 import 'package:cash_control/ui/client/pages/calculations_page.dart';
 import 'package:cash_control/ui/client/pages/favorites_page.dart';
@@ -83,10 +85,36 @@ void _onItemTapped(int index) {
             ),
             label: 'Корзина',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Избранное',
-          ),
+          BottomNavigationBarItem(
+  icon: Stack(
+    clipBehavior: Clip.none,
+    children: [
+      const Icon(Icons.favorite),
+      BlocBuilder<FavoritesBloc, FavoritesState>(
+        builder: (context, state) {
+          if (state is FavoritesLoaded && state.totalFavorites > 0) {
+            return Positioned(
+              right: -6,
+              top: -6,
+              child: CircleAvatar(
+                radius: 10,
+                backgroundColor: Colors.red,
+                child: Text('${state.totalFavorites}',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                    )),
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+    ],
+  ),
+  label: 'Избранное',
+),
+
           const BottomNavigationBarItem(
             icon: Icon(Icons.calculate),
             label: 'Расчеты',

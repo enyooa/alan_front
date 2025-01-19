@@ -11,11 +11,12 @@ class FavoritesLoading extends FavoritesState {}
 
 class FavoritesLoaded extends FavoritesState {
   final List<Map<String, dynamic>> favorites;
+  final int totalFavorites; // Keep track of the total favorites count
 
-  FavoritesLoaded(this.favorites);
+  FavoritesLoaded(this.favorites, this.totalFavorites);
 
   @override
-  List<Object?> get props => [favorites];
+  List<Object?> get props => [favorites, totalFavorites];
 }
 
 class FavoritesError extends FavoritesState {

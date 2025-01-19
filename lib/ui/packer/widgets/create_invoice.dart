@@ -19,65 +19,65 @@ class InvoicePage extends StatefulWidget {
 
 class _InvoicePageState extends State<InvoicePage> {
   String? selectedCourier;
-  Map<int, double> updatedQuantities = {};
+  late Map<int, double> updatedQuantities;
 
   @override
   void initState() {
     super.initState();
     context.read<AuthBloc>().add(FetchCourierUsersEvent());
 
-    // Initialize quantities with default values
+    // Initialize quantities
     final products = widget.orderDetails['order_products'] ?? [];
-    for (var product in products) {
-      final productId = product['product_sub_card']?['id'];
-      if (productId != null) {
-        updatedQuantities[productId] = product['quantity'].toDouble();
-      }
-    }
+    updatedQuantities = {
+      for (var product in products)
+        if (product['product_sub_card'] != null)
+          product['product_sub_card']['id']: product['quantity'].toDouble(),
+    };
   }
 
   void _submitDelivery(BuildContext context) {
-    final products = widget.orderDetails['order_products'];
+  final products = widget.orderDetails['order_products'];
 
-    if (products == null || products.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Нет доступных продуктов для доставки.')),
-      );
-      return;
-    }
-
-    final List<Map<String, dynamic>> orderProducts = products
-        .where((product) => product['product_sub_card'] != null)
-        .map<Map<String, dynamic>>((product) => {
-              'product_subcard_id': product['product_sub_card']['id'],
-              'quantity': updatedQuantities[product['product_sub_card']['id']] ?? 0.0,
-              'price': product['price'] ?? 0.0,
-              'source_table_id': product['source_table_id'],
-            })
-        .toList();
-
-    if (orderProducts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Нет допустимых продуктов для обработки.')),
-      );
-      return;
-    }
-
-    if (selectedCourier == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Пожалуйста, выберите курьера.')),
-      );
-      return;
-    }
-
-    context.read<PackerDocumentBloc>().add(
-          SubmitPackerDocumentEvent(
-            idCourier: int.parse(selectedCourier!),
-            deliveryAddress: widget.orderDetails['address'] ?? 'Неизвестный адрес',
-            orderProducts: orderProducts,
-          ),
-        );
+  if (products == null || products.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Нет доступных продуктов для доставки.')),
+    );
+    return;
   }
+
+  final List<Map<String, dynamic>> orderProducts = products
+      .where((product) => product['product_sub_card'] != null)
+      .map<Map<String, dynamic>>((product) => {
+            'product_subcard_id': product['product_sub_card']['id'],
+            'quantity': updatedQuantities[product['product_sub_card']['id']] ?? 0.0,
+            'price': product['price'] ?? 0.0,
+            'source_table_id': product['source_table_id'],
+          })
+      .toList();
+
+  if (orderProducts.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Нет допустимых продуктов для обработки.')),
+    );
+    return;
+  }
+
+  if (selectedCourier == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Пожалуйста, выберите курьера.')),
+    );
+    return;
+  }
+
+  context.read<PackerDocumentBloc>().add(
+        SubmitPackerDocumentEvent(
+          idCourier: int.parse(selectedCourier!),
+          deliveryAddress: widget.orderDetails['address'] ?? 'Неизвестный адрес',
+          orderProducts: orderProducts,
+          orderId: widget.orderDetails['id'], // Include orderId
+        ),
+      );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -166,9 +166,19 @@ class _InvoicePageState extends State<InvoicePage> {
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                product['quantity']?.toString() ?? '0',
-                                style: tableCellStyle,
+                              child: TextFormField(
+                                initialValue: updatedQuantities[product['product_sub_card']['id']]
+                                    ?.toStringAsFixed(2),
+                                onChanged: (value) {
+                                  setState(() {
+                                    updatedQuantities[product['product_sub_card']['id']] =
+                                        double.tryParse(value) ?? 0.0;
+                                  });
+                                },
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                ),
                               ),
                             ),
                             Padding(
@@ -181,7 +191,9 @@ class _InvoicePageState extends State<InvoicePage> {
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                ((product['quantity'] ?? 0) * (product['price'] ?? 0)).toStringAsFixed(2),
+                                ((updatedQuantities[product['product_sub_card']['id']] ?? 0.0) *
+                                        (product['price'] ?? 0))
+                                    .toStringAsFixed(2),
                                 style: tableCellStyle,
                               ),
                             ),

@@ -24,30 +24,37 @@ class FavoritesRepository {
   }
 
   Future<void> addToFavorites(Map<String, dynamic> product) async {
-    final token = await _getToken();
-    final response = await http.post(
-      Uri.parse(baseUrl+'addToFavorites'),
-      body: jsonEncode(product),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-    );
+  final token = await _getToken();
+  final response = await http.post(
+    Uri.parse(baseUrl + 'addToFavorites'),
+    body: jsonEncode(product),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to add to favorites');
-    }
+  if (response.statusCode != 200) {
+    throw Exception('Failed to add to favorites');
   }
+}
 
-  Future<void> removeFromFavorites(String productSubcardId) async {
-    final token = await _getToken();
-    final response = await http.post(
-      Uri.parse(baseUrl+'removeFromFavorites'),
-      body: jsonEncode({'product_subcard_id': productSubcardId}),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-    );
+Future<void> removeFromFavorites(String productSubcardId) async {
+  final token = await _getToken();
+  final response = await http.post(
+    Uri.parse(baseUrl + 'removeFromFavorites'),
+    body: jsonEncode({'product_subcard_id': productSubcardId}),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to remove from favorites');
-    }
+  if (response.statusCode != 200) {
+    throw Exception('Failed to remove from favorites');
   }
+}
+
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();

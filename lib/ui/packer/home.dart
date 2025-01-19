@@ -1,4 +1,5 @@
 import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/couriers_bloc.dart';
+import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/packer_history_document_bloc.dart';
 import 'package:cash_control/bloc/blocs/packer_page_blocs/repo/courier_repo.dart';
 import 'package:cash_control/constant.dart';
 import 'package:cash_control/ui/main/widgets/profile.dart';
@@ -21,7 +22,7 @@ class _PackerScreenState extends State<PackerScreen> {
     const HomeScreen(), // Заявка Page
     const RequestsScreen(), // Накладная Page
     const PackagingScreen(), // Склад Page
-    const CourierScreen(), // Курьеры Page
+    // const CourierScreen(), // Курьеры Page
     const AccountView(),
   ];
 
@@ -38,6 +39,9 @@ class _PackerScreenState extends State<PackerScreen> {
         BlocProvider(
           create: (context) => CourierBloc(repository: CourierRepository(baseUrl: baseUrl)),
           child: CourierScreen(),
+        ),
+         BlocProvider(
+          create: (context) => PackerHistoryDocumentBloc(baseUrl: baseUrl),
         ),
       ],
       child: Scaffold(
@@ -61,10 +65,10 @@ class _PackerScreenState extends State<PackerScreen> {
               icon: Icon(Icons.warehouse),
               label: 'Склад',
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.people),
-              label: 'Курьеры',
-            ),
+            // const BottomNavigationBarItem(
+            //   icon: Icon(Icons.people),
+            //   label: 'Курьеры',
+            // ),
             const BottomNavigationBarItem(
               icon: Icon(Icons.person),
               label: 'Профиль',

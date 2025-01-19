@@ -7,10 +7,14 @@ abstract class CourierDocumentEvent extends Equatable {
 
 class FetchCourierDocumentsEvent extends CourierDocumentEvent {}
 class SubmitCourierDocumentEvent extends CourierDocumentEvent {
-  final List<Map<String, dynamic>> documents;
+  final int courierId; // ID of the courier
+  final List<Map<String, dynamic>> orders; // Orders with products
 
-  SubmitCourierDocumentEvent({required this.documents});
+  SubmitCourierDocumentEvent({
+    required this.courierId,
+    required this.orders,
+  });
 
   @override
-  List<Object?> get props => [documents];
+  List<Object?> get props => [courierId, orders];
 }

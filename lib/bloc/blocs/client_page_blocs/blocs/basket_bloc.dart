@@ -32,13 +32,15 @@ class BasketBloc extends Bloc<BasketEvent, BasketState> {
 
   
    Future<void> _onAddToBasket(AddToBasketEvent event, Emitter<BasketState> emit) async {
-    try {
-      await repository.addToBasket(event.product); // Pass product with price
-      add(FetchBasketEvent());
-    } catch (e) {
-      emit(BasketError("Failed to add product: ${e.toString()}"));
-    }
+  try {
+    await repository.addToBasket(event.product); 
+    add(FetchBasketEvent()); // Refresh the basket after successful addition
+  } catch (e) {
+    emit(BasketError("Failed to add product: ${e.toString()}"));
+    emit(state); // Re-emit the current state to avoid leaving it in an error state
   }
+}
+
 
   Future<void> _onRemoveFromBasket(
       RemoveFromBasketEvent event, Emitter<BasketState> emit) async {

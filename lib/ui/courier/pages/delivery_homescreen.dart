@@ -1,3 +1,4 @@
+import 'package:cash_control/bloc/blocs/courier_page_blocs/events/courier_document_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cash_control/bloc/blocs/courier_page_blocs/blocs/courier_document_bloc.dart';
@@ -12,13 +13,18 @@ class DeliveryHomeScreen extends StatefulWidget {
 class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
   @override
   void initState() {
-    
-    
+    super.initState();
+    // Fetch courier documents when the screen is loaded
+    context.read<CourierDocumentBloc>().add(FetchCourierDocumentsEvent());
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
+      appBar: AppBar(
+        title: const Text("Доставка", style: headingStyle),
+        backgroundColor: primaryColor,
+      ),
       body: BlocBuilder<CourierDocumentBloc, CourierDocumentState>(
         builder: (context, state) {
           if (state is CourierDocumentLoading) {
@@ -53,6 +59,7 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
               ),
             );
           } else {
+            // Explicitly handle the initial state
             return const Center(
               child: Text('Ошибка загрузки данных.', style: bodyTextStyle),
             );
@@ -62,8 +69,6 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
     );
   }
 }
-
-
 
 class DeliveryItem extends StatelessWidget {
   final String storage;

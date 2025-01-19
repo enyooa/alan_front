@@ -14,42 +14,43 @@ class PackerDocumentBloc extends Bloc<PackerDocumentEvent, PackerDocumentState> 
   }
 
 Future<void> _onSubmitPackerDocument(
-      SubmitPackerDocumentEvent event, Emitter<PackerDocumentState> emit) async {
-    emit(PackerDocumentLoading());
+    SubmitPackerDocumentEvent event, Emitter<PackerDocumentState> emit) async {
+  emit(PackerDocumentLoading());
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
 
-      if (token == null) {
-        emit(PackerDocumentError(error: 'Authentication token not found.'));
-        return;
-      }
-
-      final response = await http.post(
-        Uri.parse(baseUrl+'create_packer_document'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'id_courier': event.idCourier,
-          'delivery_address': event.deliveryAddress,
-          'order_products': event.orderProducts,
-        }),
-      );
-
-      if (response.statusCode == 201) {
-        final responseData = jsonDecode(response.body);
-        emit(PackerDocumentSubmitted(message: responseData['message'] ?? 'Document created successfully.'));
-      } else {
-        final responseData = jsonDecode(response.body);
-        emit(PackerDocumentError(error: responseData['error'] ?? 'Failed to create document.'));
-      }
-    } catch (e) {
-      emit(PackerDocumentError(error: e.toString()));
+    if (token == null) {
+      emit(PackerDocumentError(error: 'Authentication token not found.'));
+      return;
     }
+
+    final response = await http.post(
+      Uri.parse(baseUrl + 'create_packer_document'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'id_courier': event.idCourier,
+        'delivery_address': event.deliveryAddress,
+        'order_products': event.orderProducts,
+        'order_id': event.orderId, // Include order_id in the payload
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final responseData = jsonDecode(response.body);
+      emit(PackerDocumentSubmitted(message: responseData['message'] ?? 'Document created successfully.'));
+    } else {
+      final responseData = jsonDecode(response.body);
+      emit(PackerDocumentError(error: responseData['error'] ?? 'Failed to create document.'));
+    }
+  } catch (e) {
+    emit(PackerDocumentError(error: e.toString()));
   }
+}
 
 
   Future<void> _onFetchPackerDocuments(

@@ -13,39 +13,45 @@ class CourierDocumentBloc extends Bloc<CourierDocumentEvent, CourierDocumentStat
 
   }
 
-  // Fetch Courier Documents
   Future<void> _fetchCourierDocuments(
-      FetchCourierDocumentsEvent event, Emitter<CourierDocumentState> emit) async {
-    emit(CourierDocumentLoading());
+    FetchCourierDocumentsEvent event, Emitter<CourierDocumentState> emit) async {
+  emit(CourierDocumentLoading());
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
 
-      if (token == null) {
-        emit(CourierDocumentError(error: "Authentication token not found."));
-        return;
-      }
-
-      final response = await http.get(
-        Uri.parse(baseUrl+'getCourierDocuments'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body)['orders'];
-        emit(CourierDocumentLoaded(documents: data));
-      } else {
-        emit(CourierDocumentError(error: "Failed to fetch documents."));
-      }
-    } catch (e) {
-      emit(CourierDocumentError(error: e.toString()));
+    if (token == null) {
+      emit(CourierDocumentError(error: "Authentication token not found."));
+      return;
     }
+
+    final response = await http.get(
+      Uri.parse(baseUrl + 'getCourierDocuments'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body)['orders'];
+
+      // Filter out orders where `courier_document_id` is not null
+      final filteredData = data.where((doc) => doc['courier_document_id'] == null).toList();
+
+      emit(CourierDocumentLoaded(documents: filteredData));
+    } else {
+      emit(CourierDocumentError(error: "Failed to fetch documents."));
+    }
+  } catch (e) {
+    emit(CourierDocumentError(error: e.toString()));
   }
+}
+
 
 
   Future<void> _submitCourierDocument(
-    SubmitCourierDocumentEvent event, Emitter<CourierDocumentState> emit) async {
+  SubmitCourierDocumentEvent event,
+  Emitter<CourierDocumentState> emit,
+) async {
   emit(CourierDocumentLoading());
 
   try {
@@ -58,23 +64,27 @@ class CourierDocumentBloc extends Bloc<CourierDocumentEvent, CourierDocumentStat
     }
 
     final response = await http.post(
-      Uri.parse(baseUrl + 'courier-documents'),
+      Uri.parse(baseUrl + 'create_courier_document'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({'documents': event.documents}),
+      body: jsonEncode({
+        'courier_id': event.courierId,
+        'orders': event.orders,
+      }),
     );
 
     if (response.statusCode == 201) {
       emit(CourierDocumentSubmittedSuccess());
     } else {
-      final error = jsonDecode(response.body)['message'] ?? "Unknown error.";
+      final error = jsonDecode(response.body)['error'] ?? "Unknown error.";
       emit(CourierDocumentError(error: error));
     }
   } catch (e) {
     emit(CourierDocumentError(error: e.toString()));
   }
 }
+
 
 }

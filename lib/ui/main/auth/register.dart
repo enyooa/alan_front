@@ -28,7 +28,7 @@ class _RegisterState extends State<Register> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            Navigator.pushReplacementNamed(context, '/home');
+            Navigator.pushReplacementNamed(context, '/client_dashboard');
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -71,35 +71,35 @@ class _RegisterState extends State<Register> {
                   height: 56,
                   child: ElevatedButton(
                     onPressed: () {
-                      final firstName = _firstNameController.text.trim();
-                      final lastName = _lastNameController.text.trim();
-                      final surname = _surnameController.text.trim();
-                      final whatsappNumber = _whatsappNumberController.text.trim();
-                      final password = _passwordController.text.trim();
-                      final passwordConfirmation = _passwordConfirmationController.text.trim();
+  final firstName = _firstNameController.text.trim();
+  final lastName = _lastNameController.text.trim();
+  final surname = _surnameController.text.trim();
+  final whatsappNumber = _whatsappNumberController.text.trim();
+  final password = _passwordController.text.trim();
+  final passwordConfirmation = _passwordConfirmationController.text.trim();
 
-                      if (firstName.isEmpty || lastName.isEmpty || surname.isEmpty || whatsappNumber.isEmpty || password.isEmpty || passwordConfirmation.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please enter all fields')),
-                        );
-                      } else if (password != passwordConfirmation) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Passwords do not match')),
-                        );
-                      } else {
-                        BlocProvider.of<AuthBloc>(context).add(
-                          RegisterEvent(
-                            firstName: firstName,
-                            lastName: lastName,
-                            surname: surname,
-                            whatsappNumber: whatsappNumber,
-                            password: password,
-                            passwordConfirmation: passwordConfirmation,
-                          ),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+  if ([firstName, whatsappNumber, password, passwordConfirmation].any((field) => field.isEmpty)) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Пожалуйста заполните все поля!')),
+    );
+  } else if (password != passwordConfirmation) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Пароль не совподает')),
+    );
+  } else {
+    BlocProvider.of<AuthBloc>(context).add(
+      RegisterEvent(
+        firstName: firstName,
+        lastName: lastName,
+        surname: surname,
+        whatsappNumber: whatsappNumber,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+      ),
+    );
+  }
+},
+style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
                     child: const Text(
                       'Зарегистрироваться',
                       style: TextStyle(color: Colors.white, fontSize: 15, fontFamily: 'Poppins', fontWeight: FontWeight.w500),

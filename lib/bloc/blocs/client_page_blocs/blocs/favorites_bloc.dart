@@ -2,7 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/events/favorites_event.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/states/favorites_state.dart';
 import 'package:cash_control/bloc/blocs/client_page_blocs/repositories/favorites_repository.dart';
-
 class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
   final FavoritesRepository repository;
 
@@ -17,7 +16,7 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     emit(FavoritesLoading());
     try {
       final favorites = await repository.getFavorites();
-      emit(FavoritesLoaded(favorites));
+      emit(FavoritesLoaded(favorites, favorites.length));
     } catch (e) {
       emit(FavoritesError("Failed to fetch favorites: ${e.toString()}"));
     }
@@ -25,25 +24,23 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
 
   Future<void> _onAddToFavorites(
       AddToFavoritesEvent event, Emitter<FavoritesState> emit) async {
-    emit(FavoritesLoading());
     try {
       await repository.addToFavorites(event.product);
-      final updatedFavorites = await repository.getFavorites();
-      emit(FavoritesLoaded(updatedFavorites));
+      add(FetchFavoritesEvent()); // Dynamically refresh favorites
     } catch (e) {
       emit(FavoritesError("Failed to add to favorites: ${e.toString()}"));
+      emit(state); // Re-emit current state to avoid leaving an error state
     }
   }
 
   Future<void> _onRemoveFromFavorites(
       RemoveFromFavoritesEvent event, Emitter<FavoritesState> emit) async {
-    emit(FavoritesLoading());
     try {
       await repository.removeFromFavorites(event.productSubcardId);
-      final updatedFavorites = await repository.getFavorites();
-      emit(FavoritesLoaded(updatedFavorites));
+      add(FetchFavoritesEvent()); // Dynamically refresh favorites
     } catch (e) {
       emit(FavoritesError("Failed to remove from favorites: ${e.toString()}"));
+      emit(state); // Re-emit current state to avoid leaving an error state
     }
   }
 }

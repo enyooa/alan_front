@@ -21,12 +21,14 @@ class BasketItem {
     quantity: json['quantity'],
     productSubcardId: json['product_subcard_id'],
     sourceTable: json['source_table'],
-    price: double.tryParse(json['price'].toString()) ?? 0.0, // Parse as double from string or number
+    price: json['price'] != null ? double.tryParse(json['price'].toString()) ?? 0.0 : 0.0,
     productDetails: json['product_details'] != null
         ? ProductDetails.fromJson(json['product_details'])
         : null,
   );
 }
+
+
 
 
 

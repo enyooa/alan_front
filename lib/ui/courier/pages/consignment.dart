@@ -11,23 +11,14 @@ class InvoiceScreen extends StatefulWidget {
 }
 
 class _InvoiceScreenState extends State<InvoiceScreen> {
-  bool isEditing = false; // Tracks if cells are editable
-  List<Map<String, dynamic>> localDocuments = []; // Local state for documents
+  bool isEditing = false;
+  List<Map<String, dynamic>> localDocuments = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: primaryColor,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: const Text('Накладная', style: headingStyle),
-      ),
+      
       body: Padding(
         padding: pagePadding,
         child: Column(
@@ -50,7 +41,10 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                     if (state is CourierDocumentLoading) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (state is CourierDocumentLoaded) {
-                      localDocuments = List<Map<String, dynamic>>.from(state.documents);
+                      // Filter out already created orders
+                      localDocuments = List<Map<String, dynamic>>.from(
+                        state.documents.where((doc) => doc['courier_document_id'] == null),
+                      );
                       return _buildInvoiceTable(localDocuments);
                     } else if (state is CourierDocumentError) {
                       return Center(
@@ -72,27 +66,36 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
             _buildActionIcons(),
             const SizedBox(height: 16.0),
             ElevatedButton(
-  onPressed: () {
-    // Prepare the data payload
-    final List<Map<String, dynamic>> documents = localDocuments.map((doc) {
-      return {
-        'courier_id': 6, // Replace with actual courier ID
-        'amount_of_products': (doc['order_items'] as List).length,
-        'order_items': (doc['order_items'] as List)
-            .map((item) => {'id': item['id']})
-            .toList(),
-      };
-    }).toList();
+              onPressed: () {
+                if (localDocuments.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('No documents available to submit.')),
+                  );
+                  return;
+                }
 
-    // Trigger the event with the mapped data
-    BlocProvider.of<CourierDocumentBloc>(context).add(
-      SubmitCourierDocumentEvent(documents: documents),
-    );
-  },
-  child: const Text('Отправить', style: buttonTextStyle),
-  style: elevatedButtonStyle,
-),
+                final List<Map<String, dynamic>> orders = localDocuments.map((doc) {
+                  return {
+                    'order_id': doc['id'],
+                    'order_products': (doc['order_products'] ?? []).map((product) {
+                      return {
+                        'product_subcard_id': product['product_subcard_id'],
+                        'quantity': product['quantity'],
+                      };
+                    }).toList(),
+                  };
+                }).toList();
 
+                BlocProvider.of<CourierDocumentBloc>(context).add(
+                  SubmitCourierDocumentEvent(
+                    courierId: 6, // Replace with actual courier ID
+                    orders: orders,
+                  ),
+                );
+              },
+              child: const Text('Отправить', style: buttonTextStyle),
+              style: elevatedButtonStyle,
+            ),
           ],
         ),
       ),
@@ -136,40 +139,23 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
   List<TableRow> _buildDocumentRows(List<Map<String, dynamic>> documents) {
     return documents.expand<TableRow>((doc) {
-        final orderItems = doc['order_products'] ?? [];
-      return orderItems.map<TableRow>((item) {
-        final order = item['order'] ?? {};
-        final product = item['product_sub_card'] ?? {};
-
-        final invoiceId = doc['id']?.toString() ?? 'N/A';
-        final address = order['address'] ?? 'No Address';
-        final productName = product['name'] ?? 'Unknown Product';
-        final quantity = item['quantity'] ?? 0;
-        final price = item['price'] ?? 0;
-        final total = quantity * price;
+      final orderProducts = doc['order_products'] ?? [];
+      return orderProducts.map<TableRow>((product) {
+        final packerDocumentId = doc['packer_document_id']?.toString() ?? 'N/A';
+        final address = doc['address'] ?? 'No Address';
+        final productName = product['product_sub_card']?['name'] ?? 'N/A';
+        final quantity = product['quantity'] ?? 0;
+        final price = product['price'] ?? 0.0;
+        final total = (quantity * price).toStringAsFixed(2);
 
         return TableRow(
           children: [
-            tableCell(invoiceId),
-            tableCell(address),
-            tableCell(productName),
-            TableCell(
-              child: isEditing
-                  ? TextFormField(
-                      initialValue: quantity.toString(),
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) {
-                        final updatedQuantity = int.tryParse(value) ?? 0;
-                        setState(() {
-                          item['quantity'] = updatedQuantity;
-                          item['total'] = updatedQuantity * price;
-                        });
-                      },
-                    )
-                  : tableCell(quantity.toString()),
-            ),
-            tableCell(price.toString()),
-            tableCell(total.toString()),
+            tableCell(packerDocumentId), // Invoice ID
+            tableCell(address),          // Delivery Address
+            tableCell(productName),      // Product Name
+            tableCell(quantity.toString()), // Quantity
+            tableCell(price.toString()),    // Price
+            tableCell(total),               // Total
           ],
         );
       }).toList();

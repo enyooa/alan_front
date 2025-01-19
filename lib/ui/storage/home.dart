@@ -1,4 +1,8 @@
+import 'package:cash_control/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
+import 'package:cash_control/bloc/blocs/storage_page_blocs/blocs/general_warehouse_bloc.dart';
+import 'package:cash_control/bloc/blocs/storage_page_blocs/blocs/storage_receiving_bloc.dart';
 import 'package:cash_control/bloc/blocs/storage_page_blocs/blocs/storage_sales_bloc.dart';
+import 'package:cash_control/bloc/blocs/storage_page_blocs/blocs/storage_subcard_bloc.dart';
 import 'package:cash_control/ui/admin/dynamic_pages/product_options/product_inventory_page.dart';
 import 'package:cash_control/ui/main/widgets/profile.dart';
 import 'package:cash_control/ui/storage/pages/sales.dart';
@@ -41,6 +45,22 @@ class _StoragePageState extends State<StoragePage> {
         BlocProvider(
       create: (_) => SalesStorageBloc(),
       child: const SalesStoragePage(),
+    ),
+    BlocProvider(
+      create: (_) => StorageReceivingBloc(),
+      child: const GoodsReceiptPage(),
+    ),
+    BlocProvider(
+      create: (_) => StorageSubCardBloc(),
+      child: const GoodsReceiptPage(),
+    ),
+    BlocProvider(
+      create: (_) => UnitBloc(),
+      child: const GoodsReceiptPage(),
+    ),
+    BlocProvider(
+      create: (_) => GeneralWarehouseBloc(),
+      child: const GoodsReceiptPage(),
     ),
       ],
       child: Scaffold(

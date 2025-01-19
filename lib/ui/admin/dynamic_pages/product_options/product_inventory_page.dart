@@ -21,6 +21,7 @@ class InventoryPage extends StatefulWidget {
 }
 
 class _InventoryPageState extends State<InventoryPage> {
+  String? selectedWarehouse;
   String? selectedStorager;
   Map<String, dynamic>? selectedAddress;
   DateTime? selectedDate;
@@ -38,15 +39,13 @@ class _InventoryPageState extends State<InventoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Инвентаризация', style: headingStyle),
-      //   backgroundColor: primaryColor,
-      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _buildWarehouseDropdown(),
+            const SizedBox(height: 20),
             _buildStoragerAndAddressTable(),
             const SizedBox(height: 20),
             _buildDatePicker(),
@@ -67,16 +66,36 @@ class _InventoryPageState extends State<InventoryPage> {
     );
   }
 
+  Widget _buildWarehouseDropdown() {
+    return DropdownButton<String>(
+      value: selectedWarehouse,
+      items: const [
+        DropdownMenuItem(
+          value: 'admin',
+          child: Text('Склад Администрации', style: bodyTextStyle),
+        ),
+        DropdownMenuItem(
+          value: 'general',
+          child: Text('Общий Склад', style: bodyTextStyle),
+        ),
+      ],
+      onChanged: (value) {
+        setState(() {
+          selectedWarehouse = value;
+          selectedStorager = null;
+          selectedAddress = null;
+        });
+      },
+      hint: const Text("Выберите склад", style: bodyTextStyle),
+    );
+  }
+
   Widget _buildStoragerAndAddressTable() {
     return BlocBuilder<StorageAddressBloc, StorageAddressState>(
       builder: (context, state) {
         if (state is StorageAddressLoading) {
           return const Center(child: CircularProgressIndicator());
         } else if (state is StorageAddressesFetched) {
-          if (state.storageUsers.isEmpty) {
-            return const Text("Нет данных по складовщикам", style: bodyTextStyle);
-          }
-
           return Table(
             border: TableBorder.all(color: borderColor),
             children: [
@@ -111,7 +130,7 @@ class _InventoryPageState extends State<InventoryPage> {
                       onChanged: (value) {
                         setState(() {
                           selectedStorager = value;
-                          selectedAddress = null; // Reset address when storager changes
+                          selectedAddress = null;
                         });
                       },
                       hint: const Text("Выберите складовщика", style: bodyTextStyle),
@@ -124,7 +143,8 @@ class _InventoryPageState extends State<InventoryPage> {
                             value: null,
                             child: Text('Выберите адрес', style: bodyTextStyle),
                           ),
-                          ...user['addresses'].map<DropdownMenuItem<Map<String, dynamic>?>>((address) {
+                          ...user['addresses']
+                              .map<DropdownMenuItem<Map<String, dynamic>?>>((address) {
                             return DropdownMenuItem<Map<String, dynamic>?>(
                               value: address,
                               child: Text(address['name'], style: bodyTextStyle),
@@ -145,8 +165,6 @@ class _InventoryPageState extends State<InventoryPage> {
               }).toList(),
             ],
           );
-        } else if (state is StorageAddressError) {
-          return Text(state.error, style: const TextStyle(color: Colors.red));
         } else {
           return const Text("Нет данных по складовщикам", style: bodyTextStyle);
         }
@@ -192,179 +210,177 @@ class _InventoryPageState extends State<InventoryPage> {
   }
 
   Widget _buildInventoryTable() {
-    return BlocBuilder<ProductSubCardBloc, ProductSubCardState>(
-      builder: (context, subcardState) {
-        if (subcardState is ProductSubCardLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (subcardState is ProductSubCardsLoaded) {
-          return BlocBuilder<UnitBloc, UnitState>(
-            builder: (context, unitState) {
-              if (unitState is UnitLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (unitState is UnitSuccess) {
-                final units = unitState.message.split(',');
+  return BlocBuilder<ProductSubCardBloc, ProductSubCardState>(
+    builder: (context, subcardState) {
+      if (subcardState is ProductSubCardLoading) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (subcardState is ProductSubCardsLoaded) {
+        return BlocBuilder<UnitBloc, UnitState>(
+          builder: (context, unitState) {
+            if (unitState is UnitLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (unitState is UnitSuccess) {
+              final units = unitState.message.split(',');
 
-                return Column(
-                  children: [
-                    Table(
-                      border: TableBorder.all(color: borderColor),
-                      children: [
-                        const TableRow(
-                          decoration: BoxDecoration(color: primaryColor),
+              return Column(
+                children: [
+                  Table(
+                    border: TableBorder.all(color: borderColor),
+                    children: [
+                      const TableRow(
+                        decoration: BoxDecoration(color: primaryColor),
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Наименование', style: tableHeaderStyle),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Остаток', style: tableHeaderStyle),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Ед. изм.', style: tableHeaderStyle),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Кол-во', style: tableHeaderStyle),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Удалить', style: tableHeaderStyle),
+                          ),
+                        ],
+                      ),
+                      ...inventoryRows.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final row = entry.value;
+
+                        return TableRow(
                           children: [
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('Наименование', style: tableHeaderStyle),
+                            DropdownButtonFormField<int>(
+                              value: row['product_subcard_id'],
+                              items: subcardState.productSubCards.map((subcard) {
+                                return DropdownMenuItem<int>(
+                                  value: subcard['id'],
+                                  child: Text(subcard['name'], style: bodyTextStyle),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  row['product_subcard_id'] = value;
+                                });
+                              },
+                              decoration: const InputDecoration(border: InputBorder.none),
                             ),
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('Ед. изм.', style: tableHeaderStyle),
+                            // Remaining Quantity
+                            Text(
+                              row['product_subcard_id'] != null
+                                  ? '${subcardState.productSubCards.firstWhere(
+                                      (subcard) => subcard['id'] == row['product_subcard_id'],
+                                    )['remaining_quantity']}'
+                                  : '-',
+                              style: bodyTextStyle,
                             ),
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('Кол-во', style: tableHeaderStyle),
+                            DropdownButtonFormField<String>(
+                              value: row['unit_measurement'],
+                              items: units.map((unit) {
+                                return DropdownMenuItem<String>(
+                                  value: unit,
+                                  child: Text(unit, style: bodyTextStyle),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  row['unit_measurement'] = value;
+                                });
+                              },
+                              decoration: const InputDecoration(border: InputBorder.none),
                             ),
-                            Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('Удалить', style: tableHeaderStyle),
+                            TextField(
+                              onChanged: (value) {
+                                setState(() {
+                                  row['amount'] = double.tryParse(value) ?? 0.0;
+                                });
+                              },
+                              decoration: const InputDecoration(
+                                hintText: 'Кол-во',
+                                border: InputBorder.none,
+                              ),
+                              keyboardType: TextInputType.number,
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  inventoryRows.removeAt(index);
+                                });
+                              },
                             ),
                           ],
-                        ),
-                        ...inventoryRows.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final row = entry.value;
-
-                          return TableRow(
-                            children: [
-                              DropdownButtonFormField<int>(
-                                value: row['product_subcard_id'],
-                                items: subcardState.productSubCards.map((subcard) {
-                                  return DropdownMenuItem<int>(
-                                    value: subcard['id'],
-                                    child: Text(subcard['name'], style: bodyTextStyle),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    row['product_subcard_id'] = value;
-                                  });
-                                },
-                                decoration: const InputDecoration(border: InputBorder.none),
-                              ),
-                              DropdownButtonFormField<String>(
-                                value: row['unit_measurement'],
-                                items: units.map((unit) {
-                                  return DropdownMenuItem<String>(
-                                    value: unit,
-                                    child: Text(unit, style: bodyTextStyle),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    row['unit_measurement'] = value;
-                                  });
-                                },
-                                decoration: const InputDecoration(border: InputBorder.none),
-                              ),
-                              TextField(
-                                onChanged: (value) {
-                                  setState(() {
-                                    row['amount'] = double.tryParse(value) ?? 0.0;
-                                  });
-                                },
-                                decoration: const InputDecoration(
-                                  hintText: 'Кол-во',
-                                  border: InputBorder.none,
-                                ),
-                                keyboardType: TextInputType.number,
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () {
-                                  setState(() {
-                                    inventoryRows.removeAt(index);
-                                  });
-                                },
-                              ),
-                            ],
-                          );
-                        }).toList(),
-                      ],
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        icon: const Icon(Icons.add, color: primaryColor),
-                        label: const Text('Добавить строку', style: TextStyle(color: primaryColor)),
-                        onPressed: () {
-                          setState(() {
-                            inventoryRows.add({
-                              'product_subcard_id': null,
-                              'unit_measurement': null,
-                              'amount': 0.0,
-                            });
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      icon: const Icon(Icons.add, color: primaryColor),
+                      label: const Text('Добавить строку', style: TextStyle(color: primaryColor)),
+                      onPressed: () {
+                        setState(() {
+                          inventoryRows.add({
+                            'product_subcard_id': null,
+                            'unit_measurement': null,
+                            'amount': 0.0,
                           });
-                        },
-                      ),
+                        });
+                      },
                     ),
-                  ],
-                );
-              } else {
-                return const Text('Ошибка при загрузке единиц измерения', style: bodyTextStyle);
-              }
-            },
-          );
-        } else {
-          return const Text('Ошибка при загрузке подкарточек', style: bodyTextStyle);
-        }
-      },
-    );
-  }
-
-  void _submitInventory() {
-  // Validation checks are commented
-  // if (selectedStorager == null ||
-  //     selectedAddress == null ||
-  //     selectedDate == null ||
-  //     inventoryRows.isEmpty) {
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     const SnackBar(content: Text('Заполните все поля, включая дату, складовщика и адрес')),
-  //   );
-  //   return;
-  // }
-
-  // for (var row in inventoryRows) {
-  //   if (row['product_subcard_id'] == null || row['amount'] <= 0) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Заполните все поля для каждой строки')),
-  //     );
-  //     return;
-  //   }
-  // }
-final List<Map<String, dynamic>> formattedRows = inventoryRows.map((row) {
-    return {
-      'product_subcard_id': row['product_subcard_id'] ?? 0, // Default to 0 if null
-      'unit_measurement': row['unit_measurement'] ?? 'шт', // Default unit if null
-      'amount': row['amount'] ?? 0.0, // Default to 0.0 if null
-    };
-  }).toList();
-
-  // Prepare event payload with default or provided values
-  final event = SubmitInventoryEvent(
-    storageUserId: selectedStorager != null ? int.parse(selectedStorager!) : 1, // Default to 1 if null
-    addressId: selectedAddress?['id'] ?? 1, // Default address ID if null
-    date: selectedDate != null
-        ? DateFormat('yyyy-MM-dd').format(selectedDate!)
-        : DateFormat('yyyy-MM-dd').format(DateTime.now()), // Use current date if null
-    inventoryRows: formattedRows,
-  );
-
-  context.read<InventoryBloc>().add(event);
-
-  // Notify user of submission
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Инвентаризация отправлена...')),
+                  ),
+                ],
+              );
+            } else {
+              return const Text('Ошибка при загрузке единиц измерения', style: bodyTextStyle);
+            }
+          },
+        );
+      } else {
+        return const Text('Ошибка при загрузке подкарточек', style: bodyTextStyle);
+      }
+    },
   );
 }
 
+  void _submitInventory() {
+    if (selectedWarehouse == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Пожалуйста, выберите склад.')),
+      );
+      return;
+    }
+
+    final List<Map<String, dynamic>> formattedRows = inventoryRows.map((row) {
+      return {
+        'product_subcard_id': row['product_subcard_id'] ?? 0,
+        'unit_measurement': row['unit_measurement'] ?? 'шт',
+        'amount': row['amount'] ?? 0.0,
+      };
+    }).toList();
+
+    final event = SubmitInventoryEvent(
+      storageUserId: selectedStorager != null ? int.parse(selectedStorager!) : 1,
+      addressId: selectedAddress?['id'] ?? 1,
+      date: selectedDate != null
+          ? DateFormat('yyyy-MM-dd').format(selectedDate!)
+          : DateFormat('yyyy-MM-dd').format(DateTime.now()),
+      inventoryRows: formattedRows,
+    );
+
+    context.read<InventoryBloc>().add(event);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Инвентаризация отправлена...')),
+    );
+  }
 }

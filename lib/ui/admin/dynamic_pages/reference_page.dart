@@ -15,6 +15,8 @@ class _OperationHistoryPageState extends State<OperationHistoryPage> {
   final TextEditingController searchController = TextEditingController();
   List<Operation> allOperations = [];
   List<Operation> filteredOperations = [];
+    String? selectedFilter; // State variable for selected filter
+
 
   @override
   void initState() {
@@ -22,16 +24,61 @@ class _OperationHistoryPageState extends State<OperationHistoryPage> {
     context.read<OperationsBloc>().add(FetchOperationsHistoryEvent());
   }
 
-  void _filterOperations(String query) {
+   void _filterOperations(String query) {
   setState(() {
     filteredOperations = allOperations.where((operation) {
       final operationLower = operation.operation.toLowerCase();
       final typeLower = operation.type.toLowerCase();
-      return operationLower.contains(query.toLowerCase()) || typeLower.contains(query.toLowerCase());
+      final matchesQuery =
+          operationLower.contains(query.toLowerCase()) || typeLower.contains(query.toLowerCase());
+      final matchesFilter =
+          selectedFilter == null || operation.type == selectedFilter;
+      return matchesQuery && matchesFilter;
     }).toList();
   });
 }
 
+
+  void _filterByType() {
+    setState(() {
+      if (selectedFilter == null) {
+        filteredOperations = allOperations;
+      } else {
+        filteredOperations = allOperations.where((operation) {
+          return operation.type == selectedFilter;
+        }).toList();
+      }
+    });
+  }
+
+  Widget _buildFilterDropdown() {
+  return DropdownButtonHideUnderline(
+    child: DropdownButton<String>(
+      isExpanded: true,
+      value: selectedFilter,
+      items: [
+        DropdownMenuItem(value: null, child: Text('Все', style: bodyTextStyle)),
+        DropdownMenuItem(value: 'Карточка товара', child: Text('Карточка товара', style: bodyTextStyle)),
+        DropdownMenuItem(value: 'Подкарточка товара', child: Text('Подкарточка товара', style: bodyTextStyle)),
+        DropdownMenuItem(value: 'Ценовое предложение', child: Text('Ценовое предложение', style: bodyTextStyle)),
+        DropdownMenuItem(value: 'Продажа', child: Text('Продажа', style: bodyTextStyle)),
+        DropdownMenuItem(value: 'Ед измерения', child: Text('Ед измерения', style: bodyTextStyle)),
+        DropdownMenuItem(value: 'Присвоить роль', child: Text('Присвоить роль', style: bodyTextStyle)),
+        DropdownMenuItem(value: 'Присвоить адрес', child: Text('Присвоить адрес', style: bodyTextStyle)),
+        DropdownMenuItem(value: 'Перемещение в склад', child: Text('Перемещение в склад', style: bodyTextStyle)),
+        DropdownMenuItem(value: 'Поставщик', child: Text('Поставщик', style: bodyTextStyle)),
+      ],
+      onChanged: (value) {
+        setState(() {
+          selectedFilter = value;
+          _filterByType();
+        });
+      },
+      hint: Text('Фильтр', style: captionStyle),
+      icon: const Icon(Icons.filter_list, color: Colors.grey),
+    ),
+  );
+}
 
   void _editOperation(BuildContext context, Map<String, dynamic> operation) {
     final type = operation['type'];
@@ -155,7 +202,7 @@ class _OperationHistoryPageState extends State<OperationHistoryPage> {
     );
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -167,87 +214,105 @@ class _OperationHistoryPageState extends State<OperationHistoryPage> {
         padding: pagePadding,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: verticalPadding),
-              child: TextField(
-                controller: searchController,
-                style: bodyTextStyle,
-                decoration: InputDecoration(
-                  hintText: 'Поиск...',
-                  hintStyle: captionStyle,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide(color: borderColor),
-                  ),
-                  prefixIcon: const Icon(Icons.search, color: textColor),
-                ),
-                onChanged: _filterOperations,
-              ),
-            ),
+            Row(
+  children: [
+    // Search Field
+    Expanded(
+      flex: 2,
+      child: TextField(
+        controller: searchController,
+        style: bodyTextStyle,
+        decoration: InputDecoration(
+          hintText: 'Поиск...',
+          hintStyle: captionStyle,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: borderColor),
+          ),
+          prefixIcon: const Icon(Icons.search, color: textColor),
+        ),
+        onChanged: _filterOperations,
+      ),
+    ),
+    const SizedBox(width: 8.0),
+    // Filter Dropdown
+    Expanded(
+      flex: 1,
+      child: _buildFilterDropdown(),
+    ),
+  ],
+),
+const SizedBox(height: verticalPadding),
             Expanded(
               child: BlocConsumer<OperationsBloc, OperationsState>(
                 listener: (context, state) {
                   if (state is OperationsSuccess) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.message, style: bodyTextStyle), backgroundColor: primaryColor),
+                      SnackBar(
+                        content: Text(state.message, style: bodyTextStyle),
+                        backgroundColor: primaryColor,
+                      ),
                     );
                   } else if (state is OperationsError) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.message, style: bodyTextStyle), backgroundColor: errorColor),
+                      SnackBar(
+                        content: Text(state.message, style: bodyTextStyle),
+                        backgroundColor: errorColor,
+                      ),
                     );
                   }
                 },
                 builder: (context, state) {
-                if (state is OperationsLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is OperationsLoaded) {
-                  if (allOperations.isEmpty) {
-                    allOperations = state.operations;
-                    filteredOperations = state.operations;
-                  }
+                  if (state is OperationsLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is OperationsLoaded) {
+                    if (allOperations.isEmpty) {
+                      allOperations = state.operations;
+                      filteredOperations = state.operations;
+                    }
 
-                  if (filteredOperations.isEmpty) {
+                    if (filteredOperations.isEmpty) {
+                      return Center(
+                        child: Text('Нет данных для отображения.', style: bodyTextStyle),
+                      );
+                    }
+
+                    return ListView.builder(
+                      itemCount: filteredOperations.length,
+                      itemBuilder: (context, index) {
+                        final operation = filteredOperations[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: ListTile(
+                            tileColor: Colors.white,
+                            title: Text(operation.operation, style: titleStyle),
+                            subtitle: Text(operation.type, style: captionStyle),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit, color: primaryColor),
+                                  onPressed: () => _editOperation(context, operation.toJson()),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: errorColor),
+                                  onPressed: () => _deleteOperation(context, operation.toJson()),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  } else if (state is OperationsError) {
                     return Center(
-                      child: Text('Нет данных для отображения.', style: bodyTextStyle),
+                      child: Text(state.message, style: bodyTextStyle),
                     );
                   }
-
-                  return ListView.builder(
-                    itemCount: filteredOperations.length,
-                    itemBuilder: (context, index) {
-                      final operation = filteredOperations[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: ListTile(
-                          tileColor: Colors.white,
-                          title: Text(operation.operation, style: titleStyle),
-                          subtitle: Text(operation.type, style: captionStyle),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: primaryColor),
-                                onPressed: () => _editOperation(context, operation.toJson()),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: errorColor),
-                                onPressed: () => _deleteOperation(context, operation.toJson()),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                } else if (state is OperationsError) {
                   return Center(
-                    child: Text(state.message, style: bodyTextStyle),
+                    child: Text('Нет данных.', style: bodyTextStyle),
                   );
-                }
-                return Center(
-                  child: Text('Нет данных.', style: bodyTextStyle),
-                );
-              },
+                },
               ),
             ),
           ],
