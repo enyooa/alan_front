@@ -1,4 +1,4 @@
-package com.example.cash_control
+package com.example.alan
 
 import io.flutter.embedding.android.FlutterActivity
 

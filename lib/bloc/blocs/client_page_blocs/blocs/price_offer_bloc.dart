@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import 'package:cash_control/bloc/blocs/client_page_blocs/events/price_offer_event.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/states/price_offer_state.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/price_offer_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/price_offer_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class PriceOfferBloc extends Bloc<PriceOfferEvent, PriceOfferState> {
   PriceOfferBloc() : super(PriceOfferInitial()) {

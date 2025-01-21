@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:cash_control/ui/main/models/user.dart';
+import 'package:alan/ui/main/models/user.dart';
 
 abstract class UserState extends Equatable {
   @override

@@ -1,11 +1,11 @@
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/events/warehouse_event.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/states/warehouse_state.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/events/warehouse_event.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/states/warehouse_state.dart';
 import 'package:equatable/equatable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class PackagingBloc extends Bloc<PackagingEvent, PackagingState> {
   PackagingBloc() : super(PackagingInitial()) {

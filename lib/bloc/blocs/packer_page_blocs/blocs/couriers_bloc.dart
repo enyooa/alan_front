@@ -1,6 +1,6 @@
-import 'package:cash_control/bloc/blocs/packer_page_blocs/events/couriers_event.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/repo/courier_repo.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/states/couriers_state.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/events/couriers_event.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/repo/courier_repo.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/states/couriers_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 

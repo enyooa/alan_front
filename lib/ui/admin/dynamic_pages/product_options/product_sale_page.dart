@@ -1,17 +1,17 @@
 import 'dart:convert';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_sale_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_sale_state.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/product_sale_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/product_sale_state.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
 import 'package:flutter/material.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/unit_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/unit_state.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/unit_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/unit_state.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class ProductSalePage extends StatefulWidget {
   @override

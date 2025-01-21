@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_receiving_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_receiving_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/product_receiving_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/product_receiving_state.dart';
+import 'package:alan/constant.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';

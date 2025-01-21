@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/events/favorites_event.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/states/favorites_state.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/repositories/favorites_repository.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/favorites_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/favorites_state.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/repositories/favorites_repository.dart';
 class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
   final FavoritesRepository repository;
 

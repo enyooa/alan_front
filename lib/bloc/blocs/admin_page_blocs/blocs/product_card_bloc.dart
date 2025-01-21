@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_card_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_card_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/product_card_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/product_card_state.dart';
+import 'package:alan/constant.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 

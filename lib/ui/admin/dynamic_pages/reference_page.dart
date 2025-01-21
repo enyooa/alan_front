@@ -1,10 +1,10 @@
-import 'package:cash_control/bloc/models/operation.dart';
+import 'package:alan/bloc/models/operation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/operations_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/operations_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/operations_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/operations_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/operations_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/operations_state.dart';
+import 'package:alan/constant.dart';
 
 class OperationHistoryPage extends StatefulWidget {
   @override

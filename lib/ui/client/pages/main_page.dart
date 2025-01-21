@@ -1,9 +1,9 @@
-import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/sales_bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/events/sales_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/blocs/sales_bloc.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/sales_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../widgets/product_list.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);

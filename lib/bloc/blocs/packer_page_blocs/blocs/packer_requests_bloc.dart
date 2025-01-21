@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/events/packer_requests_event.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/states/packer_requests_state.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/events/packer_requests_event.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/states/packer_requests_state.dart';
 
 import 'package:http/http.dart' as http;
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class HistoryOrderDetailsPage extends StatelessWidget {
   final Map<String, dynamic> document;

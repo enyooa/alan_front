@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:cash_control/bloc/blocs/common_blocs/events/auth_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/register_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
-import 'package:cash_control/constant.dart';
-import 'package:cash_control/ui/main/models/user.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/auth_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/register_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
+import 'package:alan/constant.dart';
+import 'package:alan/ui/main/models/user.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';

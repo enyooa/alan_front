@@ -1,14 +1,14 @@
 
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/admin_cash_bloc.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/admin_cash_event.dart';
-import 'package:cash_control/ui/cashbox/pages/calculations.dart';
-import 'package:cash_control/ui/cashbox/pages/expenses_order.dart';
-import 'package:cash_control/ui/cashbox/pages/income_order.dart';
-import 'package:cash_control/ui/cashbox/pages/report.dart';
-import 'package:cash_control/ui/cashbox/pages/reference_screen.dart';
-import 'package:cash_control/ui/main/widgets/profile.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/admin_cash_bloc.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/events/admin_cash_event.dart';
+import 'package:alan/ui/cashbox/pages/calculations.dart';
+import 'package:alan/ui/cashbox/pages/expenses_order.dart';
+import 'package:alan/ui/cashbox/pages/income_order.dart';
+import 'package:alan/ui/cashbox/pages/report.dart';
+import 'package:alan/ui/cashbox/pages/reference_screen.dart';
+import 'package:alan/ui/main/widgets/profile.dart';
 import 'package:flutter/material.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 class CashboxDashboardScreen extends StatefulWidget {
   @override

@@ -1,4 +1,4 @@
-import 'package:cash_control/bloc/models/operation.dart';
+import 'package:alan/bloc/models/operation.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class OperationsState extends Equatable {

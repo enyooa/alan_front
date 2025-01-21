@@ -1,19 +1,19 @@
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/inventory_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/inventory_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/inventory_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/inventory_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/storage_address_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/storage_address_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/storage_address_state.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/unit_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/unit_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/storage_address_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/storage_address_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/storage_address_state.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/unit_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/unit_state.dart';
+import 'package:alan/constant.dart';
 
 class InventoryPage extends StatefulWidget {
   @override

@@ -1,6 +1,6 @@
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_element.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/states/financial_element.dart';
+import 'package:alan/constant.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';

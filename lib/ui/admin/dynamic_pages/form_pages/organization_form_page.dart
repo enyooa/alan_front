@@ -1,9 +1,9 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:cash_control/bloc/blocs/organization_bloc.dart';
-// import 'package:cash_control/bloc/events/organization_event.dart';
-// import 'package:cash_control/bloc/states/organization_state.dart';
-// import 'package:cash_control/constant.dart';
+// import 'package:alan/bloc/blocs/organization_bloc.dart';
+// import 'package:alan/bloc/events/organization_event.dart';
+// import 'package:alan/bloc/states/organization_state.dart';
+// import 'package:alan/constant.dart';
 
 // class OrganizationFormPage extends StatefulWidget {
 //   @override

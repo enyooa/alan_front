@@ -11,18 +11,18 @@
          "program": "lib/main.dart"
       },
       {
-         "name": "cash_control",
+         "name": "alan",
          "request": "launch",
          "type": "dart"
       },
       {
-         "name": "cash_control (profile mode)",
+         "name": "alan (profile mode)",
          "request": "launch",
          "type": "dart",
          "flutterMode": "profile"
       },
       {
-         "name": "cash_control (release mode)",
+         "name": "alan (release mode)",
          "request": "launch",
          "type": "dart",
          "flutterMode": "release"
@@ -38,6 +38,12 @@
          "type": "dart",
          "request": "launch",
          "program": "lib\\ui\\client\\widgets\\basket.dart"
+      },
+      {
+         "name": "Flutter (lib\\main.dart)",
+         "type": "dart",
+         "request": "launch",
+         "program": "lib\\main.dart"
       },
       {
          "name": "Flutter (lib\\main.dart)",

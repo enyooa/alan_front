@@ -3,9 +3,9 @@
   import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
   import '../../../../constant.dart';
-  import 'package:cash_control/bloc/blocs/common_blocs/events/employee_event.dart';
-  import 'package:cash_control/bloc/blocs/common_blocs/states/employee_state.dart';
-  import 'package:cash_control/ui/main/models/user.dart';
+  import 'package:alan/bloc/blocs/common_blocs/events/employee_event.dart';
+  import 'package:alan/bloc/blocs/common_blocs/states/employee_state.dart';
+  import 'package:alan/ui/main/models/user.dart';
 
   class UserBloc extends Bloc<UserEvent, UserState> {
       UserBloc() : super(UserInitial()) {

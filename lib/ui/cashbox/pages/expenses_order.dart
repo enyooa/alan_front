@@ -1,13 +1,13 @@
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
-import 'package:cash_control/ui/cashbox/widgets/expense_order.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/auth_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
+import 'package:alan/ui/cashbox/widgets/expense_order.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/auth_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
+import 'package:alan/constant.dart';
 
 class ExpenseOrderScreen extends StatefulWidget {
   @override

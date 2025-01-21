@@ -1,10 +1,10 @@
-import 'package:cash_control/ui/packer/widgets/document_details_page.dart';
+import 'package:alan/ui/packer/widgets/document_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/packer_history_document_bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/events/packer_history_document_event.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/states/packer_history_document_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/blocs/packer_history_document_bloc.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/events/packer_history_document_event.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/states/packer_history_document_state.dart';
+import 'package:alan/constant.dart';
 
 class RequestsScreen extends StatelessWidget {
   const RequestsScreen({Key? key}) : super(key: key);

@@ -1,12 +1,12 @@
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_card_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_card_state.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/product_card_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/product_card_state.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class ProductSubCardPage extends StatefulWidget {
   @override

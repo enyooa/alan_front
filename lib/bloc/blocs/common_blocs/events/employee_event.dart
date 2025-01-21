@@ -1,4 +1,4 @@
-import 'package:cash_control/ui/main/models/user.dart';
+import 'package:alan/ui/main/models/user.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class UserEvent extends Equatable {

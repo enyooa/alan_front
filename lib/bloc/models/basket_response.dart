@@ -1,4 +1,4 @@
-import 'package:cash_control/bloc/models/basket_item.dart';
+import 'package:alan/bloc/models/basket_item.dart';
 
 class BasketResponse {
   final List<BasketItem> items;

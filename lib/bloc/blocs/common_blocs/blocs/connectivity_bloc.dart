@@ -1,7 +1,7 @@
 
 
-import 'package:cash_control/bloc/blocs/common_blocs/events/connectivity_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/connectivity_state.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/connectivity_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/connectivity_state.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

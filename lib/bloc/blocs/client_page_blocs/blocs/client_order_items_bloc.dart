@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/events/client_order_items_event.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/states/client_order_items_state.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/client_order_items_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/client_order_items_state.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class ClientOrderItemsBloc extends Bloc<ClientOrderItemsEvent, ClientOrderItemsState> {
   ClientOrderItemsBloc() : super(ClientOrderItemsInitial()) {

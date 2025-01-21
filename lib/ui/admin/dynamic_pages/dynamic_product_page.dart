@@ -1,10 +1,10 @@
-import 'package:cash_control/ui/admin/dynamic_pages/product_options/product_inventory_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/product_options/product_pricing_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/product_options/product_receiving_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/product_options/product_sale_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/product_options/product_inventory_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/product_options/product_pricing_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/product_options/product_receiving_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/product_options/product_sale_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class DynamicProductPage extends StatefulWidget {
   @override

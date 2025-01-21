@@ -1,7 +1,7 @@
 // import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:cash_control/bloc/events/organization_event.dart';
-// import 'package:cash_control/bloc/states/organization_state.dart';
-// // import 'package:cash_control/bloc/services/organization_service.dart';
+// import 'package:alan/bloc/events/organization_event.dart';
+// import 'package:alan/bloc/states/organization_state.dart';
+// // import 'package:alan/bloc/services/organization_service.dart';
 
 // class OrganizationBloc extends Bloc<OrganizationEvent, OrganizationState> {
 //   final OrganizationService organizationService;

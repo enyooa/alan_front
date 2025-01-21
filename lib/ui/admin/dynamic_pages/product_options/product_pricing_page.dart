@@ -1,23 +1,23 @@
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/address_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/address_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/address_state.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/unit_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/address_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/address_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/address_state.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/unit_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/price_offer_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/price_offer_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/price_offer_state.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/unit_state.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/auth_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/price_offer_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/price_offer_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/price_offer_state.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/unit_state.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/auth_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
+import 'package:alan/constant.dart';
 
 class ProductOfferPage extends StatefulWidget {
   @override

@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class FinancialOrderBloc extends Bloc<FinancialOrderEvent, FinancialOrderState> {
   FinancialOrderBloc() : super(FinancialOrderInitial()) {

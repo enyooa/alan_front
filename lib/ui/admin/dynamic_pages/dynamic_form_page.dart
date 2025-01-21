@@ -1,13 +1,13 @@
-import 'package:cash_control/constant.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/form_pages/address_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/form_pages/provider_form_page.dart';
+import 'package:alan/constant.dart';
+import 'package:alan/ui/admin/dynamic_pages/form_pages/address_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/form_pages/provider_form_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/form_pages/employee_form_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/form_pages/organization_form_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/form_pages/product_card_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/form_pages/subproduct_card_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/form_pages/unit_form_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/form_pages/employee_form_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/form_pages/organization_form_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/form_pages/product_card_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/form_pages/subproduct_card_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/form_pages/unit_form_page.dart';
 
 class DynamicFormPage extends StatefulWidget {
   @override

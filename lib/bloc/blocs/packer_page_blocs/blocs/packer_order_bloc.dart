@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/events/packer_order_event.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/states/packer_order_state.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/events/packer_order_event.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/states/packer_order_state.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 

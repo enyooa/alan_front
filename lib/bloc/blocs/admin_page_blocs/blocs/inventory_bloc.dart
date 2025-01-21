@@ -1,11 +1,11 @@
 import 'dart:convert';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/inventory_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/inventory_state.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/inventory_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/inventory_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
   InventoryBloc() : super(InventoryInitial()) {

@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/events/basket_event.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/states/basket_state.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/repositories/basket_repository.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/basket_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/basket_state.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/repositories/basket_repository.dart';
 import 'package:equatable/equatable.dart';
 
 class BasketBloc extends Bloc<BasketEvent, BasketState> {

@@ -1,32 +1,34 @@
-import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/repositories/basket_repository.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/account_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/admin_cash_bloc.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_element.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/admin_cash_event.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/connectivity_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/user_photo_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/connectivity_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/connectivity_state.dart';
-import 'package:cash_control/constant.dart';
-import 'package:cash_control/ui/admin/home.dart';
-import 'package:cash_control/ui/cashbox/home.dart';
-import 'package:cash_control/ui/client/home.dart';
-import 'package:cash_control/ui/courier/home.dart';
-import 'package:cash_control/ui/main/auth/login.dart';
-import 'package:cash_control/ui/packer/home.dart';
-import 'package:cash_control/ui/storage/home.dart';
-import 'package:cash_control/ui/main/widgets/onboarding/onboarding.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/repositories/basket_repository.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/account_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/admin_cash_bloc.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/financial_element.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/events/admin_cash_event.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/connectivity_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/user_photo_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/connectivity_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/connectivity_state.dart';
+import 'package:alan/bloc/blocs/courier_page_blocs/blocs/invoice_bloc.dart';
+import 'package:alan/bloc/blocs/courier_page_blocs/events/invoice_event.dart';
+import 'package:alan/constant.dart';
+import 'package:alan/ui/admin/home.dart';
+import 'package:alan/ui/cashbox/home.dart';
+import 'package:alan/ui/client/home.dart';
+import 'package:alan/ui/courier/home.dart';
+import 'package:alan/ui/main/auth/login.dart';
+import 'package:alan/ui/packer/home.dart';
+import 'package:alan/ui/storage/home.dart';
+import 'package:alan/ui/main/widgets/onboarding/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cash_control/ui/main/widgets/profile.dart';
+import 'package:alan/ui/main/widgets/profile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -93,6 +95,7 @@ class StartApp extends StatelessWidget {
         BlocProvider(
         create: (context) => BasketBloc(repository: BasketRepository(baseUrl: baseUrl)),
       ),
+      
       ],
       child: MaterialApp(
         supportedLocales: const [
@@ -126,6 +129,7 @@ class StartApp extends StatelessWidget {
           '/packer_dashboard': (context) => PackerScreen(),
           '/storage_dashboard': (context) => const StoragePage(),
           '/courier_dashboard': (context) => CourierDashboardScreen(),
+          
         },
         builder: (context, child) {
           return MultiBlocListener(

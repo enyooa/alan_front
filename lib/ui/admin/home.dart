@@ -1,25 +1,25 @@
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/address_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/inventory_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/operations_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/price_offer_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_receiving_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/storage_address_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/provider_bloc.dart';
-import 'package:cash_control/constant.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/dynamic_product_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/dynamic_report_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/reference_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/form_pages/product_card_page.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/form_pages/subproduct_card_page.dart';
-import 'package:cash_control/ui/main/widgets/profile.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/address_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/inventory_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/operations_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/price_offer_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_card_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_receiving_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/storage_address_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/provider_bloc.dart';
+import 'package:alan/constant.dart';
+import 'package:alan/ui/admin/dynamic_pages/dynamic_product_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/dynamic_report_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/reference_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/form_pages/product_card_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/form_pages/subproduct_card_page.dart';
+import 'package:alan/ui/main/widgets/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/employee_bloc.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/dynamic_form_page.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/employee_bloc.dart';
+import 'package:alan/ui/admin/dynamic_pages/dynamic_form_page.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   

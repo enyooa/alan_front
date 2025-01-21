@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/courier_page_blocs/blocs/chat_bloc.dart';
-import 'package:cash_control/bloc/blocs/courier_page_blocs/events/chat_event.dart';
-import 'package:cash_control/bloc/blocs/courier_page_blocs/states/chat_state.dart';
+import 'package:alan/bloc/blocs/courier_page_blocs/blocs/chat_bloc.dart';
+import 'package:alan/bloc/blocs/courier_page_blocs/events/chat_event.dart';
+import 'package:alan/bloc/blocs/courier_page_blocs/states/chat_state.dart';
 
 class ChatScreen extends StatefulWidget {
   @override

@@ -1,9 +1,9 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:cash_control/bloc/blocs/courier_page_blocs/blocs/courier_document_bloc.dart';
-// import 'package:cash_control/bloc/blocs/courier_page_blocs/events/courier_document_event.dart';
-// import 'package:cash_control/bloc/blocs/courier_page_blocs/states/courier_document_state.dart';
-// import 'package:cash_control/constant.dart';
+// import 'package:alan/bloc/blocs/courier_page_blocs/blocs/courier_document_bloc.dart';
+// import 'package:alan/bloc/blocs/courier_page_blocs/events/courier_document_event.dart';
+// import 'package:alan/bloc/blocs/courier_page_blocs/states/courier_document_state.dart';
+// import 'package:alan/constant.dart';
 
 // class CourierDocumentsScreen extends StatelessWidget {
 //   @override

@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/events/packer_document_event.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/states/packer_document_state.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/events/packer_document_event.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/states/packer_document_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class PackerDocumentBloc extends Bloc<PackerDocumentEvent, PackerDocumentState> {
   PackerDocumentBloc() : super(PackerDocumentInitial()) {

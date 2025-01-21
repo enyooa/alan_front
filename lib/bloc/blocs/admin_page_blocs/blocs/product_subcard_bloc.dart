@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
+import 'package:alan/constant.dart';
 import 'package:equatable/equatable.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';

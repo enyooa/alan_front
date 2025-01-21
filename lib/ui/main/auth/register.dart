@@ -1,7 +1,7 @@
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/register_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/register_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
+import 'package:alan/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

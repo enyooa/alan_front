@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/events/basket_event.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/states/basket_state.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/address_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/address_state.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/blocs/address_bloc.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/basket_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/basket_state.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/address_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/address_state.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/address_bloc.dart';
+import 'package:alan/constant.dart';
 
 class BasketScreen extends StatefulWidget {
   const BasketScreen({Key? key}) : super(key: key);

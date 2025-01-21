@@ -1,7 +1,7 @@
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_element.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_element.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/financial_element.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/states/financial_element.dart';
+import 'package:alan/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

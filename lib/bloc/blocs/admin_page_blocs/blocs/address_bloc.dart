@@ -1,10 +1,10 @@
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/address_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/address_state.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/address_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/address_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 class AddressBloc extends Bloc<AddressEvent, AddressState> {
   AddressBloc() : super(AddressInitial()) {
     on<CreateAddressEvent>(_handleCreateAddress);

@@ -1,15 +1,15 @@
-import 'package:cash_control/bloc/blocs/client_page_blocs/states/favorites_state.dart';
-import 'package:cash_control/bloc/models/basket_item.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/favorites_state.dart';
+import 'package:alan/bloc/models/basket_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/events/basket_event.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/states/basket_state.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/events/favorites_event.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/states/sales_state.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/sales_bloc.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/basket_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/basket_state.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/favorites_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/sales_state.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/blocs/sales_bloc.dart';
+import 'package:alan/constant.dart';
 class ProductListPage extends StatefulWidget {
   final String searchQuery;
 

@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/storage_page_blocs/events/sales_report_event.dart';
-import 'package:cash_control/bloc/blocs/storage_page_blocs/states/sales_report_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/events/sales_report_event.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/states/sales_report_state.dart';
+import 'package:alan/constant.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/storage_page_blocs/blocs/general_warehouse_bloc.dart';
-import 'package:cash_control/bloc/blocs/storage_page_blocs/events/general_warehouse_event.dart';
-import 'package:cash_control/bloc/blocs/storage_page_blocs/states/general_warehouse_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/blocs/general_warehouse_bloc.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/events/general_warehouse_event.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/states/general_warehouse_state.dart';
+import 'package:alan/constant.dart';
 
 class WriteOffPage extends StatefulWidget {
   const WriteOffPage({Key? key}) : super(key: key);

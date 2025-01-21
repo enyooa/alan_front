@@ -1,8 +1,8 @@
-import 'package:cash_control/ui/admin/dynamic_pages/report_pages/cashbox_report.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/report_pages/storage_report.dart';
+import 'package:alan/ui/admin/dynamic_pages/report_pages/cashbox_report.dart';
+import 'package:alan/ui/admin/dynamic_pages/report_pages/storage_report.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class DynamicReportPage extends StatefulWidget {
   @override

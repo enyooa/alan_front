@@ -7,7 +7,7 @@
 
 
     <application
-        android:label="cash_control"
+        android:label="alan"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         android:requestLegacyExternalStorage="true">

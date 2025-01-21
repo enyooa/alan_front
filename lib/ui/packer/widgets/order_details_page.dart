@@ -1,12 +1,12 @@
-import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/packer_document_bloc.dart';
-import 'package:cash_control/ui/packer/widgets/create_invoice.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/blocs/packer_document_bloc.dart';
+import 'package:alan/ui/packer/widgets/create_invoice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/packer_order_bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/events/packer_order_event.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/states/packer_order_state.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/blocs/packer_order_bloc.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/events/packer_order_event.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/states/packer_order_state.dart';
 import 'package:intl/intl.dart'; // For date formatting
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class OrderDetailsPage extends StatefulWidget {
   final int orderId;

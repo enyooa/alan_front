@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/admin_cash_bloc.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/admin_cash_state.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/auth_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/blocs/financial_element.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
-import 'package:cash_control/bloc/blocs/cashbox_page_blocs/states/financial_element.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/admin_cash_bloc.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/states/admin_cash_state.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/auth_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/financial_element.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/states/financial_element.dart';
+import 'package:alan/constant.dart';
 
 class ExpenseOrderWidget extends StatefulWidget {
   @override

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/provider_event.dart';
-import 'package:cash_control/bloc/models/provider.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/provider_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/provider_event.dart';
+import 'package:alan/bloc/models/provider.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/provider_state.dart';
+import 'package:alan/constant.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 

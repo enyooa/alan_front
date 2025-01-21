@@ -1,4 +1,4 @@
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 import 'package:flutter/material.dart';
 
 class DashboardCard extends StatelessWidget {

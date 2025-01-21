@@ -1,4 +1,4 @@
-import 'package:cash_control/ui/main/auth/submit_verification.dart';
+import 'package:alan/ui/main/auth/submit_verification.dart';
 import 'package:flutter/material.dart';
 
 class PasswordVerificationScreen extends StatelessWidget {

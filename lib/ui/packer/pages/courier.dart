@@ -1,10 +1,10 @@
-import 'package:cash_control/bloc/blocs/packer_page_blocs/events/couriers_event.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/repo/courier_repo.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/events/couriers_event.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/repo/courier_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/couriers_bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/states/couriers_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/blocs/couriers_bloc.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/states/couriers_state.dart';
+import 'package:alan/constant.dart';
 
 class CourierScreen extends StatefulWidget {
   const CourierScreen({Key? key}) : super(key: key);

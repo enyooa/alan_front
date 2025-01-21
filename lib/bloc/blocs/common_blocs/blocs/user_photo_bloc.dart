@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/user_photo_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/user_photo_state.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/user_photo_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/user_photo_state.dart';
 import 'package:equatable/equatable.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;

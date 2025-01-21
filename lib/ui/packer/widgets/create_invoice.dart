@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/auth_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/auth_state.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/packer_document_bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/events/packer_document_event.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/states/packer_document_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/auth_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/blocs/packer_document_bloc.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/events/packer_document_event.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/states/packer_document_state.dart';
+import 'package:alan/constant.dart';
 
 class InvoicePage extends StatefulWidget {
   final Map<String, dynamic> orderDetails;

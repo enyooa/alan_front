@@ -1,10 +1,10 @@
-import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/warehouse_bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/events/warehouse_event.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/states/warehouse_state.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/blocs/warehouse_bloc.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/events/warehouse_event.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/states/warehouse_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart'; // For date formatting
-import 'package:cash_control/constant.dart'; // For consistent design
+import 'package:alan/constant.dart'; // For consistent design
 
 class PackagingScreen extends StatefulWidget {
   const PackagingScreen({super.key});

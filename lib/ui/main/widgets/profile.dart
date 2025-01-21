@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/account_bloc.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/events/account_event.dart';
-import 'package:cash_control/bloc/blocs/common_blocs/states/account_state.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/account_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/account_event.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/account_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 
 class AccountView extends StatefulWidget {
   const AccountView({Key? key}) : super(key: key);

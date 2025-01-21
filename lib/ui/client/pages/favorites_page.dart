@@ -1,11 +1,11 @@
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/events/favorites_event.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/states/favorites_state.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/events/basket_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/favorites_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/favorites_state.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/basket_event.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({Key? key}) : super(key: key);

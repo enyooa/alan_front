@@ -1,16 +1,16 @@
-import 'package:cash_control/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
-import 'package:cash_control/bloc/blocs/storage_page_blocs/blocs/general_warehouse_bloc.dart';
-import 'package:cash_control/bloc/blocs/storage_page_blocs/blocs/storage_receiving_bloc.dart';
-import 'package:cash_control/bloc/blocs/storage_page_blocs/blocs/storage_sales_bloc.dart';
-import 'package:cash_control/bloc/blocs/storage_page_blocs/blocs/storage_subcard_bloc.dart';
-import 'package:cash_control/ui/admin/dynamic_pages/product_options/product_inventory_page.dart';
-import 'package:cash_control/ui/main/widgets/profile.dart';
-import 'package:cash_control/ui/storage/pages/sales.dart';
-import 'package:cash_control/ui/storage/pages/goods_receipt.dart';
-import 'package:cash_control/ui/storage/pages/sales_reports.dart';
-import 'package:cash_control/ui/storage/pages/write_off.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/blocs/general_warehouse_bloc.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_receiving_bloc.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_sales_bloc.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_subcard_bloc.dart';
+import 'package:alan/ui/admin/dynamic_pages/product_options/product_inventory_page.dart';
+import 'package:alan/ui/main/widgets/profile.dart';
+import 'package:alan/ui/storage/pages/sales.dart';
+import 'package:alan/ui/storage/pages/goods_receipt.dart';
+import 'package:alan/ui/storage/pages/sales_reports.dart';
+import 'package:alan/ui/storage/pages/write_off.dart';
 import 'package:flutter/material.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class StoragePage extends StatefulWidget {

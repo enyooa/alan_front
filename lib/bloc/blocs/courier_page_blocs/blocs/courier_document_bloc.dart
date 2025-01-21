@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/courier_page_blocs/events/courier_document_event.dart';
-import 'package:cash_control/bloc/blocs/courier_page_blocs/states/courier_document_state.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/courier_page_blocs/events/courier_document_event.dart';
+import 'package:alan/bloc/blocs/courier_page_blocs/states/courier_document_state.dart';
+import 'package:alan/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -49,42 +49,38 @@ class CourierDocumentBloc extends Bloc<CourierDocumentEvent, CourierDocumentStat
 
 
   Future<void> _submitCourierDocument(
-  SubmitCourierDocumentEvent event,
-  Emitter<CourierDocumentState> emit,
-) async {
-  emit(CourierDocumentLoading());
+      SubmitCourierDocumentEvent event, Emitter<CourierDocumentState> emit) async {
+    emit(CourierDocumentLoading());
 
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
 
-    if (token == null) {
-      emit(CourierDocumentError(error: "Authentication token not found."));
-      return;
+      if (token == null) {
+        emit(CourierDocumentError(error: "Authentication token not found."));
+        return;
+      }
+
+      final response = await http.post(
+        Uri.parse(baseUrl + 'storeCourierDocument'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'orders': event.orders,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        emit(CourierDocumentSubmittedSuccess());
+      } else {
+        final error = jsonDecode(response.body)['error'] ?? "Unknown error.";
+        emit(CourierDocumentError(error: error));
+      }
+    } catch (e) {
+      emit(CourierDocumentError(error: e.toString()));
     }
-
-    final response = await http.post(
-      Uri.parse(baseUrl + 'create_courier_document'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'courier_id': event.courierId,
-        'orders': event.orders,
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      emit(CourierDocumentSubmittedSuccess());
-    } else {
-      final error = jsonDecode(response.body)['error'] ?? "Unknown error.";
-      emit(CourierDocumentError(error: error));
-    }
-  } catch (e) {
-    emit(CourierDocumentError(error: e.toString()));
   }
-}
-
 
 }

@@ -1,12 +1,12 @@
-import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/couriers_bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/blocs/packer_history_document_bloc.dart';
-import 'package:cash_control/bloc/blocs/packer_page_blocs/repo/courier_repo.dart';
-import 'package:cash_control/constant.dart';
-import 'package:cash_control/ui/main/widgets/profile.dart';
-import 'package:cash_control/ui/packer/pages/courier.dart';
-import 'package:cash_control/ui/packer/pages/main_page.dart';
-import 'package:cash_control/ui/packer/pages/packaging.dart';
-import 'package:cash_control/ui/packer/pages/requests.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/blocs/couriers_bloc.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/blocs/packer_history_document_bloc.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/repo/courier_repo.dart';
+import 'package:alan/constant.dart';
+import 'package:alan/ui/main/widgets/profile.dart';
+import 'package:alan/ui/packer/pages/courier.dart';
+import 'package:alan/ui/packer/pages/main_page.dart';
+import 'package:alan/ui/packer/pages/packaging.dart';
+import 'package:alan/ui/packer/pages/requests.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

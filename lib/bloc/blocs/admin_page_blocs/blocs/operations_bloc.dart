@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/events/operations_event.dart';
-import 'package:cash_control/bloc/blocs/admin_page_blocs/states/operations_state.dart';
-import 'package:cash_control/bloc/models/operation.dart';
-import 'package:cash_control/constant.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/operations_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/operations_state.dart';
+import 'package:alan/bloc/models/operation.dart';
+import 'package:alan/constant.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;

@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/storage_page_blocs/events/storage_receiving_event.dart';
-import 'package:cash_control/bloc/blocs/storage_page_blocs/states/storage_receiving_state.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/events/storage_receiving_event.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/states/storage_receiving_state.dart';
 import 'package:equatable/equatable.dart';
 import 'package:http/http.dart' as http;
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageReceivingBloc extends Bloc<StorageReceivingEvent, StorageReceivingState> {

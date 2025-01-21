@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/courier_page_blocs/events/chat_event.dart';
-import 'package:cash_control/bloc/blocs/courier_page_blocs/states/chat_state.dart';
-import 'package:cash_control/ui/courier/widgets/chat_service.dart';
+import 'package:alan/bloc/blocs/courier_page_blocs/events/chat_event.dart';
+import 'package:alan/bloc/blocs/courier_page_blocs/states/chat_state.dart';
+import 'package:alan/ui/courier/widgets/chat_service.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatService chatService;

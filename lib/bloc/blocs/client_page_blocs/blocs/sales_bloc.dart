@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/events/sales_event.dart';
-import 'package:cash_control/bloc/blocs/client_page_blocs/states/sales_state.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/sales_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/sales_state.dart';
 
 
-import 'package:cash_control/constant.dart';
+import 'package:alan/constant.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 

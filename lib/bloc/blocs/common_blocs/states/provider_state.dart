@@ -1,4 +1,4 @@
-import 'package:cash_control/bloc/models/provider.dart';
+import 'package:alan/bloc/models/provider.dart';
 
 abstract class ProviderState {}
 
