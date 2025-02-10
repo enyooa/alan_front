@@ -1,8 +1,10 @@
-import 'package:alan/bloc/blocs/courier_page_blocs/events/courier_document_event.dart';
+
+
+import 'package:alan/bloc/blocs/courier_page_blocs/blocs/courier_order_bloc.dart';
+import 'package:alan/bloc/blocs/courier_page_blocs/states/courier_order_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:alan/bloc/blocs/courier_page_blocs/blocs/courier_document_bloc.dart';
-import 'package:alan/bloc/blocs/courier_page_blocs/states/courier_document_state.dart';
+
 import 'package:alan/constant.dart';
 
 class DeliveryHomeScreen extends StatefulWidget {
@@ -13,9 +15,7 @@ class DeliveryHomeScreen extends StatefulWidget {
 class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
   @override
   void initState() {
-    super.initState();
-    // Fetch courier documents when the screen is loaded
-    context.read<CourierDocumentBloc>().add(FetchCourierDocumentsEvent());
+    
   }
 
   @override
@@ -25,12 +25,12 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
         title: const Text("Доставка", style: headingStyle),
         backgroundColor: primaryColor,
       ),
-      body: BlocBuilder<CourierDocumentBloc, CourierDocumentState>(
+      body: BlocBuilder<CourierOrdersBloc, CourierOrdersState>(
         builder: (context, state) {
-          if (state is CourierDocumentLoading) {
+          if (state is CourierOrdersLoading) {
             return const Center(child: CircularProgressIndicator());
-          } else if (state is CourierDocumentLoaded) {
-            final documents = state.documents;
+          } else if (state is CourierOrdersLoaded) {
+            final documents = state.orders;
 
             if (documents.isEmpty) {
               return const Center(
@@ -51,15 +51,14 @@ class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
                 );
               },
             );
-          } else if (state is CourierDocumentError) {
+          } else if (state is CourierOrdersError) {
             return Center(
               child: Text(
-                'Ошибка: ${state.error}',
+                'Ошибка: ${state.message}',
                 style: bodyTextStyle.copyWith(color: errorColor),
               ),
             );
           } else {
-            // Explicitly handle the initial state
             return const Center(
               child: Text('Ошибка загрузки данных.', style: bodyTextStyle),
             );

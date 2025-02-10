@@ -10,24 +10,26 @@ class UnitFormPage extends StatefulWidget {
   @override
   _UnitFormPageState createState() => _UnitFormPageState();
 }
-
 class _UnitFormPageState extends State<UnitFormPage> {
   final TextEditingController unitNameController = TextEditingController();
+  final TextEditingController tareController = TextEditingController(); // Add controller for tare
 
   @override
   void dispose() {
     unitNameController.dispose();
+    tareController.dispose(); // Dispose tare controller
     super.dispose();
   }
 
   void _saveUnit(BuildContext context) {
     final unitName = unitNameController.text.trim();
+    final tare = tareController.text.trim();
 
-    if (unitName.isEmpty) {
+    if (unitName.isEmpty || tare.isEmpty) {  // Check both fields
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Пожалуйста, введите наименование единицы',
+            'Пожалуйста, введите наименование единицы и тару',
             style: TextStyle(color: Colors.white),
           ),
           backgroundColor: Colors.red,
@@ -36,7 +38,7 @@ class _UnitFormPageState extends State<UnitFormPage> {
       return;
     }
 
-    context.read<UnitBloc>().add(CreateUnitEvent(name: unitName));
+    context.read<UnitBloc>().add(CreateUnitEvent(name: unitName, tare: tare)); // Pass tare value
   }
 
   @override
@@ -48,7 +50,7 @@ class _UnitFormPageState extends State<UnitFormPage> {
       ),
       body: BlocConsumer<UnitBloc, UnitState>(
         listener: (context, state) {
-          if (state is UnitSuccess) {
+          if (state is UnitFetchedSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text(
@@ -59,6 +61,7 @@ class _UnitFormPageState extends State<UnitFormPage> {
               ),
             );
             unitNameController.clear();
+            tareController.clear(); // Clear tare controller
           } else if (state is UnitError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -82,6 +85,8 @@ class _UnitFormPageState extends State<UnitFormPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildTextField(unitNameController, 'Наименование единицы'),
+                const SizedBox(height: 10),
+                _buildTextField(tareController, 'Тара (Вес упаковки)'), // Add tare input field
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () => _saveUnit(context),

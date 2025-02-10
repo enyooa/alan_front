@@ -13,6 +13,8 @@ class ProductSubCardBloc extends Bloc<ProductSubCardEvent, ProductSubCardState> 
     on<FetchProductSubCardsEvent>(_handleFetchProductSubCards);
     on<UpdateProductSubCardEvent>(_updateProductSubCard);
     on<DeleteProductSubCardEvent>(_deleteProductSubCard);
+  // остаток
+
   }
 
   Future<void> _handleCreateProductSubCard(
@@ -52,7 +54,7 @@ class ProductSubCardBloc extends Bloc<ProductSubCardEvent, ProductSubCardState> 
   }
 
  Future<void> _handleFetchProductSubCards(
-  FetchProductSubCardsEvent event,
+   FetchProductSubCardsEvent event,
   Emitter<ProductSubCardState> emit,
 ) async {
   emit(ProductSubCardLoading());
@@ -70,12 +72,14 @@ class ProductSubCardBloc extends Bloc<ProductSubCardEvent, ProductSubCardState> 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body);
 
-      // Safely map the response data
+      // Map the response to a list of subcards
       final productSubCards = responseData.map((subCard) {
         return {
-          'id': subCard['id'] ?? 0, // Default to 0 if `id` is null
-          'name': subCard['name'] ?? 'Unnamed Subcard', // Default name if `name` is null
-          'product_card_id': subCard['product_card_id'] ?? 0, // Default to 0 if `product_card_id` is null
+          'id': subCard['id'],
+          'name': subCard['name'],
+          'product_card_id': subCard['product_card_id'],
+          'remaining_quantity': subCard['remaining_quantity'], // Include the new field
+          'unit_measurement': subCard['unit_measurement'],
         };
       }).toList();
 
@@ -152,4 +156,6 @@ Future<void> _updateProductSubCard(
       emit(ProductSubCardError("Ошибка: $error"));
     }
   }
+
+ 
 }

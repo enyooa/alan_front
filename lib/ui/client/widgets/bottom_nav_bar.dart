@@ -10,7 +10,6 @@ import 'package:alan/ui/client/pages/main_page.dart';
 import 'package:alan/ui/main/widgets/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({Key? key}) : super(key: key);
 
@@ -25,105 +24,113 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const MainPage(), // Home Page
     const BasketScreen(), // Basket Page
     const FavoritesPage(), // Favorites Page
-    const CalculationsPage(), // Calculations Page  
+    const CalculationsPage(), // Calculations Page
     const AccountView(), // Profile Page
   ];
-void _onItemTapped(int index) {
-  setState(() {
-    _selectedIndex = index;
 
-    // Trigger FetchBasketEvent when Basket tab is selected
-    if (_selectedIndex == 1) { // Basket Page index
-      context.read<BasketBloc>().add(FetchBasketEvent());
-    }
-  });
-}
-@override
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+
+      // Trigger FetchBasketEvent when Basket tab is selected
+      if (_selectedIndex == 1) {
+        context.read<BasketBloc>().add(FetchBasketEvent());
+      }
+    });
+  }
+
+  @override
   void initState() {
-          context.read<BasketBloc>().add(FetchBasketEvent());
+    super.initState();
 
+    // Fetch initial basket data
+    context.read<BasketBloc>().add(FetchBasketEvent());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        onTap: _onItemTapped,
-        items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.storefront),
-            label: 'Главная',
-          ),
-          BottomNavigationBarItem(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(Icons.shopping_cart),
-                BlocBuilder<BasketBloc, BasketState>(
-                  builder: (context, state) {
-                    return state.totalItems > 0
-                        ? Positioned(
-                            right: -6,
-                            top: -6,
-                            child: CircleAvatar(
-                              radius: 10,
-                              backgroundColor: Colors.red,
-                              child: Text('${state.totalItems}',
-                                  style: const TextStyle(
-                                      fontSize: 10, color: Colors.white)),
-                            ),
-                          )
-                        : const SizedBox.shrink();
-                  },
-                ),
-              ],
-            ),
-            label: 'Корзина',
-          ),
-          BottomNavigationBarItem(
-  icon: Stack(
-    clipBehavior: Clip.none,
-    children: [
-      const Icon(Icons.favorite),
-      BlocBuilder<FavoritesBloc, FavoritesState>(
-        builder: (context, state) {
-          if (state is FavoritesLoaded && state.totalFavorites > 0) {
-            return Positioned(
-              right: -6,
-              top: -6,
-              child: CircleAvatar(
-                radius: 10,
-                backgroundColor: Colors.red,
-                child: Text('${state.totalFavorites}',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: Colors.white,
-                    )),
+      bottomNavigationBar: BlocBuilder<FavoritesBloc, FavoritesState>(
+        builder: (context, favoritesState) {
+          return BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            selectedItemColor: Colors.blue,
+            unselectedItemColor: Colors.grey,
+            type: BottomNavigationBarType.fixed,
+            onTap: _onItemTapped,
+            items: [
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.storefront),
+                label: 'Главная',
               ),
-            );
-          }
-          return const SizedBox.shrink();
+              BottomNavigationBarItem(
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.shopping_cart),
+                    BlocBuilder<BasketBloc, BasketState>(
+                      builder: (context, basketState) {
+                        return basketState.totalItems > 0
+                            ? Positioned(
+                                right: -6,
+                                top: -6,
+                                child: CircleAvatar(
+                                  radius: 10,
+                                  backgroundColor: Colors.red,
+                                  child: Text(
+                                    '${basketState.totalItems}',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink();
+                      },
+                    ),
+                  ],
+                ),
+                label: 'Корзина',
+              ),
+              BottomNavigationBarItem(
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.favorite),
+                    if (favoritesState is FavoritesLoaded &&
+                        favoritesState.totalFavorites > 0)
+                      Positioned(
+                        right: -6,
+                        top: -6,
+                        child: CircleAvatar(
+                          radius: 10,
+                          backgroundColor: Colors.red,
+                          child: Text(
+                            '${favoritesState.totalFavorites}',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                label: 'Избранное',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.calculate),
+                label: 'Расчеты',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Профиль',
+              ),
+            ],
+          );
         },
-      ),
-    ],
-  ),
-  label: 'Избранное',
-),
-
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.calculate),
-            label: 'Расчеты',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Профиль',
-          ),
-        ],
       ),
     );
   }

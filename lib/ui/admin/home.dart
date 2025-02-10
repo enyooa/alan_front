@@ -8,6 +8,7 @@ import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_sale_bloc.dart';
 import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
 import 'package:alan/bloc/blocs/admin_page_blocs/blocs/storage_address_bloc.dart';
 import 'package:alan/bloc/blocs/common_blocs/blocs/provider_bloc.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_report_bloc.dart';
 import 'package:alan/constant.dart';
 import 'package:alan/ui/admin/dynamic_pages/dynamic_product_page.dart';
 import 'package:alan/ui/admin/dynamic_pages/dynamic_report_page.dart';
@@ -57,6 +58,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         BlocProvider(create: (context) => ProductReceivingBloc()),
         BlocProvider(create: (context) => SalesBloc()),
         BlocProvider(create: (context) => InventoryBloc()),
+        BlocProvider(create: (context) => StorageReportBloc()),
+
         BlocProvider(create: (context) => PriceOfferBloc()),
 
         BlocProvider(create: (context) => OperationsBloc()),

@@ -1,9 +1,10 @@
 import 'package:alan/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
 import 'package:alan/bloc/blocs/storage_page_blocs/blocs/general_warehouse_bloc.dart';
 import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_receiving_bloc.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_report_bloc.dart';
 import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_sales_bloc.dart';
 import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_subcard_bloc.dart';
-import 'package:alan/ui/admin/dynamic_pages/product_options/product_inventory_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/product_options/send_to_warehouse.dart';
 import 'package:alan/ui/main/widgets/profile.dart';
 import 'package:alan/ui/storage/pages/sales.dart';
 import 'package:alan/ui/storage/pages/goods_receipt.dart';
@@ -61,6 +62,10 @@ class _StoragePageState extends State<StoragePage> {
     BlocProvider(
       create: (_) => GeneralWarehouseBloc(),
       child: const GoodsReceiptPage(),
+    ),
+    BlocProvider(
+      create: (_) => StorageReportBloc(),
+      child: const SalesReportPage(),
     ),
       ],
       child: Scaffold(

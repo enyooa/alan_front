@@ -7,24 +7,6 @@ import 'package:alan/bloc/blocs/client_page_blocs/events/client_order_items_even
 import 'package:alan/bloc/blocs/client_page_blocs/states/client_order_items_state.dart';
 import 'package:alan/bloc/blocs/client_page_blocs/states/price_offer_state.dart';
 import 'package:alan/constant.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/events/price_offer_event.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/blocs/client_order_items_bloc.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/blocs/price_offer_bloc.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/events/client_order_items_event.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/states/client_order_items_state.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/states/price_offer_state.dart';
-import 'package:alan/constant.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/blocs/client_order_items_bloc.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/blocs/price_offer_bloc.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/events/client_order_items_event.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/events/price_offer_event.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/states/client_order_items_state.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/states/price_offer_state.dart';
-import 'package:alan/constant.dart';
 
 class CalculationsPage extends StatefulWidget {
   const CalculationsPage({Key? key}) : super(key: key);

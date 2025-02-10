@@ -4,6 +4,18 @@ abstract class ProductSubCardEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
+//остаток
+
+class FetchRemainingQuantityEvent extends ProductSubCardEvent {
+  final int productSubcardId;
+
+  FetchRemainingQuantityEvent(this.productSubcardId);
+
+  @override
+  List<Object?> get props => [productSubcardId];
+}
+
+//остаток
 
 class CreateProductSubCardEvent extends ProductSubCardEvent {
   final int productCardId; // ID of the parent ProductCard

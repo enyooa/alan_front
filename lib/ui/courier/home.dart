@@ -1,19 +1,18 @@
 
        
 import 'package:alan/bloc/blocs/courier_page_blocs/blocs/chat_bloc.dart';
-import 'package:alan/bloc/blocs/courier_page_blocs/blocs/courier_document_bloc.dart';
-import 'package:alan/bloc/blocs/courier_page_blocs/blocs/invoice_bloc.dart';
-import 'package:alan/bloc/blocs/courier_page_blocs/events/courier_document_event.dart';
-import 'package:alan/bloc/blocs/courier_page_blocs/events/invoice_event.dart';
+import 'package:alan/bloc/blocs/courier_page_blocs/blocs/courier_order_bloc.dart';
+
+import 'package:alan/bloc/blocs/courier_page_blocs/events/courier_order_event.dart';
+
 import 'package:alan/constant.dart';
-import 'package:alan/ui/courier/pages/consignment.dart';
+import 'package:alan/ui/courier/pages/main_page.dart';
 import 'package:alan/ui/courier/widgets/chat_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:alan/ui/courier/pages/delivery_homescreen.dart';
 import 'package:alan/ui/courier/pages/chat.dart';
 import 'package:alan/ui/main/widgets/profile.dart';
-
 class CourierDashboardScreen extends StatefulWidget {
   @override
   _CourierDashboardScreenState createState() => _CourierDashboardScreenState();
@@ -24,7 +23,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
 
   final List<Widget> _screens = [
     DeliveryHomeScreen(),
-    InvoiceScreen(),
+    HomeScreen(),
     ChatScreen(),
     const AccountView(),
   ];
@@ -39,15 +38,14 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        
         BlocProvider(
-          create: (_) => CourierDocumentBloc()..add(FetchCourierDocumentsEvent()),
-        ),
-        BlocProvider(
-      create: (context) => InvoiceBloc()..add(FetchInvoiceOrders()),
-    ),
-         BlocProvider(
           create: (_) => ChatBloc(ChatService(baseUrl: baseUrl)),
         ),
+         BlocProvider(
+          create: (_) => CourierOrdersBloc(baseUrl: baseUrl)..add(FetchCourierOrdersEvent()),
+        ),
+        
       ],
       child: Scaffold(
         appBar: AppBar(

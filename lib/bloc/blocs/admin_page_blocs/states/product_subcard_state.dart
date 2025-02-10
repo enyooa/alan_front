@@ -34,3 +34,31 @@ class ProductSubCardError extends ProductSubCardState {
 
   ProductSubCardError(this.message);
 }
+//остаток
+class RemainingQuantityLoading extends ProductSubCardState {
+  final int productSubcardId;
+
+  RemainingQuantityLoading(this.productSubcardId);
+
+  @override
+  List<Object> get props => [productSubcardId];
+}
+
+class RemainingQuantityLoaded extends ProductSubCardState {
+  final int productSubcardId;
+  final double remainingQuantity;
+  final String unitMeasurement; // Add this field for unit measurement
+
+  RemainingQuantityLoaded({
+    required this.productSubcardId,
+    required this.remainingQuantity,
+    required this.unitMeasurement,
+  });
+}
+
+
+class RemainingQuantityError extends ProductSubCardState {
+  final String message;
+
+  RemainingQuantityError(this.message);
+}

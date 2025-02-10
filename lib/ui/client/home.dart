@@ -13,8 +13,6 @@ import 'package:alan/bloc/blocs/client_page_blocs/events/price_offer_event.dart'
 import 'package:alan/bloc/blocs/client_page_blocs/events/sub_card_event.dart';
 import 'package:alan/bloc/blocs/client_page_blocs/repositories/basket_repository.dart';
 import 'package:alan/bloc/blocs/client_page_blocs/repositories/favorites_repository.dart';
-import 'package:alan/bloc/blocs/courier_page_blocs/blocs/courier_document_bloc.dart';
-import 'package:alan/bloc/blocs/courier_page_blocs/events/courier_document_event.dart';
 import 'package:alan/bloc/blocs/packer_page_blocs/blocs/packer_document_bloc.dart';
 import 'package:alan/bloc/blocs/packer_page_blocs/events/packer_document_event.dart';
 import 'package:alan/constant.dart';

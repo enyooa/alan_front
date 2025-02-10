@@ -358,8 +358,7 @@ Widget _buildClientTable() {
       ),
     );
   }
-
-Widget _buildProductTable() {
+ Widget _buildProductTable() {
   return BlocBuilder<ProductSubCardBloc, ProductSubCardState>(
     builder: (context, subcardState) {
       if (subcardState is ProductSubCardLoading) {
@@ -369,131 +368,169 @@ Widget _buildProductTable() {
           builder: (context, unitState) {
             if (unitState is UnitLoading) {
               return const Center(child: CircularProgressIndicator());
-            } else if (unitState is UnitSuccess) {
-              final units = unitState.message.split(',');
+            } else if (unitState is UnitFetchedSuccess) {
+              final units = unitState.units; // `units` is now a List<Map<String, dynamic>>.
 
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal, // Enables horizontal scrolling
-                child: Column(
-                  children: [
-                    SingleChildScrollView(
-                      child: Table(
-                        defaultColumnWidth: const IntrinsicColumnWidth(), // Adjusts column width dynamically
-                        border: TableBorder.all(color: borderColor),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Table(
+                    border: TableBorder.all(color: borderColor),
+                    children: [
+                      const TableRow(
+                        decoration: BoxDecoration(color: primaryColor),
                         children: [
-                          const TableRow(
-                            decoration: BoxDecoration(color: primaryColor),
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text('Подкарточка', style: tableHeaderStyle),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text('Ед. изм.', style: tableHeaderStyle),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text('Кол-во', style: tableHeaderStyle),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text('Цена', style: tableHeaderStyle),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text('Сумма', style: tableHeaderStyle),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text('Удалить', style: tableHeaderStyle),
-                              ),
-                            ],
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Подкарточка', style: tableHeaderStyle),
                           ),
-                          ...productRows.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final row = entry.value;
-                            final sum = ((row['amount'] ?? 0) * (row['price'] ?? 0)).toInt();
-
-                            return TableRow(
-                              children: [
-                                DropdownButtonFormField<int>(
-                                  value: row['product_subcard_id'],
-                                  items: subcardState.productSubCards.map((subcard) {
-                                    return DropdownMenuItem<int>(
-                                      value: subcard['id'],
-                                      child: Text(subcard['name'], style: bodyTextStyle),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) => setState(() => row['product_subcard_id'] = value),
-                                  decoration: const InputDecoration(border: InputBorder.none),
-                                ),
-                                DropdownButtonFormField<String>(
-                                  value: row['unit_measurement'],
-                                  items: units.map((unit) {
-                                    return DropdownMenuItem<String>(
-                                      value: unit,
-                                      child: Text(unit, style: bodyTextStyle),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) => setState(() => row['unit_measurement'] = value),
-                                  decoration: const InputDecoration(border: InputBorder.none),
-                                ),
-                                TextField(
-                                  onChanged: (value) {
-                                    setState(() {
-                                      row['amount'] = int.tryParse(value) ?? 0;
-                                    });
-                                  },
-                                  keyboardType: TextInputType.number,
-                                  decoration: const InputDecoration(border: InputBorder.none),
-                                ),
-                                TextField(
-                                  onChanged: (value) {
-                                    setState(() {
-                                      row['price'] = int.tryParse(value) ?? 0;
-                                    });
-                                  },
-                                  keyboardType: TextInputType.number,
-                                  decoration: const InputDecoration(border: InputBorder.none),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    sum.toString(),
-                                    style: bodyTextStyle.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () => setState(() => productRows.removeAt(index)),
-                                ),
-                              ],
-                            );
-                          }).toList(),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Остаток и ед. изм.', style: tableHeaderStyle),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Ед. изм.', style: tableHeaderStyle),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Кол-во', style: tableHeaderStyle),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Цена', style: tableHeaderStyle),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Удалить', style: tableHeaderStyle),
+                          ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        icon: const Icon(Icons.add, color: primaryColor),
-                        label: const Text('Добавить строку', style: TextStyle(color: primaryColor)),
-                        onPressed: () {
-                          setState(() {
-                            productRows.add({
-                              'product_subcard_id': null,
-                              'unit_measurement': null,
-                              'amount': 0,
-                              'price': 0,
-                            });
+                      ...productRows.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final row = entry.value;
+
+                        return TableRow(
+                          children: [
+                            // Product Subcard Dropdown
+                            DropdownButtonFormField<int>(
+                              value: row['product_subcard_id'],
+                              items: subcardState.productSubCards.map((subcard) {
+                                return DropdownMenuItem<int>(
+                                  value: subcard['id'],
+                                  child: Text(subcard['name'], style: bodyTextStyle),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  row['product_subcard_id'] = value;
+                                  row['amount'] = 0.0; // Reset amount when product changes
+                                });
+                              },
+                              decoration: const InputDecoration(border: InputBorder.none),
+                            ),
+                            // Display Remaining Quantity and Unit Measurement
+                            Text(
+                              row['product_subcard_id'] != null
+                                  ? '${subcardState.productSubCards.firstWhere((subcard) => subcard['id'] == row['product_subcard_id'])['remaining_quantity']} ${subcardState.productSubCards.firstWhere((subcard) => subcard['id'] == row['product_subcard_id'])['unit_measurement'] ?? ''}'
+                                  : '-',
+                              style: bodyTextStyle,
+                            ),
+                            // Unit Measurement Dropdown
+                            DropdownButtonFormField<String>(
+                              value: row['unit_measurement'],
+                              items: units.map((unit) {
+                                return DropdownMenuItem<String>(
+                                  value: unit['name'],
+                                  child: Text(unit['name'], style: bodyTextStyle),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  row['unit_measurement'] = value;
+                                });
+                              },
+                              decoration: const InputDecoration(border: InputBorder.none),
+                            ),
+                            // Amount TextField
+                            TextField(
+                              onChanged: (value) {
+                                setState(() {
+                                  final amount = double.tryParse(value) ?? 0.0;
+                                  final productSubcardId = row['product_subcard_id'];
+
+                                  if (productSubcardId != null) {
+                                    final subcard = subcardState.productSubCards.firstWhere(
+                                      (subcard) => subcard['id'] == productSubcardId,
+                                      orElse: () => <String, dynamic>{},
+                                    );
+
+                                    if (subcard.isNotEmpty && amount > subcard['remaining_quantity']) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Количество для "${subcard['name']}" не может превышать остаток (${subcard['remaining_quantity']}).',
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      row['amount'] = amount;
+                                    }
+                                  }
+                                });
+                              },
+                              decoration: const InputDecoration(
+                                hintText: 'Кол-во',
+                                border: InputBorder.none,
+                              ),
+                              keyboardType: TextInputType.number,
+                            ),
+                            // Price TextField
+                            TextField(
+                              onChanged: (value) {
+                                setState(() {
+                                  row['price'] = double.tryParse(value) ?? 0.0;
+                                });
+                              },
+                              decoration: const InputDecoration(
+                                hintText: 'Цена',
+                                border: InputBorder.none,
+                              ),
+                              keyboardType: TextInputType.number,
+                            ),
+                            // Delete Button
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  productRows.removeAt(index);
+                                });
+                              },
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      icon: const Icon(Icons.add, color: primaryColor),
+                      label: const Text('Добавить строку', style: TextStyle(color: primaryColor)),
+                      onPressed: () {
+                        setState(() {
+                          productRows.add({
+                            'product_subcard_id': null,
+                            'unit_measurement': null,
+                            'amount': 0.0,
+                            'price': 0.0,
                           });
-                        },
-                      ),
+                        });
+                      },
                     ),
-                  ],
-                ),
+                  ),
+                ],
               );
             } else {
               return const Text('Ошибка при загрузке единиц измерения', style: bodyTextStyle);
@@ -506,7 +543,6 @@ Widget _buildProductTable() {
     },
   );
 }
-
 
 void _submitPriceOffer() {
   if (selectedClient == null || startDate == null || endDate == null || productRows.isEmpty) {

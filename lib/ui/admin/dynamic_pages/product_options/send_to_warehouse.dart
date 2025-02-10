@@ -219,8 +219,8 @@ class _InventoryPageState extends State<InventoryPage> {
           builder: (context, unitState) {
             if (unitState is UnitLoading) {
               return const Center(child: CircularProgressIndicator());
-            } else if (unitState is UnitSuccess) {
-              final units = unitState.message.split(',');
+            } else if (unitState is UnitFetchedSuccess) {
+  final units = unitState.units; // `units` is now a List<Map<String, dynamic>>.
 
               return Column(
                 children: [
@@ -253,73 +253,103 @@ class _InventoryPageState extends State<InventoryPage> {
                         ],
                       ),
                       ...inventoryRows.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final row = entry.value;
+                      final index = entry.key;
+                      final row = entry.value;
 
-                        return TableRow(
-                          children: [
-                            DropdownButtonFormField<int>(
-                              value: row['product_subcard_id'],
-                              items: subcardState.productSubCards.map((subcard) {
-                                return DropdownMenuItem<int>(
-                                  value: subcard['id'],
-                                  child: Text(subcard['name'], style: bodyTextStyle),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  row['product_subcard_id'] = value;
-                                });
-                              },
-                              decoration: const InputDecoration(border: InputBorder.none),
-                            ),
-                            // Remaining Quantity
-                            Text(
-                              row['product_subcard_id'] != null
-                                  ? '${subcardState.productSubCards.firstWhere(
-                                      (subcard) => subcard['id'] == row['product_subcard_id'],
-                                    )['remaining_quantity']}'
-                                  : '-',
-                              style: bodyTextStyle,
-                            ),
-                            DropdownButtonFormField<String>(
-                              value: row['unit_measurement'],
-                              items: units.map((unit) {
-                                return DropdownMenuItem<String>(
-                                  value: unit,
-                                  child: Text(unit, style: bodyTextStyle),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  row['unit_measurement'] = value;
-                                });
-                              },
-                              decoration: const InputDecoration(border: InputBorder.none),
-                            ),
-                            TextField(
-                              onChanged: (value) {
-                                setState(() {
-                                  row['amount'] = double.tryParse(value) ?? 0.0;
-                                });
-                              },
-                              decoration: const InputDecoration(
-                                hintText: 'Кол-во',
-                                border: InputBorder.none,
-                              ),
-                              keyboardType: TextInputType.number,
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                setState(() {
-                                  inventoryRows.removeAt(index);
-                                });
-                              },
-                            ),
-                          ],
-                        );
-                      }).toList(),
+                      return TableRow(
+                      children: [
+                        DropdownButtonFormField<int>(
+                          value: row['product_subcard_id'],
+                          items: subcardState.productSubCards.map((subcard) {
+                            return DropdownMenuItem<int>(
+                              value: subcard['id'],
+                              child: Text(subcard['name'], style: bodyTextStyle),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              row['product_subcard_id'] = value;
+                            });
+                          },
+                          decoration: const InputDecoration(border: InputBorder.none),
+                        ),
+                        // Display remaining quantity
+                        Text(
+                          row['product_subcard_id'] != null
+                              ? '${subcardState.productSubCards.firstWhere((subcard) => subcard['id'] == row['product_subcard_id'])['remaining_quantity']}'
+                              : '-',
+                          style: bodyTextStyle,
+                        ),
+                        DropdownButtonFormField<String>(
+                          value: row['unit_measurement'],
+                          items: units.map((unit) {
+                            return DropdownMenuItem<String>(
+                              value: unit['name'],
+                              child: Text(unit['name'], style: bodyTextStyle),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              row['unit_measurement'] = value;
+                            });
+                          },
+                          decoration: const InputDecoration(border: InputBorder.none),
+                        ),
+                        TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          final amount = double.tryParse(value) ?? 0.0;
+                          final productSubcardId = row['product_subcard_id'];
+
+                          if (productSubcardId != null) {
+                            Map<String, dynamic>? subcard = subcardState.productSubCards.firstWhere(
+                              (subcard) => subcard['id'] == productSubcardId,
+                              orElse: () => <String, dynamic>{}, // Provide an empty map as a default
+                            );
+
+                            // Check if subcard is empty or null before using it
+                            if (subcard == null || subcard.isEmpty) {
+                              // Handle the case where subcard is not found
+                              return;
+                            }
+
+
+
+                            if (subcard != null && amount > subcard['remaining_quantity']) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Количество для "${subcard['name']}" не может превышать остаток (${subcard['remaining_quantity']}).',
+                                  ),
+                                ),
+                              );
+                            } else {
+                              row['amount'] = amount;
+                            }
+                          } else {
+                            row['amount'] = amount;
+                          }
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        hintText: 'Кол-во',
+                        border: InputBorder.none,
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              inventoryRows.remove(row);
+                            });
+                          },
+                        ),
+                      ],
+                    );
+
+                    }).toList(),
+
                     ],
                   ),
                   Align(
@@ -353,34 +383,61 @@ class _InventoryPageState extends State<InventoryPage> {
 }
 
   void _submitInventory() {
-    if (selectedWarehouse == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Пожалуйста, выберите склад.')),
-      );
-      return;
-    }
-
-    final List<Map<String, dynamic>> formattedRows = inventoryRows.map((row) {
-      return {
-        'product_subcard_id': row['product_subcard_id'] ?? 0,
-        'unit_measurement': row['unit_measurement'] ?? 'шт',
-        'amount': row['amount'] ?? 0.0,
-      };
-    }).toList();
-
-    final event = SubmitInventoryEvent(
-      storageUserId: selectedStorager != null ? int.parse(selectedStorager!) : 1,
-      addressId: selectedAddress?['id'] ?? 1,
-      date: selectedDate != null
-          ? DateFormat('yyyy-MM-dd').format(selectedDate!)
-          : DateFormat('yyyy-MM-dd').format(DateTime.now()),
-      inventoryRows: formattedRows,
-    );
-
-    context.read<InventoryBloc>().add(event);
-
+  if (selectedWarehouse == null) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Инвентаризация отправлена...')),
+      const SnackBar(content: Text('Пожалуйста, выберите склад.')),
     );
+    return;
   }
+
+  // Validate that amount <= remaining_quantity for all rows
+  for (var row in inventoryRows) {
+    final productSubcardId = row['product_subcard_id'];
+    final amount = row['amount'] ?? 0.0;
+
+    if (productSubcardId != null) {
+      final subcard = context.read<ProductSubCardBloc>().state is ProductSubCardsLoaded
+          ? (context.read<ProductSubCardBloc>().state as ProductSubCardsLoaded)
+              .productSubCards
+              .firstWhere((subcard) => subcard['id'] == productSubcardId)
+          : null;
+
+      if (subcard != null && amount > subcard['remaining_quantity']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Количество для "${subcard['name']}" не может превышать остаток (${subcard['remaining_quantity']}).',
+            ),
+          ),
+        );
+        return; // Stop submission
+      }
+    }
+  }
+
+  // Prepare the rows for submission
+  final List<Map<String, dynamic>> formattedRows = inventoryRows.map((row) {
+    return {
+      'product_subcard_id': row['product_subcard_id'] ?? 0,
+      'unit_measurement': row['unit_measurement'] ?? 'шт',
+      'amount': row['amount'] ?? 0.0,
+    };
+  }).toList();
+
+  // Submit the inventory event
+  final event = SubmitInventoryEvent(
+    storageUserId: selectedStorager != null ? int.parse(selectedStorager!) : 1,
+    addressId: selectedAddress?['id'] ?? 1,
+    date: selectedDate != null
+        ? DateFormat('yyyy-MM-dd').format(selectedDate!)
+        : DateFormat('yyyy-MM-dd').format(DateTime.now()),
+    inventoryRows: formattedRows,
+  );
+
+  context.read<InventoryBloc>().add(event);
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Инвентаризация отправлена...')),
+  );
+}
 }

@@ -28,13 +28,22 @@ class PriceOfferError extends PriceOfferState {
 }
 
 class PriceOffersFetched extends PriceOfferState {
-  final List<Map<String, dynamic>> priceOffers;
+  final List<Map<String, dynamic>> clientUsers;
+  final List<Map<String, dynamic>> subCards;
+  final List<Map<String, dynamic>> units;
 
-  PriceOffersFetched({required this.priceOffers});
+  PriceOffersFetched({
+    required this.clientUsers,
+    required this.subCards,
+    required this.units,
+  });
 
   @override
-  List<Object?> get props => [priceOffers];
+  List<Object?> get props => [clientUsers, subCards, units];
 }
+
+
+
 class PriceOfferUpdated extends PriceOfferState {
   final String message;
 

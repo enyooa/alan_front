@@ -88,8 +88,8 @@ Widget _buildSaleTable() {
           builder: (context, unitState) {
             if (unitState is UnitLoading) {
               return const Center(child: CircularProgressIndicator());
-            } else if (unitState is UnitSuccess) {
-              final units = unitState.message.split(',');
+            } else if (unitState is UnitFetchedSuccess) {
+  final units = unitState.units; // `units` is now a List<Map<String, dynamic>>.
 
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal, // Enable horizontal scrolling
@@ -161,8 +161,8 @@ Widget _buildSaleTable() {
                                 value: row['unit_measurement'],
                                 items: units.map((unit) {
                                   return DropdownMenuItem<String>(
-                                    value: unit,
-                                    child: Text(unit, style: bodyTextStyle),
+                                    value: unit['name'],
+                                    child: Text(unit['name'], style: bodyTextStyle),
                                   );
                                 }).toList(),
                                 onChanged: (value) {

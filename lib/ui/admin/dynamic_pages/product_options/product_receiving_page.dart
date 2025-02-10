@@ -24,6 +24,11 @@ class ProductReceivingPage extends StatefulWidget {
 
 class _ProductReceivingPageState extends State<ProductReceivingPage> {
   List<Map<String, dynamic>> productRows = [];
+  List<Map<String, dynamic>> expenses = [
+    // {'name': 'Фрахт', 'amount': 800000.0},
+    // {'name': 'Растаможка', 'amount': 1200000.0},
+    // {'name': 'Прочие', 'amount': 100000.0},
+  ];
   DateTime? selectedDate;
   int? selectedProviderId;
 
@@ -38,48 +43,50 @@ class _ProductReceivingPageState extends State<ProductReceivingPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Поступление товара', style: headingStyle),
-      //   backgroundColor: primaryColor,
-      // ),
-      body: BlocListener<ProductReceivingBloc, ProductReceivingState>(
-        listener: (context, state) {
-          if (state is ProductReceivingCreated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-            setState(() {
-              productRows.clear();
-              selectedDate = null;
-              selectedProviderId = null;
-            });
-          } else if (state is ProductReceivingError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          }
-        },
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: BlocListener<ProductReceivingBloc, ProductReceivingState>(
+      listener: (context, state) {
+        if (state is ProductReceivingCreated) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+          setState(() {
+            productRows.clear();
+            selectedDate = null;
+            selectedProviderId = null;
+          });
+        } else if (state is ProductReceivingError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      child: SingleChildScrollView( // Enable scrolling
+        scrollDirection: Axis.vertical, // Allow scrolling down
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-  children: [
-    _buildProviderAndDateRow(),
-    const SizedBox(height: 20),
-    _buildProductTable(),
-    const SizedBox(height: 20),
-    ElevatedButton(
-      onPressed: _submitReceivingData,
-      child: const Text('Сохранить', style: buttonTextStyle),
-      style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-    ),
-  ],
-)
-),
+            children: [
+              _buildProviderAndDateRow(),
+              const SizedBox(height: 20),
+              _buildProductTable(),
+              const SizedBox(height: 20),
+              _buildExpenseTable(),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _submitReceivingData,
+                child: const Text('Сохранить', style: buttonTextStyle),
+                style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+              ),
+            ],
+          ),
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
 Widget _buildStyledDropdown<T>({
   required String label,
@@ -204,8 +211,7 @@ Widget _buildProviderAndDateRow() {
     },
   );
 }
-  
-Widget _buildProductTable() {
+ Widget _buildProductTable() {
   return BlocBuilder<ProductSubCardBloc, ProductSubCardState>(
     builder: (context, productSubCardState) {
       if (productSubCardState is ProductSubCardLoading) {
@@ -215,128 +221,371 @@ Widget _buildProductTable() {
           builder: (context, unitState) {
             if (unitState is UnitLoading) {
               return const Center(child: CircularProgressIndicator());
-            } else if (unitState is UnitSuccess) {
-              final units = unitState.message.split(',');
+            } else if (unitState is UnitFetchedSuccess) {
+              final units = unitState.units;
+
+              double totalQuantity = productRows.fold(0.0, (sum, row) => sum + (row['quantity'] ?? 0.0));
+              double totalSum = productRows.fold(0.0, (sum, row) => sum + ((row['netto'] ?? 0.0) * (row['price'] ?? 0.0)));
+              double totalExpenses = expenses.fold(0.0, (sum, expense) => sum + (expense['amount'] ?? 0.0));
+              double expensePerQuantity = totalQuantity > 0 ? totalExpenses / totalQuantity : 0.0;
+
               return Column(
                 children: [
-                  Table(
-                    border: TableBorder.all(color: borderColor),
-                    children: [
-                      // Header Row
-                      TableRow(
-                        decoration: BoxDecoration(color: primaryColor),
-                        children: const [
-                          Padding(padding: EdgeInsets.all(10.0), child: Text('Товар', style: tableHeaderStyle)),
-                          Padding(padding: EdgeInsets.all(10.0), child: Text('Ед изм', style: tableHeaderStyle)),
-                          Padding(padding: EdgeInsets.all(8.0), child: Text('Кол-во', style: tableHeaderStyle)),
-                          Padding(padding: EdgeInsets.all(8.0), child: Text('Цена', style: tableHeaderStyle)),
-                          Padding(padding: EdgeInsets.all(8.0), child: Text('Сумма', style: tableHeaderStyle)),
-                          Padding(padding: EdgeInsets.all(8.0), child: Text('Удалить', style: tableHeaderStyle)),
-                        ],
-                      ),
-                      // Data Rows
-                      ...productRows.asMap().entries.map((entry) {
-                        int index = entry.key;
-                        Map<String, dynamic> row = entry.value;
-                        return TableRow(
-                          children: [
-                            // SubProduct dropdown
-                            DropdownButtonFormField<int>(
-                              value: row['product_subcard_id'],
-                              items: productSubCardState.productSubCards.map((subCard) {
-                                return DropdownMenuItem<int>(
-                                  value: subCard['id'],
-                                  child: Text(subCard['name']),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  row['product_subcard_id'] = value;
-                                });
-                              },
+                  // **Scrollable Product Table**
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Column(
+                      children: [
+                        // **Table Header**
+                        Container(
+                          decoration: BoxDecoration(
+                            color: primaryColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                          child: Row(
+                            children: const [
+                              SizedBox(width: 150, child: Text('Товар', style: tableHeaderStyle)),
+                              SizedBox(width: 120, child: Text('Кол-во тары', style: tableHeaderStyle)),
+                              SizedBox(width: 140, child: Text('Ед. изм / Тара', style: tableHeaderStyle)), // ✅ Unit column added
+                              SizedBox(width: 100, child: Text('Брутто', style: tableHeaderStyle)),
+                              SizedBox(width: 100, child: Text('Нетто', style: tableHeaderStyle)),
+                              SizedBox(width: 100, child: Text('Цена', style: tableHeaderStyle)),
+                              SizedBox(width: 100, child: Text('Сумма', style: tableHeaderStyle)),
+                              SizedBox(width: 100, child: Text('Допрасход', style: tableHeaderStyle)),
+                              SizedBox(width: 100, child: Text('Себестоимость', style: tableHeaderStyle)),
+                              SizedBox(width: 50, child: SizedBox()), // Delete button
+                            ],
+                          ),
+                        ),
+
+                        // **Table Rows**
+                        ...productRows.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          Map<String, dynamic> row = entry.value;
+
+                          // Find the selected unit
+                          Map<String, dynamic> selectedUnit = units.firstWhere(
+                            (u) => u['name'] == row['unit_measurement'],
+                            orElse: () => {'tare': 0.0, 'name': ''},
+                          );
+
+                          double unitTare = (selectedUnit['tare'] ?? 0.0) / 1000;
+                          double netWeightTare = (row['quantity'] ?? 0.0) * unitTare;
+                          double netto = (row['brutto'] ?? 0.0) - netWeightTare;
+                          row['netto'] = netto;
+
+                          double totalSumRow = netto * (row['price'] ?? 0.0);
+                          double additionalExpense = expensePerQuantity * (row['quantity'] ?? 0.0);
+                          double costPrice = (row['quantity'] != null && row['quantity']! > 0)
+                              ? (additionalExpense + totalSumRow) / row['quantity']!
+                              : 0.0;
+
+                          return Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                            decoration: BoxDecoration(
+                              border: const Border(bottom: tableBorderSide),
+                              color: index % 2 == 0 ? backgroundColor : Colors.white,
                             ),
-                            // Unit dropdown
-                            DropdownButtonFormField<String>(
-                              value: row['unit_measurement'],
-                              items: units.map((unit) {
-                                return DropdownMenuItem<String>(
-                                  value: unit,
-                                  child: Text(unit),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  row['unit_measurement'] = value;
-                                });
-                              },
+                            child: Row(
+                              children: [
+                                // Product Dropdown
+                                SizedBox(
+                                  width: 150,
+                                  child: DropdownButtonFormField<int>(
+                                    value: row['product_subcard_id'],
+                                    items: productSubCardState.productSubCards.map((subCard) {
+                                      return DropdownMenuItem<int>(
+                                        value: subCard['id'],
+                                        child: Text(subCard['name'], style: bodyTextStyle),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        row['product_subcard_id'] = value;
+                                      });
+                                    },
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Товар',
+                                      hintStyle: captionStyle,
+                                    ),
+                                  ),
+                                ),
+
+                                // Quantity Input
+                                SizedBox(
+                                  width: 120,
+                                  child: TextField(
+                                    onChanged: (value) {
+                                      setState(() {
+                                        row['quantity'] = double.tryParse(value) ?? 0.0;
+                                      });
+                                    },
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Кол-во',
+                                    ),
+                                  ),
+                                ),
+
+                                // ✅ Unit Measurement (Ед. изм / Тара)
+                                SizedBox(
+                                  width: 140,
+                                  child: DropdownButtonFormField<String>(
+                                    value: row['unit_measurement'],
+                                    items: units.map((unit) {
+                                      return DropdownMenuItem<String>(
+                                        value: unit['name'],
+                                        child: Text(
+                                          '${unit['name']} ${unit['tare'] != null ? '(${unit['tare']} г)' : ''}',
+                                          style: bodyTextStyle,
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        row['unit_measurement'] = value;
+                                      });
+                                    },
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Ед. изм',
+                                      hintStyle: captionStyle,
+                                    ),
+                                  ),
+                                ),
+
+                                // Brutto Input
+                                SizedBox(
+                                  width: 100,
+                                  child: TextField(
+                                    onChanged: (value) {
+                                      setState(() {
+                                        row['brutto'] = double.tryParse(value) ?? 0.0;
+                                      });
+                                    },
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Брутто',
+                                    ),
+                                  ),
+                                ),
+
+                                // Netto Display
+                                SizedBox(
+                                  width: 100,
+                                  child: Text(
+                                    netto.toStringAsFixed(2),
+                                    style: bodyTextStyle,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+
+                                // Price Input
+                                SizedBox(
+                                  width: 100,
+                                  child: TextField(
+                                    onChanged: (value) {
+                                      setState(() {
+                                        row['price'] = double.tryParse(value) ?? 0.0;
+                                      });
+                                    },
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Цена',
+                                    ),
+                                  ),
+                                ),
+
+                                // Total Sum
+                                SizedBox(
+                                  width: 100,
+                                  child: Text(
+                                    totalSumRow.toStringAsFixed(2),
+                                    style: bodyTextStyle,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+
+                                // Допрасход
+                                SizedBox(
+                                  width: 100,
+                                  child: Text(
+                                    additionalExpense.toStringAsFixed(2),
+                                    style: bodyTextStyle,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+
+                                // Себестоимость
+                                SizedBox(
+                                  width: 100,
+                                  child: Text(
+                                    costPrice.toStringAsFixed(2),
+                                    style: bodyTextStyle,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
                             ),
-                            // Quantity input
-                            TextField(
-                              onChanged: (value) {
-                                setState(() {
-                                  row['quantity'] = double.tryParse(value) ?? 0.0;
-                                });
-                              },
-                              decoration: const InputDecoration(hintText: 'Кол-во'),
-                              keyboardType: TextInputType.number,
-                            ),
-                            // Price input
-                            TextField(
-                              onChanged: (value) {
-                                setState(() {
-                                  row['price'] = double.tryParse(value) ?? 0.0;
-                                });
-                              },
-                              decoration: const InputDecoration(hintText: 'Цена'),
-                              keyboardType: TextInputType.number,
-                            ),
-                            // Total sum
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text((row['quantity'] * row['price']).toStringAsFixed(2)),
-                            ),
-                            // Delete icon
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                setState(() {
-                                  productRows.removeAt(index);
-                                });
-                              },
-                            ),
-                          ],
-                        );
-                      }).toList(),
-                    ],
+                          );
+                        }).toList(),
+                      ],
+                    ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.add),
+
+                  // **Add Row Button**
+                  TextButton.icon(
                     onPressed: () {
                       setState(() {
                         productRows.add({
                           'product_subcard_id': null,
                           'unit_measurement': null,
+                          'tare': null,
+                          'brutto': 0.0,
                           'quantity': 0.0,
                           'price': 0.0,
-                          'total_sum': 0.0,
                         });
                       });
                     },
+                    icon: const Icon(Icons.add, color: primaryColor),
+                    label: const Text('Добавить строку', style: bodyTextStyle),
                   ),
                 ],
               );
-            } else {
-              return const Center(child: Text('Ошибка при загрузке единиц измерения.'));
             }
+            return const Center(child: Text('Ошибка загрузки единиц измерения.'));
           },
         );
-      } else {
-        return const Center(child: Text('Ошибка при загрузке подкарточек товаров.'));
       }
+      return const Center(child: Text('Ошибка загрузки подкарточек товаров.'));
     },
   );
 }
 
+Widget _buildSummaryTable() {
+  double totalQuantity = productRows.fold(0.0, (sum, row) => sum + (row['quantity'] ?? 0.0));
+  double totalSum = productRows.fold(0.0, (sum, row) => sum + ((row['netto'] ?? 0.0) * (row['price'] ?? 0.0)));
+  double totalExpenses = expenses.fold(0.0, (sum, expense) => sum + (expense['amount'] ?? 0.0)); // SUM expenses
+
+  return Container(
+    margin: const EdgeInsets.only(top: 20),
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: primaryColor.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: borderColor),
+    ),
+    child: Column(
+      children: [
+        Text("ИТОГО", style: subheadingStyle),
+        Text("Общее количество: ${totalQuantity.toStringAsFixed(2)}", style: bodyTextStyle),
+        Text("Общая сумма: ${totalSum.toStringAsFixed(2)}", style: bodyTextStyle),
+        Text("Доп расходы: ${totalExpenses.toStringAsFixed(2)}", style: bodyTextStyle), // ADDITIONAL EXPENSES
+      ],
+    ),
+  );
+}
+
+
+Widget _buildExpenseTable() {
+  return SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: Column(
+      children: [
+        // Table Header
+        Container(
+          decoration: BoxDecoration(
+            color: primaryColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          child: Row(
+            children: const [
+              SizedBox(width: 250, child: Text('Наименование', style: tableHeaderStyle)),
+              SizedBox(width: 150, child: Text('Сумма', style: tableHeaderStyle)),
+              SizedBox(width: 50, child: SizedBox()), // For delete button
+            ],
+          ),
+        ),
+        // Expense Rows
+        ...expenses.asMap().entries.map((entry) {
+          int index = entry.key;
+          Map<String, dynamic> expense = entry.value;
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: tableBorderSide,
+              ),
+            ),
+            child: Row(
+              children: [
+                // Name Input
+                SizedBox(
+                  width: 250,
+                  child: TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        expense['name'] = value;
+                      });
+                    },
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Наименование',
+                    ),
+                  ),
+                ),
+                // Amount Input
+                SizedBox(
+                  width: 150,
+                  child: TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        expense['amount'] = double.tryParse(value) ?? 0.0;
+                      });
+                    },
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Сумма',
+                    ),
+                  ),
+                ),
+                // Delete Icon
+                SizedBox(
+                  width: 50,
+                  child: IconButton(
+                    icon: const Icon(Icons.delete, color: errorColor),
+                    onPressed: () {
+                      setState(() {
+                        expenses.removeAt(index);
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+        // Add New Expense Button
+        TextButton.icon(
+          onPressed: () {
+            setState(() {
+              expenses.add({'name': '', 'amount': 0.0});
+            });
+          },
+          icon: const Icon(Icons.add, color: primaryColor),
+          label: const Text('Добавить расход', style: bodyTextStyle),
+        ),
+      ],
+    ),
+  );
+}
 
 void _submitReceivingData() {
   List<Map<String, dynamic>> formattedRows = productRows.map((row) {

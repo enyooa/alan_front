@@ -13,8 +13,7 @@ import 'package:alan/bloc/blocs/common_blocs/blocs/user_photo_bloc.dart';
 import 'package:alan/bloc/blocs/common_blocs/events/connectivity_event.dart';
 import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
 import 'package:alan/bloc/blocs/common_blocs/states/connectivity_state.dart';
-import 'package:alan/bloc/blocs/courier_page_blocs/blocs/invoice_bloc.dart';
-import 'package:alan/bloc/blocs/courier_page_blocs/events/invoice_event.dart';
+
 import 'package:alan/constant.dart';
 import 'package:alan/ui/admin/home.dart';
 import 'package:alan/ui/cashbox/home.dart';

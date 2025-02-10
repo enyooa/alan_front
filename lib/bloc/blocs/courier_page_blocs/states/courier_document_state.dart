@@ -9,16 +9,14 @@ class CourierDocumentInitial extends CourierDocumentState {}
 
 class CourierDocumentLoading extends CourierDocumentState {}
 
-class CourierDocumentLoaded extends CourierDocumentState {
-  final List<dynamic> documents;
+class CourierDocumentSubmitted extends CourierDocumentState {
+  final String message;
 
-  CourierDocumentLoaded({required this.documents});
+  CourierDocumentSubmitted({required this.message});
 
   @override
-  List<Object?> get props => [documents];
+  List<Object?> get props => [message];
 }
-
-class CourierDocumentSubmittedSuccess extends CourierDocumentState {}
 
 class CourierDocumentError extends CourierDocumentState {
   final String error;
@@ -28,3 +26,12 @@ class CourierDocumentError extends CourierDocumentState {
   @override
   List<Object?> get props => [error];
 }
+class CourierDocumentsFetched extends CourierDocumentState {
+  final List<Map<String, dynamic>> documents;
+
+  CourierDocumentsFetched({required this.documents});
+
+  @override
+  List<Object?> get props => [documents];
+}
+

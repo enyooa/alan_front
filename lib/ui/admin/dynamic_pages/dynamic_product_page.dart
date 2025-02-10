@@ -1,5 +1,5 @@
-import 'package:alan/ui/admin/dynamic_pages/product_options/product_inventory_page.dart';
-import 'package:alan/ui/admin/dynamic_pages/product_options/product_pricing_page.dart';
+import 'package:alan/ui/admin/dynamic_pages/product_options/send_to_warehouse.dart';
+import 'package:alan/ui/admin/dynamic_pages/product_options/price_offer_page.dart';
 import 'package:alan/ui/admin/dynamic_pages/product_options/product_receiving_page.dart';
 import 'package:alan/ui/admin/dynamic_pages/product_options/product_sale_page.dart';
 import 'package:flutter/material.dart';

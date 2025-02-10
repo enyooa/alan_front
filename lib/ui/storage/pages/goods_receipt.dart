@@ -64,9 +64,9 @@ class _GoodsReceiptPageState extends State<GoodsReceiptPage> {
           ),
           BlocListener<UnitBloc, UnitState>(
             listener: (context, state) {
-              if (state is UnitSuccess) {
+              if (state is UnitFetchedSuccess) {
                 setState(() {
-                  units = state.message.split(','); // Parse comma-separated units
+  final units = state.units; // `units` is now a List<Map<String, dynamic>>.
                 });
               } else if (state is UnitError) {
                 ScaffoldMessenger.of(context).showSnackBar(

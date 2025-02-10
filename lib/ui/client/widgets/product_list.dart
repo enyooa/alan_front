@@ -146,33 +146,36 @@ class _ProductListPageState extends State<ProductListPage> {
                       top: 8,
                       right: 8,
                       child: BlocBuilder<FavoritesBloc, FavoritesState>(
-                        builder: (context, favoritesState) {
-                          final isFavorite = (favoritesState is FavoritesLoaded) &&
-                              favoritesState.favorites.any((fav) => fav['product_subcard_id'] == subCard['id']);
+                      builder: (context, favoritesState) {
+                        final isFavorite = (favoritesState is FavoritesLoaded) &&
+                            favoritesState.favorites.any((fav) => fav['product_subcard_id'] == subCard['id']);
 
-                          return IconButton(
-                            icon: Icon(
-                              isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: isFavorite ? Colors.red : textColor,
-                            ),
-                            onPressed: () {
-                              if (isFavorite) {
-                                context.read<FavoritesBloc>().add(
-                                      RemoveFromFavoritesEvent(
-                                        productSubcardId: subCard['id'].toString(),
-                                      ),
-                                    );
-                              } else {
-                                context.read<FavoritesBloc>().add(
-                                      AddToFavoritesEvent(
-                                        product: {'product_subcard_id': subCard['id'], 'source_table': 'sales'},
-                                      ),
-                                    );
-                              }
-                            },
-                          );
-                        },
-                      ),
+                        return IconButton(
+                          icon: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            color: isFavorite ? Colors.red : textColor,
+                          ),
+                          onPressed: () {
+                            if (isFavorite) {
+                              context.read<FavoritesBloc>().add(
+                                    RemoveFromFavoritesEvent(
+                                      productSubcardId: subCard['id'].toString(),
+                                    ),
+                                  );
+                            } else {
+                              context.read<FavoritesBloc>().add(
+                                    AddToFavoritesEvent(
+                                      product: {
+                                        'product_subcard_id': subCard['id'],
+                                        'source_table': 'sales',
+                                      },
+                                    ),
+                                  );
+                            }
+                          },
+                        );
+                      },
+                    )
                     ),
 
                     // Increment-Decrement or "В корзину" Button
