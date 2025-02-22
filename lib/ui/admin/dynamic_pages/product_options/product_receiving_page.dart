@@ -586,19 +586,28 @@ Widget _buildExpenseTable() {
     ),
   );
 }
-
 void _submitReceivingData() {
+  // Calculate the total additional expenses
+  double totalAdditionalExpenses = expenses.fold(0.0, (sum, expense) => sum + (expense['amount'] ?? 0.0));
+
+  // Prepare the list of product receiving data
   List<Map<String, dynamic>> formattedRows = productRows.map((row) {
+    double netto = row['netto'] ?? 0.0;
+    double price = row['price'] ?? 0.0;
+    double totalSumRow = netto * price;
+
     return {
       'organization_id': selectedProviderId ?? 1,
       'product_subcard_id': row['product_subcard_id'] ?? 0,
       'unit_measurement': row['unit_measurement'] ?? 'шт',
       'quantity': row['quantity'] ?? 0.0,
-      'price': row['price'] ?? 0.0,
-      'total_sum': row['total_sum'] ?? 0.0,
+      'price': price,
+      'total_sum': totalSumRow,
       'date': selectedDate != null
           ? DateFormat('yyyy-MM-dd').format(selectedDate!)
           : DateFormat('yyyy-MM-dd').format(DateTime.now()),
+      'cost_price': row['cost_price'] ?? 0.0,
+      'additional_expenses': totalAdditionalExpenses, // Assign total additional expenses here
     };
   }).toList();
 
@@ -609,6 +618,7 @@ void _submitReceivingData() {
     return;
   }
 
+  // Dispatch the event to create bulk product receiving
   context.read<ProductReceivingBloc>().add(
         CreateBulkProductReceivingEvent(receivings: formattedRows),
       );
@@ -617,5 +627,7 @@ void _submitReceivingData() {
     const SnackBar(content: Text('Отправка данных...')),
   );
 }
+
+
 
 }

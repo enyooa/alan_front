@@ -15,8 +15,7 @@ class ProductSubCardPage extends StatefulWidget {
 
 class _ProductSubCardPageState extends State<ProductSubCardPage> {
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController bruttoController = TextEditingController();
-  final TextEditingController nettoController = TextEditingController();
+
   int? selectedProductCardId;
 
   @override
@@ -43,8 +42,7 @@ class _ProductSubCardPageState extends State<ProductSubCardPage> {
               );
               // Clear input fields after successful creation
               nameController.clear();
-              bruttoController.clear();
-              nettoController.clear();
+              
               setState(() {
                 selectedProductCardId = null;
               });
@@ -115,42 +113,7 @@ class _ProductSubCardPageState extends State<ProductSubCardPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-
-                    const Text('Брутто', style: formLabelStyle),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: bruttoController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: 'Введите брутто',
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 12,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    const Text('Нетто', style: formLabelStyle),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: nettoController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: 'Введите нетто',
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 12,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
+                   
                     const SizedBox(height: 20),
 
                     ElevatedButton.icon(
@@ -173,8 +136,7 @@ class _ProductSubCardPageState extends State<ProductSubCardPage> {
                           CreateProductSubCardEvent(
                             productCardId: selectedProductCardId!,
                             name: nameController.text,
-                            brutto: double.tryParse(bruttoController.text) ?? 0.0,
-                            netto: double.tryParse(nettoController.text) ?? 0.0,
+                           
                           ),
                         );
                       },

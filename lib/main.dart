@@ -91,9 +91,7 @@ class StartApp extends StatelessWidget {
           create: (context) => AdminCashBloc()..add(FetchAdminCashesEvent()),
         ),
         BlocProvider(create: (context) => AccountBloc(baseUrl: baseUrl)),
-        BlocProvider(
-        create: (context) => BasketBloc(repository: BasketRepository(baseUrl: baseUrl)),
-      ),
+        
       
       ],
       child: MaterialApp(

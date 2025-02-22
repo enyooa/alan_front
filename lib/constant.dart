@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 // const websocketIp = '192.168.1.67';
 
 //  const baseUrl = 'http://127.0.0.1:8000/api/';
-const baseUrl = 'http://185.22.65.56/api/';
-const basePhotoUrl = 'http://185.22.65.56/';
+const baseUrl = 'https://alantrade.kz/api/';
+const basePhotoUrl = 'https://alantrade.kz/';
 
 // const webSocketUrl = '185.22.65.56';
 // const webSocketUrl = '192.168.1.67';

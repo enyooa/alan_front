@@ -65,7 +65,7 @@ class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
     };
 
     final response = await http.post(
-      Uri.parse(baseUrl + 'bulkStoreInventory'),
+      Uri.parse(baseUrl + 'sendToGeneralWarehouse'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',

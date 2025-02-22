@@ -112,15 +112,14 @@ class _OperationHistoryPageState extends State<OperationHistoryPage> {
         });
         break;
       case 'Подкарточка товара':
-        _showEditDialog(context, operation, ['название подкарточки', 'брутто', 'нетто'], (fields) {
+        _showEditDialog(context, operation, ['название подкарточки'], (fields) {
           context.read<OperationsBloc>().add(
                 EditOperationEvent(
                   id: int.tryParse(operation['id'].toString()) ?? 0,
                   type: 'Подкарточка товара',
                   updatedFields: {
                     'name': fields['name'] ?? '',
-                    'brutto': double.tryParse(fields['brutto'] ?? '0.0') ?? 0.0,
-                    'netto': double.tryParse(fields['netto'] ?? '0.0') ?? 0.0,
+                    
                   },
                 ),
               );

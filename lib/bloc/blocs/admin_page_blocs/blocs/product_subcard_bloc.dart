@@ -36,8 +36,7 @@ class ProductSubCardBloc extends Bloc<ProductSubCardEvent, ProductSubCardState> 
         body: json.encode({
           'product_card_id': event.productCardId,
           'name': event.name,
-          'brutto': event.brutto,
-          'netto': event.netto,
+          
         }),
       );
 

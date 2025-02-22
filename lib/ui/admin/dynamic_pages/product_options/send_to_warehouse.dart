@@ -437,7 +437,7 @@ class _InventoryPageState extends State<InventoryPage> {
   context.read<InventoryBloc>().add(event);
 
   ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Инвентаризация отправлена...')),
+    const SnackBar(content: Text('перемещен на другой склад...')),
   );
 }
 }

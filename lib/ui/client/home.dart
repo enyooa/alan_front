@@ -54,6 +54,9 @@ class ClientHome extends StatelessWidget {
         BlocProvider<ClientOrderItemsBloc>(
           create: (context) => ClientOrderItemsBloc()..add(FetchClientOrderItemsEvent()),
         ),
+      //   BlocProvider(
+      //   create: (context) => BasketBloc(repository: BasketRepository(baseUrl: baseUrl)),
+      // ),
       ],
       child: BottomNavBar(),
     );
