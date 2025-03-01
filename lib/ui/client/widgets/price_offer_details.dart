@@ -29,8 +29,10 @@ class PriceOfferDetailsPage extends StatelessWidget {
           itemCount: items.length,
           itemBuilder: (context, index) {
             final item = items[index];
-            final int productSubCardId = item['product_sub_card']?['id'] ?? -1;
-            final String productName = item['product_sub_card']?['name'] ?? 'Товар';
+final int productSubCardId =
+    item['product_sub_card']?['id'] ??
+    (item['product_subcard_id'] ?? -1);            
+    final String productName = item['product_sub_card']?['name'] ?? 'Товар';
             final double price = (item['price'] ?? 0).toDouble();
             final double amount = (item['amount'] ?? 0).toDouble();
 
@@ -150,7 +152,8 @@ class PriceOfferDetailsPage extends StatelessWidget {
                                         AddToBasketEvent({
                                           'product_subcard_id': productSubCardId,
                                           'source_table': 'price_offers',
-                                          'quantity': -1,
+                                          'source_table_id': item['id'], // ← Include this!
+                                          'quantity': 1,
                                           'price': price,
                                         }),
                                       );
@@ -164,6 +167,8 @@ class PriceOfferDetailsPage extends StatelessWidget {
                                         AddToBasketEvent({
                                           'product_subcard_id': productSubCardId,
                                           'source_table': 'price_offers',
+                                          'source_table_id': item['id'], 
+
                                           'quantity': 1,
                                           'price': price,
                                         }),
@@ -180,6 +185,8 @@ class PriceOfferDetailsPage extends StatelessWidget {
                                     AddToBasketEvent({
                                       'product_subcard_id': productSubCardId,
                                       'source_table': 'price_offers',
+                                        'source_table_id': item['id'], // ← included
+
                                       'quantity': 1,
                                       'price': price,
                                     }),

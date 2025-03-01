@@ -22,7 +22,7 @@ class StorageSubCardBloc extends Bloc<ProductSubCardEvent, ProductSubCardState> 
       final token = prefs.getString('token') ?? '';
 
       final response = await http.get(
-        Uri.parse('${baseUrl}product_subcards'),
+        Uri.parse('${baseUrl}product_subcards_storager'),
         headers: {
           'Authorization': 'Bearer $token',
         },

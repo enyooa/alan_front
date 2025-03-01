@@ -72,7 +72,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
- Future<void> _onRegisterEvent(RegisterEvent event, Emitter<AuthState> emit) async {
+Future<void> _onRegisterEvent(RegisterEvent event, Emitter<AuthState> emit) async {
   emit(AuthLoading());
   try {
     final response = await http.post(
@@ -93,9 +93,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      // The top-level keys are: id, user, token, message
       final token = data['token'] as String?;
       final userId = data['id'] as int?;
-      final roles = List<String>.from(data['roles'] ?? []);
+      
+      // "user" is an object with "first_name", "last_name", "whatsapp_number", "roles" ...
+      final userMap = data['user'] as Map<String, dynamic>;
+      // roles is an array INSIDE user
+      final roles = List<String>.from(userMap['roles'] ?? []);
 
       if (token != null && userId != null) {
         final prefs = await SharedPreferences.getInstance();
@@ -108,12 +114,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthError(message: "Registration failed: Missing token or user ID."));
       }
     } else {
-      // Handle API errors with a proper message
-      final errorMessage = jsonDecode(response.body)['message'] ?? "Registration failed.";
+      // For non-201 responses, parse the error "message"
+      final errorJson = jsonDecode(response.body) as Map<String, dynamic>;
+      final errorMessage = errorJson['message'] ?? "Registration failed.";
       emit(AuthError(message: errorMessage));
     }
   } catch (error) {
-    // Catch and emit any unexpected errors
     emit(AuthError(message: "Error: ${error.toString()}"));
   }
 }

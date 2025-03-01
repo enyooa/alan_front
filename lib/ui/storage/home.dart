@@ -26,7 +26,7 @@ class _StoragePageState extends State<StoragePage> {
 
   final List<Widget> _pages = [
     SalesReportPage(),
-    SalesStoragePage(),
+    StoragerSalePage(),
     GoodsReceiptPage(),
     WriteOffPage(),
     AccountView()
@@ -45,7 +45,7 @@ class _StoragePageState extends State<StoragePage> {
       providers: [
         BlocProvider(
       create: (_) => SalesStorageBloc(),
-      child: const SalesStoragePage(),
+      child: const StoragerSalePage(),
     ),
     BlocProvider(
       create: (_) => StorageReceivingBloc(),

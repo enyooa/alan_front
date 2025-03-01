@@ -21,6 +21,7 @@ class _CalculationsPageState extends State<CalculationsPage> {
     super.initState();
     // Already triggered in MultiBlocProvider or you can do it here:
     context.read<PriceOfferBloc>().add(const FetchPriceOffersEvent());
+    
   }
 
   Widget _buildDropdown() {

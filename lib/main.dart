@@ -1,5 +1,7 @@
 import 'package:alan/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
 import 'package:alan/bloc/blocs/client_page_blocs/repositories/basket_repository.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/repositories/favorites_repository.dart';
 import 'package:alan/bloc/blocs/common_blocs/blocs/account_bloc.dart';
 import 'package:alan/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
 import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/admin_cash_bloc.dart';
@@ -91,7 +93,12 @@ class StartApp extends StatelessWidget {
           create: (context) => AdminCashBloc()..add(FetchAdminCashesEvent()),
         ),
         BlocProvider(create: (context) => AccountBloc(baseUrl: baseUrl)),
-        
+        BlocProvider<BasketBloc>(
+      create: (context) => BasketBloc(repository: BasketRepository(baseUrl: baseUrl)),
+    ),
+    BlocProvider<FavoritesBloc>(
+      create: (context) => FavoritesBloc(repository: FavoritesRepository(baseUrl: baseUrl)),
+    ),
       
       ],
       child: MaterialApp(

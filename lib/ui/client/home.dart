@@ -28,12 +28,7 @@ class ClientHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<BasketBloc>(
-      create: (context) => BasketBloc(repository: BasketRepository(baseUrl: baseUrl)),
-    ),
-    BlocProvider<FavoritesBloc>(
-      create: (context) => FavoritesBloc(repository: FavoritesRepository(baseUrl: baseUrl)),
-    ),
+        
         BlocProvider<ProductSubCardBloc>(
           create: (context) => ProductSubCardBloc()..add(FetchProductSubCardsEvent()),
         ),

@@ -1,6 +1,8 @@
+// sales_storage_event.dart
 abstract class SalesStorageEvent {}
 
 class FetchSalesStorageData extends SalesStorageEvent {}
+
 class SubmitSalesStorageData extends SalesStorageEvent {
   final int clientId;
   final int addressId;
