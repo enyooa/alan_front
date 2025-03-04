@@ -20,7 +20,7 @@ class PriceOfferDetailsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Предложение #$orderId'),
+        title: Text('Предложение #$orderId',style: headingStyle),
         backgroundColor: primaryColor,
       ),
       body: Padding(
@@ -87,7 +87,7 @@ final int productSubCardId =
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          Text('Кол-во: $amount | Цена: $price ₸', style: captionStyle),
+                          Text('Кол-во: $amount | Цена: $price ₸', style: titleStyle),
                         ],
                       ),
                     ),
