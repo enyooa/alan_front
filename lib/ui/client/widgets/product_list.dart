@@ -1,15 +1,16 @@
-import 'package:alan/bloc/blocs/client_page_blocs/states/favorites_state.dart';
-import 'package:alan/bloc/models/basket_item.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/basket_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/events/basket_event.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/states/basket_state.dart';
 import 'package:alan/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
 import 'package:alan/bloc/blocs/client_page_blocs/events/favorites_event.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/states/sales_state.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/favorites_state.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/events/basket_event.dart';
+import 'package:alan/bloc/models/basket_item.dart';
 import 'package:alan/bloc/blocs/client_page_blocs/blocs/sales_bloc.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/states/sales_state.dart';
 import 'package:alan/constant.dart';
+
 class ProductListPage extends StatefulWidget {
   final String searchQuery;
 
@@ -35,9 +36,10 @@ class _ProductListPageState extends State<ProductListPage> {
         } else if (state is SalesLoadedWithDetails) {
           final salesDetails = state.salesDetails;
 
-          // Filter products based on search query
+          // Filter products based on the search query.
           final filteredData = salesDetails.where((data) {
-            final subCardName = data['sub_card']['name'].toString().toLowerCase();
+            final subCardName =
+                data['sub_card']['name'].toString().toLowerCase();
             return subCardName.contains(widget.searchQuery.toLowerCase());
           }).toList();
 
@@ -54,19 +56,24 @@ class _ProductListPageState extends State<ProductListPage> {
               final item = filteredData[index];
               final subCard = item['sub_card'];
               final productCard = subCard['product_card'];
-              final relativePhotoPath = productCard['photo_product'] ?? '';
-              final photoUrl = relativePhotoPath.isNotEmpty
-                  ? '${basePhotoUrl}storage/$relativePhotoPath'
-                  : '';
-              final productName = productCard['name_of_products'] ?? 'Товар';
-              final description = productCard['description'] ?? 'Описание отсутствует';
+              // Get the product image URL.
+              final photoProduct = productCard['photo_product'] ?? '';
+              final photoUrl = photoProduct.toString().startsWith("http")
+                  ? photoProduct
+                  : '${basePhotoUrl}storage/$photoProduct';
+              final productName =
+                  productCard['name_of_products'] ?? 'Товар';
+              final description =
+                  productCard['description'] ?? 'Описание отсутствует';
               final price = item['price'];
-              final unitMeasurement = item['unit_measurement'] ?? 'Единица';
+              final unitMeasurement =
+                  item['unit_measurement'] ?? 'Единица';
               final subCardName = subCard['name'] ?? 'Подкарточка';
               final productId = item['id'];
 
               return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                margin:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -97,10 +104,12 @@ class _ProductListPageState extends State<ProductListPage> {
                                     color: Colors.grey.shade200,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(Icons.image_not_supported, size: 40),
+                                  child: const Icon(
+                                    Icons.image_not_supported,
+                                    size: 40,
+                                  ),
                                 ),
                           const SizedBox(width: 10),
-
                           // Product Details
                           Expanded(
                             child: Column(
@@ -108,7 +117,8 @@ class _ProductListPageState extends State<ProductListPage> {
                               children: [
                                 Text(
                                   productName,
-                                  style: subheadingStyle.copyWith(fontWeight: FontWeight.bold),
+                                  style: subheadingStyle.copyWith(
+                                      fontWeight: FontWeight.bold),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -132,7 +142,8 @@ class _ProductListPageState extends State<ProductListPage> {
                                 ),
                                 Text(
                                   'Единица: $unitMeasurement',
-                                  style: captionStyle.copyWith(fontStyle: FontStyle.italic),
+                                  style: captionStyle.copyWith(
+                                      fontStyle: FontStyle.italic),
                                 ),
                               ],
                             ),
@@ -140,52 +151,56 @@ class _ProductListPageState extends State<ProductListPage> {
                         ],
                       ),
                     ),
-
                     // Favorite Button
                     Positioned(
                       top: 8,
                       right: 8,
                       child: BlocBuilder<FavoritesBloc, FavoritesState>(
-                      builder: (context, favoritesState) {
-                        final isFavorite = (favoritesState is FavoritesLoaded) &&
-                            favoritesState.favorites.any((fav) => fav['product_subcard_id'] == subCard['id']);
+                        builder: (context, favoritesState) {
+                          final isFavorite = (favoritesState is FavoritesLoaded) &&
+                              favoritesState.favorites.any((fav) =>
+                                  fav['product_subcard_id'] == subCard['id']);
 
-                        return IconButton(
-                          icon: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: isFavorite ? Colors.red : textColor,
-                          ),
-                          onPressed: () {
-                            if (isFavorite) {
-                              context.read<FavoritesBloc>().add(
-                                    RemoveFromFavoritesEvent(
-                                      productSubcardId: subCard['id'].toString(),
-                                    ),
-                                  );
-                            } else {
-                              context.read<FavoritesBloc>().add(
-                                    AddToFavoritesEvent(
-                                      product: {
-                                        'product_subcard_id': subCard['id'],
-                                        'source_table': 'sales',
-                                      },
-                                    ),
-                                  );
-                            }
-                          },
-                        );
-                      },
-                    )
+                          return IconButton(
+                            icon: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color:
+                                  isFavorite ? Colors.red : textColor,
+                            ),
+                            onPressed: () {
+                              if (isFavorite) {
+                                context.read<FavoritesBloc>().add(
+                                      RemoveFromFavoritesEvent(
+                                        productSubcardId:
+                                            subCard['id'].toString(),
+                                      ),
+                                    );
+                              } else {
+                                context.read<FavoritesBloc>().add(
+                                      AddToFavoritesEvent(
+                                        product: {
+                                          'product_subcard_id': subCard['id'],
+                                          'source_table': 'sales',
+                                        },
+                                      ),
+                                    );
+                              }
+                            },
+                          );
+                        },
+                      ),
                     ),
-
-                    // Increment-Decrement or "В корзину" Button
+                    // Increment/Decrement or "В корзину" Button
                     Positioned(
                       bottom: 8,
                       right: 8,
                       child: BlocBuilder<BasketBloc, BasketState>(
                         builder: (context, basketState) {
                           final basketItem = basketState.basketItems.firstWhere(
-                            (item) => item.productSubcardId == subCard['id'],
+                            (item) =>
+                                item.productSubcardId == subCard['id'],
                             orElse: () => BasketItem(
                               id: -1,
                               quantity: 0,
@@ -194,7 +209,6 @@ class _ProductListPageState extends State<ProductListPage> {
                               price: 0.0,
                             ),
                           );
-
                           final quantity = basketItem.quantity;
 
                           if (quantity > 0) {
@@ -202,8 +216,14 @@ class _ProductListPageState extends State<ProductListPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.remove_circle, color: primaryColor),
+                                  icon: const Icon(Icons.remove_circle,
+                                      color: primaryColor),
                                   onPressed: () {
+                                    final unitMeasurement =
+                                        item['unit_measurement'] ?? 'шт';
+                                    final double serverTotalsum =
+                                        (item['totalsum'] ?? 0).toDouble();
+
                                     context.read<BasketBloc>().add(
                                           AddToBasketEvent({
                                             'product_subcard_id': subCard['id'],
@@ -211,13 +231,16 @@ class _ProductListPageState extends State<ProductListPage> {
                                             'source_table_id': item['id'],
                                             'quantity': -1,
                                             'price': price,
+                                            'unit_measurement': unitMeasurement,
+                                            'totalsum': serverTotalsum,
                                           }),
                                         );
                                   },
                                 ),
                                 Text('$quantity', style: subheadingStyle),
                                 IconButton(
-                                  icon: const Icon(Icons.add_circle, color: primaryColor),
+                                  icon: const Icon(Icons.add_circle,
+                                      color: primaryColor),
                                   onPressed: () {
                                     context.read<BasketBloc>().add(
                                           AddToBasketEvent({
@@ -251,7 +274,8 @@ class _ProductListPageState extends State<ProductListPage> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              child: const Text('В корзину', style: TextStyle(color: Colors.white)),
+                              child: const Text('В корзину',
+                                  style: TextStyle(color: Colors.white)),
                             );
                           }
                         },

@@ -14,21 +14,46 @@ import 'package:shared_preferences/shared_preferences.dart';
       on<RemoveRoleEvent>(_onRemoveRole);
     }
 
-    Future<void> _onFetchUsers(FetchUsersEvent event, Emitter<UserState> emit) async {
-      emit(UserLoading());
-      try {
-        final response = await http.get(Uri.parse(baseUrl + 'users'));
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final List<User> users = (data as List).map((json) => User.fromJson(json)).toList();
-          emit(UsersLoaded(users: users));
-        } else {
-          emit(UserError(message: "Failed to fetch users"));
-        }
-      } catch (e) {
-        emit(UserError(message: e.toString()));
-      }
+   Future<void> _onFetchUsers(
+    FetchUsersEvent event, Emitter<UserState> emit) async {
+  emit(UserLoading());
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    print("Token is: $token"); // Debug
+
+    if (token == null) {
+      emit(UserError(message: "Token not found"));
+      return;
     }
+
+    final response = await http.get(
+      Uri.parse(baseUrl + 'users'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print('Fetch users status code: ${response.statusCode}');
+    print('Fetch users body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final List<User> users = (data as List)
+          .map((json) => User.fromJson(json))
+          .toList();
+      emit(UsersLoaded(users: users));
+    } else {
+      emit(UserError(
+        message: "Failed to fetch users. Code: ${response.statusCode}",
+      ));
+    }
+  } catch (e) {
+    emit(UserError(message: e.toString()));
+  }
+}
+
   Future<void> _onAssignRole(AssignRoleEvent event, Emitter<UserState> emit) async {
   emit(UserLoading());
   try {

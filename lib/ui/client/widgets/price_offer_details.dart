@@ -1,26 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+// Blocs & Events
 import 'package:alan/bloc/blocs/client_page_blocs/blocs/basket_bloc.dart';
-import 'package:alan/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
 import 'package:alan/bloc/blocs/client_page_blocs/events/basket_event.dart';
+import 'package:alan/bloc/blocs/client_page_blocs/blocs/favorites_bloc.dart';
 import 'package:alan/bloc/blocs/client_page_blocs/events/favorites_event.dart';
+
+// States
 import 'package:alan/bloc/blocs/client_page_blocs/states/basket_state.dart';
 import 'package:alan/bloc/blocs/client_page_blocs/states/favorites_state.dart';
+
+// Models & Constants
 import 'package:alan/bloc/models/basket_item.dart';
 import 'package:alan/constant.dart';
 
 class PriceOfferDetailsPage extends StatelessWidget {
   final Map<String, dynamic> offerOrder;
-  const PriceOfferDetailsPage({Key? key, required this.offerOrder}) : super(key: key);
+  const PriceOfferDetailsPage({
+    Key? key,
+    required this.offerOrder,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final int orderId = offerOrder['id'];
+    // The list of items under this offer order:
     final List<dynamic> items = offerOrder['price_offers'] ?? [];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Предложение #$orderId',style: headingStyle),
+        title: Text(
+          'Предложение #$orderId',
+          style: headingStyle,
+        ),
         backgroundColor: primaryColor,
       ),
       body: Padding(
@@ -29,17 +42,33 @@ class PriceOfferDetailsPage extends StatelessWidget {
           itemCount: items.length,
           itemBuilder: (context, index) {
             final item = items[index];
-final int productSubCardId =
-    item['product_sub_card']?['id'] ??
-    (item['product_subcard_id'] ?? -1);            
-    final String productName = item['product_sub_card']?['name'] ?? 'Товар';
+
+            // Identify the product_sub_card_id from the nested JSON:
+            final int productSubCardId = item['product_sub_card']?['id'] ??
+                (item['product_subcard_id'] ?? -1);
+
+            // Some fields from the JSON:
+            final String productName =
+                item['product_sub_card']?['name'] ?? 'Товар';
             final double price = (item['price'] ?? 0).toDouble();
             final double amount = (item['amount'] ?? 0).toDouble();
 
-            // If there's a photo
+            // If your backend already calculated totalsum:
+            final double totalSum = (item['totalsum'] ?? 0).toDouble();
+
+            // If you prefer to recalc totalsum as price * amount, do:
+            // final double totalSum = price * amount;
+
+            // Unit measurement field (e.g. "мешок", "кг", etc.)
+            final String unitMeasurement =
+                (item['unit_measurement'] ?? 'шт').toString();
+
+            // Handling photo from nested "product_card"
             String photoUrl = '';
-            if (item['product_sub_card']?['product_card']?['photo_product'] != null) {
-              photoUrl = '$baseUrl${item['product_sub_card']['product_card']['photo_product']}';
+            if (item['product_sub_card']?['product_card']?['photo_product'] !=
+                null) {
+              photoUrl =
+                  '$baseUrl${item['product_sub_card']['product_card']['photo_product']}';
             }
 
             return Card(
@@ -72,7 +101,10 @@ final int productSubCardId =
                               color: Colors.grey.shade200,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.image_not_supported, size: 40),
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              size: 40,
+                            ),
                           ),
                     const SizedBox(width: 10),
 
@@ -83,11 +115,21 @@ final int productSubCardId =
                         children: [
                           Text(
                             productName,
-                            style: subheadingStyle.copyWith(fontWeight: FontWeight.bold),
+                            style: subheadingStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          Text('Кол-во: $amount | Цена: $price ₸', style: titleStyle),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Кол-во: $amount | Цена: $price ₸',
+                            style: titleStyle,
+                          ),
+                          Text(
+                            'Ед: $unitMeasurement | Сумма: $totalSum ₸',
+                            style: captionStyle,
+                          ),
                         ],
                       ),
                     ),
@@ -95,27 +137,36 @@ final int productSubCardId =
                     // Favorite Button
                     BlocBuilder<FavoritesBloc, FavoritesState>(
                       builder: (context, favState) {
-                        final bool isFavorite = (favState is FavoritesLoaded) &&
-                            favState.favorites.any((fav) => fav['product_subcard_id'] == productSubCardId);
+                        final bool isFavorite =
+                            (favState is FavoritesLoaded) &&
+                                favState.favorites.any(
+                                  (fav) =>
+                                      fav['product_subcard_id'] ==
+                                      productSubCardId,
+                                );
 
                         return IconButton(
                           icon: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
                             color: isFavorite ? Colors.red : textColor,
                           ),
                           onPressed: () {
                             if (isFavorite) {
                               context.read<FavoritesBloc>().add(
                                     RemoveFromFavoritesEvent(
-                                      productSubcardId: productSubCardId.toString(),
+                                      productSubcardId:
+                                          productSubCardId.toString(),
                                     ),
                                   );
                             } else {
                               context.read<FavoritesBloc>().add(
                                     AddToFavoritesEvent(
                                       product: {
-                                        'product_subcard_id': productSubCardId,
-                                        'source_table': 'price_offers',
+                                        'product_subcard_id':
+                                            productSubCardId,
+                                        'source_table': 'price_offer_items',
                                       },
                                     ),
                                   );
@@ -128,49 +179,74 @@ final int productSubCardId =
                     // Basket Buttons
                     BlocBuilder<BasketBloc, BasketState>(
                       builder: (context, basketState) {
-                        final basketItem = basketState.basketItems.firstWhere(
-                          (bItem) => bItem.productSubcardId == productSubCardId,
+                        // Check if it's already in the basket
+                        final basketItem =
+                            basketState.basketItems.firstWhere(
+                          (bItem) =>
+                              bItem.productSubcardId == productSubCardId,
                           orElse: () => BasketItem(
-                            sourceTable: 'price_offers',
+                            sourceTable: 'price_offer_items',
                             id: -1,
                             quantity: 0,
                             productSubcardId: productSubCardId,
                             price: 0.0,
                           ),
                         );
+
                         final int quantity = basketItem.quantity;
 
+                        // If the user already has some quantity
+                        // show increment/decrement
                         if (quantity > 0) {
-                          // Show increment / decrement
                           return Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.remove_circle, color: primaryColor),
+                                icon: const Icon(
+                                  Icons.remove_circle,
+                                  color: primaryColor,
+                                ),
                                 onPressed: () {
                                   context.read<BasketBloc>().add(
                                         AddToBasketEvent({
-                                          'product_subcard_id': productSubCardId,
-                                          'source_table': 'price_offers',
-                                          'source_table_id': item['id'], // ← Include this!
-                                          'quantity': 1,
+                                          'product_subcard_id':
+                                              productSubCardId,
+                                          'source_table':
+                                              'price_offer_items',
+                                          'source_table_id': item['id'],
+                                          'quantity': -1,
                                           'price': price,
+                                          // NEW FIELDS:
+                                          'unit_measurement':
+                                              unitMeasurement,
+                                          'totalsum': totalSum,
                                         }),
                                       );
                                 },
                               ),
-                              Text('$quantity', style: subheadingStyle),
+                              Text(
+                                '$quantity',
+                                style: subheadingStyle,
+                              ),
                               IconButton(
-                                icon: const Icon(Icons.add_circle, color: primaryColor),
+                                icon: const Icon(
+                                  Icons.add_circle,
+                                  color: primaryColor,
+                                ),
                                 onPressed: () {
                                   context.read<BasketBloc>().add(
                                         AddToBasketEvent({
-                                          'product_subcard_id': productSubCardId,
-                                          'source_table': 'price_offers',
-                                          'source_table_id': item['id'], 
-
+                                          'product_subcard_id':
+                                              productSubCardId,
+                                          'source_table':
+                                              'price_offer_items',
+                                          'source_table_id': item['id'],
                                           'quantity': 1,
                                           'price': price,
+                                          // NEW FIELDS:
+                                          'unit_measurement':
+                                              unitMeasurement,
+                                          'totalsum': totalSum,
                                         }),
                                       );
                                 },
@@ -178,17 +254,21 @@ final int productSubCardId =
                             ],
                           );
                         } else {
-                          // "В корзину" button
+                          // If quantity == 0, show "В корзину"
                           return ElevatedButton(
                             onPressed: () {
                               context.read<BasketBloc>().add(
                                     AddToBasketEvent({
-                                      'product_subcard_id': productSubCardId,
-                                      'source_table': 'price_offers',
-                                        'source_table_id': item['id'], // ← included
-
+                                      'product_subcard_id':
+                                          productSubCardId,
+                                      'source_table':
+                                          'price_offer_items',
+                                      'source_table_id': item['id'],
                                       'quantity': 1,
                                       'price': price,
+                                      // NEW FIELDS:
+                                      'unit_measurement': unitMeasurement,
+                                      'totalsum': totalSum,
                                     }),
                                   );
                             },
@@ -198,7 +278,10 @@ final int productSubCardId =
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: const Text('В корзину', style: TextStyle(color: Colors.white)),
+                            child: const Text(
+                              'В корзину',
+                              style: TextStyle(color: Colors.white),
+                            ),
                           );
                         }
                       },

@@ -1,27 +1,27 @@
 import 'package:equatable/equatable.dart';
 
-abstract class PackagingState extends Equatable {
+abstract class WarehouseMovementState extends Equatable {
   @override
   List<Object?> get props => [];
 }
 
-class PackagingInitial extends PackagingState {}
+class WarehouseMovementInitial extends WarehouseMovementState {}
 
-class PackagingLoading extends PackagingState {}
+class WarehouseMovementLoading extends WarehouseMovementState {}
 
-class PackagingLoaded extends PackagingState {
-  final List<Map<String, dynamic>> tableData;
+class WarehouseMovementLoaded extends WarehouseMovementState {
+  final List<Map<String, dynamic>> reportData;
 
-  PackagingLoaded({required this.tableData});
+  WarehouseMovementLoaded({required this.reportData});
 
   @override
-  List<Object?> get props => [tableData];
+  List<Object?> get props => [reportData];
 }
 
-class PackagingError extends PackagingState {
+class WarehouseMovementError extends WarehouseMovementState {
   final String error;
 
-  PackagingError({required this.error});
+  WarehouseMovementError({required this.error});
 
   @override
   List<Object?> get props => [error];

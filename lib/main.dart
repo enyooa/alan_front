@@ -11,6 +11,7 @@ import 'package:alan/bloc/blocs/cashbox_page_blocs/events/admin_cash_event.dart'
 import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
 import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
 import 'package:alan/bloc/blocs/common_blocs/blocs/connectivity_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/blocs/provider_bloc.dart';
 import 'package:alan/bloc/blocs/common_blocs/blocs/user_photo_bloc.dart';
 import 'package:alan/bloc/blocs/common_blocs/events/connectivity_event.dart';
 import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
@@ -99,6 +100,8 @@ class StartApp extends StatelessWidget {
     BlocProvider<FavoritesBloc>(
       create: (context) => FavoritesBloc(repository: FavoritesRepository(baseUrl: baseUrl)),
     ),
+                    BlocProvider(create: (_) => ProviderBloc()),
+
       
       ],
       child: MaterialApp(

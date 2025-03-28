@@ -1,58 +1,59 @@
-import 'package:bloc/bloc.dart';
+import 'dart:convert';
 import 'package:alan/bloc/blocs/packer_page_blocs/events/warehouse_event.dart';
 import 'package:alan/bloc/blocs/packer_page_blocs/states/warehouse_state.dart';
+import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+
 import 'package:alan/constant.dart';
 
-class PackagingBloc extends Bloc<PackagingEvent, PackagingState> {
-  PackagingBloc() : super(PackagingInitial()) {
-    on<FetchPackagingDataEvent>(_fetchPackagingData);
+class WarehouseMovementBloc
+    extends Bloc<WarehouseMovementEvent, WarehouseMovementState> {
+  WarehouseMovementBloc() : super(WarehouseMovementInitial()) {
+    on<FetchWarehouseMovementEvent>(_onFetchWarehouseMovement);
   }
 
-  Future<void> _fetchPackagingData(
-      FetchPackagingDataEvent event, Emitter<PackagingState> emit) async {
-    emit(PackagingLoading());
+  Future<void> _onFetchWarehouseMovement(
+    FetchWarehouseMovementEvent event,
+    Emitter<WarehouseMovementState> emit,
+  ) async {
+    emit(WarehouseMovementLoading());
 
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
       if (token == null) {
-        emit(PackagingError(error:'Authentication token not found.'));
+        emit(WarehouseMovementError(
+            error: "Токен не найден (не авторизованы)."));
         return;
       }
 
+      // We'll call getPackerReportPage?date_from=...&date_to=...
+      final url = Uri.parse(baseUrl+'getPackerReportPage'
+          '?date_from=${event.dateFrom}&date_to=${event.dateTo}');
+
       final response = await http.get(
-        Uri.parse(baseUrl +
-            'generalWarehouse?startDate=${event.startDate.toIso8601String()}&endDate=${event.endDate.toIso8601String()}'),
-        headers: {'Authorization': 'Bearer $token'},
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List<dynamic>;
+        final List<Map<String, dynamic>> tableData =
+            data.map((item) => Map<String, dynamic>.from(item)).toList();
 
-        // Parse response data into tableData format
-        final List<Map<String, dynamic>> tableData = data.map((item) {
-          return {
-            'name': item['product_subcard_name'] ?? 'Unknown',
-            'unit': item['unit_measurement'] ?? '',
-            'quantity': item['amount'] ?? 0,
-          };
-        }).toList();
-
-        // Debug log
-        print('Parsed Data: $tableData');
-
-        emit(PackagingLoaded(tableData: tableData));
+        emit(WarehouseMovementLoaded(reportData: tableData));
       } else {
-        final error = jsonDecode(response.body);
-        emit(PackagingError(error:error['message'] ?? 'Error fetching data.'));
+        emit(WarehouseMovementError(
+            error: "Ошибка сервера: ${response.body}"));
       }
     } catch (e) {
-      emit(PackagingError(error:'Error: $e'));
+      emit(WarehouseMovementError(error: "Ошибка загрузки: $e"));
     }
   }
 }

@@ -11,12 +11,17 @@ class CourierOrdersLoading extends CourierOrdersState {}
 
 class CourierOrdersLoaded extends CourierOrdersState {
   final List<Map<String, dynamic>> orders;
+  final List<Map<String, dynamic>> statuses;  // <-- new
 
-  CourierOrdersLoaded({required this.orders});
+  CourierOrdersLoaded({
+    required this.orders,
+    required this.statuses,  // <-- new
+  });
 
   @override
-  List<Object?> get props => [orders];
+  List<Object?> get props => [orders, statuses];
 }
+
 
 class CourierOrdersError extends CourierOrdersState {
   final String message;

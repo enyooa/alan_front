@@ -4,6 +4,7 @@ abstract class AuthEvent extends Equatable {
   @override
   List<Object> get props => [];
 }
+
 class AppStartedEvent extends AuthEvent {}
 
 class LoginEvent extends AuthEvent {
@@ -15,11 +16,10 @@ class LoginEvent extends AuthEvent {
   @override
   List<Object> get props => [whatsapp_number, password];
 }
-// для склада и ценового предложения
+
+// For storage & client/courier
 class FetchStorageUsersEvent extends AuthEvent {}
 class FetchClientUsersEvent extends AuthEvent {}
-
 class FetchCourierUsersEvent extends AuthEvent {}
-// для склада и ценового предложения
 
 class LogoutEvent extends AuthEvent {}

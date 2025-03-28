@@ -1,17 +1,19 @@
-
-import 'package:alan/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
-import 'package:alan/bloc/blocs/common_blocs/events/unit_event.dart';
-import 'package:alan/bloc/blocs/common_blocs/states/unit_state.dart';
-import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_receiving_bloc.dart';
-import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_subcard_bloc.dart';
-import 'package:alan/bloc/blocs/storage_page_blocs/events/storage_receiving_event.dart';
-import 'package:alan/bloc/blocs/storage_page_blocs/events/storage_subcard_event.dart';
-import 'package:alan/bloc/blocs/storage_page_blocs/states/storage_receiving_state.dart';
-import 'package:alan/bloc/blocs/storage_page_blocs/states/storage_subcard_state.dart';
-import 'package:alan/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
+
+import 'package:alan/constant.dart';
+// BLoC
+import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_receiving_bloc.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/events/storage_receiving_event.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/states/storage_receiving_state.dart';
+
+import 'package:alan/bloc/blocs/storage_page_blocs/blocs/storage_references_bloc.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/states/storage_references_state.dart';
+import 'package:alan/bloc/blocs/storage_page_blocs/events/storage_references_event.dart';
+
+// Your custom widgets
+import 'package:alan/ui/storage/widgets/receipt.dart'; // your custom widget for creating a new receipt
+import 'package:alan/ui/storage/widgets/edit_receive_dialog.dart';
 
 class GoodsReceiptPage extends StatefulWidget {
   const GoodsReceiptPage({Key? key}) : super(key: key);
@@ -21,272 +23,194 @@ class GoodsReceiptPage extends StatefulWidget {
 }
 
 class _GoodsReceiptPageState extends State<GoodsReceiptPage> {
-  List<Map<String, dynamic>> goodsRows = [];
-  List<Map<String, dynamic>> subcards = [];
-  List<String> units = [];
-
-  DateTime? selectedDate;
   @override
   void initState() {
     super.initState();
-    _fetchSubCards();
-    _fetchUnits();
+    // Load references and receipts list
+    context.read<StorageReferencesBloc>().add(FetchAllInstancesEvent());
+    context.read<StorageReceivingBloc>().add(FetchAllReceiptsEvent());
+  }
 
-  }
-   void _fetchSubCards() {
-    context.read<StorageSubCardBloc>().add(FetchProductSubCardsEvent());
-  }
-  void _fetchUnits() {
-  context.read<UnitBloc>().add(FetchUnitsEvent());
-  }
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: MultiBlocListener(
-        listeners: [
-          BlocListener<StorageReceivingBloc, StorageReceivingState>(
-            listener: (context, state) {
-              if (state is StorageReceivingCreated) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
-                setState(() {
-                  goodsRows.clear();
-                  selectedDate = null;
-                });
-              } else if (state is StorageReceivingError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
-              }
-            },
-          ),
-          BlocListener<UnitBloc, UnitState>(
-            listener: (context, state) {
-              if (state is UnitFetchedSuccess) {
-                setState(() {
-  final units = state.units; // `units` is now a List<Map<String, dynamic>>.
-                });
-              } else if (state is UnitError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.error)),
-                );
-              }
-            },
-          ),
-        ],
-        child: BlocBuilder<StorageSubCardBloc, ProductSubCardState>(
-          builder: (context, state) {
-            if (state is ProductSubCardsLoaded) {
-              subcards = state.productSubCards;
-            }
-            return _buildPageContent();
-          },
-        ),
+      appBar: AppBar(
+        title: const Text('Склад: Приход Товаров', style: TextStyle(color: Colors.white)),
+        backgroundColor: primaryColor,
       ),
-    );
-  }
-
-  
-  Widget _buildPageContent() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildDatePicker(),
-          const SizedBox(height: 20),
-          _buildGoodsTable(),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _submitGoodsData,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              padding: const EdgeInsets.all(12.0),
-            ),
-            child: const Text('Сохранить', style: buttonTextStyle),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDatePicker() {
-    return GestureDetector(
-      onTap: () async {
-        final pickedDate = await showDatePicker(
-          context: context,
-          initialDate: selectedDate ?? DateTime.now(),
-          firstDate: DateTime(2000),
-          lastDate: DateTime(2100),
-        );
-        if (pickedDate != null) {
-          setState(() {
-            selectedDate = pickedDate;
-          });
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          selectedDate != null
-              ? DateFormat('yyyy-MM-dd').format(selectedDate!)
-              : 'Выберите дату',
-          style: bodyTextStyle,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGoodsTable() {
-  return Column(
-    children: [
-      Table(
-        border: TableBorder.all(color: borderColor),
-        children: [
-          TableRow(
-            decoration: BoxDecoration(color: primaryColor),
-            children: const [
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('Товар', style: tableHeaderStyle),
-              ),
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('Единица', style: tableHeaderStyle),
-              ),
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('Кол-во', style: tableHeaderStyle),
-              ),
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('Цена', style: tableHeaderStyle),
-              ),
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('Сумма', style: tableHeaderStyle),
-              ),
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('Удалить', style: tableHeaderStyle),
-              ),
-            ],
-          ),
-          ...goodsRows.asMap().entries.map((entry) {
-            int index = entry.key;
-            Map<String, dynamic> row = entry.value;
-            return TableRow(
-              children: [
-                DropdownButton<int>(
-                  value: row['subcard_id'],
-                  items: subcards.map((subcard) {
-                    return DropdownMenuItem<int>(
-                      value: subcard['id'],
-                      child: Text(subcard['name']),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      row['subcard_id'] = value;
-                    });
-                  },
-                  hint: const Text('подкарточка'),
-                ),
-                DropdownButton<String>(
-                  value: row['name'],
-                  items: units.map((unit) {
-                    return DropdownMenuItem<String>(
-                      value: unit,
-                      child: Text(unit),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      row['name'] = value;
-                    });
-                  },
-                  hint: const Text('ед.изм'),
-                ),
-                TextField(
-                  onChanged: (value) {
-                    setState(() {
-                      row['quantity'] = double.tryParse(value) ?? 0.0;
-                    });
-                  },
-                  decoration: const InputDecoration(hintText: 'Кол-во'),
-                  keyboardType: TextInputType.number,
-                ),
-                TextField(
-                  onChanged: (value) {
-                    setState(() {
-                      row['price'] = double.tryParse(value) ?? 0.0;
-                    });
-                  },
-                  decoration: const InputDecoration(hintText: 'Цена'),
-                  keyboardType: TextInputType.number,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text((row['quantity'] * row['price']).toStringAsFixed(2)),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    setState(() {
-                      goodsRows.removeAt(index);
-                    });
-                  },
-                ),
-              ],
+      body: BlocConsumer<StorageReceivingBloc, StorageReceivingState>(
+        listener: (context, state) {
+          if (state is StorageReceivingCreated) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
             );
-          }).toList(),
-        ],
-      ),
-      IconButton(
-        icon: const Icon(Icons.add),
-        onPressed: () {
-          setState(() {
-            goodsRows.add({
-              'subcard_id': null,
-              'unit_name': null,
-              'quantity': 0.0,
-              'price': 0.0,
-            });
-          });
+            // Refresh list after creation
+            context.read<StorageReceivingBloc>().add(FetchAllReceiptsEvent());
+          } else if (state is StorageReceivingDeleted) {
+            // When deletion is successful, show a message and refresh the list
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+            context.read<StorageReceivingBloc>().add(FetchAllReceiptsEvent());
+          } else if (state is StorageReceivingError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Ошибка: ${state.message}')),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is StorageReceivingLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is StorageReceivingListLoaded) {
+            final receipts = state.receipts;
+            return _buildReceiptsTable(receipts);
+          } else if (state is StorageReceivingError) {
+            return Center(child: Text('Ошибка: ${state.message}'));
+          } else {
+            return const Center(
+              child: Text('Нет сохранённых поступлений. Нажмите + чтобы добавить.'),
+            );
+          }
         },
       ),
-    ],
-  );
-}
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: primaryColor,
+        onPressed: _openReceiptDialog,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
 
-  void _submitGoodsData() {
-    if (goodsRows.any((row) => row['subcard_id'] == null)) {
+  Widget _buildReceiptsTable(List<dynamic> receipts) {
+    if (receipts.isEmpty) {
+      return const Center(child: Text('Нет сохранённых поступлений.'));
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: DataTable(
+        headingRowColor: MaterialStateProperty.all(primaryColor),
+        columns: [
+          DataColumn(label: Text('ID', style: tableHeaderStyle)),
+          DataColumn(label: Text('Поставщик', style: tableHeaderStyle)),
+          DataColumn(label: Text('Дата', style: tableHeaderStyle)),
+          DataColumn(label: Text('Ред.', style: tableHeaderStyle)),
+          DataColumn(label: Text('Уд.', style: tableHeaderStyle)),
+        ],
+        rows: receipts.map<DataRow>((receipt) {
+          final id = receipt['id']?.toString() ?? '-';
+          final providerName = receipt['provider']?['name'] ?? '-';
+          final date = receipt['document_date'] ?? '-';
+          return DataRow(cells: [
+            DataCell(Text(id, style: tableCellStyle)),
+            DataCell(Text(providerName, style: tableCellStyle)),
+            DataCell(Text(date, style: tableCellStyle)),
+            DataCell(
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.green),
+                onPressed: () => _onEdit(receipt),
+              ),
+            ),
+            DataCell(
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () => _onDelete(receipt),
+              ),
+            ),
+          ]);
+        }).toList(),
+      ),
+    );
+  }
+
+  void _onEdit(dynamic receipt) async {
+    final docId = receipt['id'];
+    if (docId == null) return;
+
+    await showDialog(
+      context: context,
+      builder: (_) {
+        return BlocProvider.value(
+          value: context.read<StorageReceivingBloc>(),
+          child: EditReceiptDialog(docId: docId),
+        );
+      },
+    );
+
+    // Refresh the list after editing if needed
+    context.read<StorageReceivingBloc>().add(FetchAllReceiptsEvent());
+  }
+
+  void _onDelete(dynamic receipt) async {
+    final docId = receipt['id'];
+    if (docId == null) return;
+
+    // Show a confirmation dialog before deletion
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Подтвердите удаление'),
+          content: const Text('Вы действительно хотите удалить этот документ?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Отмена'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Удалить'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      // Dispatch the delete event
+      context.read<StorageReceivingBloc>().add(DeleteIncomeEvent(docId: docId));
+
+      // Optionally, show a SnackBar immediately
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Выберите все подкарточки товаров')),
+        const SnackBar(content: Text('Удаление документа...')),
+      );
+    }
+  }
+
+  // Dialog for creating a new receipt using ReceiptWidget
+  Future<void> _openReceiptDialog() async {
+    final refState = context.read<StorageReferencesBloc>().state;
+    if (refState is! StorageReferencesLoaded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Справочники не загружены.')),
       );
       return;
     }
 
-    List<Map<String, dynamic>> formattedRows = goodsRows.map((row) {
-  return {
-    'subcard_id': row['subcard_id'],
-    'unit_name': row['name'], // Include unit name
-    'quantity': row['quantity'],
-    'price': row['price'],
-    'date': selectedDate != null
-        ? DateFormat('yyyy-MM-dd').format(selectedDate!)
-        : DateFormat('yyyy-MM-dd').format(DateTime.now()),
-  };
-}).toList();
+    final providers = refState.providers;
+    final productSubCards = refState.productSubCards;
+    final unitMeasurements = refState.unitMeasurements;
+    final allExpenses = refState.expenses;
 
-
-    context.read<StorageReceivingBloc>().add(
-          CreateBulkStorageReceivingEvent(receivings: formattedRows),
-        );
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Поступление ТМЗ сохранено')),
+    final result = await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        content: ReceiptWidget(
+          providers: providers,
+          productSubCards: productSubCards,
+          unitMeasurements: unitMeasurements,
+          allExpenses: allExpenses,
+        ),
+      ),
     );
+
+    if (result != null) {
+      final newReceiptMap = result as Map<String, dynamic>;
+      final newReceiptsList = [newReceiptMap];
+      // Create a new receipt
+      context.read<StorageReceivingBloc>().add(
+        CreateBulkStorageReceivingEvent(receivings: newReceiptsList),
+      );
+    }
   }
 }

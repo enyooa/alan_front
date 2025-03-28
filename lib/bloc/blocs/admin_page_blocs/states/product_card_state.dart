@@ -21,3 +21,7 @@ class ProductCardsLoaded extends ProductCardState {
 
   ProductCardsLoaded(this.productCards);
 }
+class SingleProductCardLoaded extends ProductCardState {
+  final Map<String, dynamic> productCard;
+  SingleProductCardLoaded(this.productCard);
+}

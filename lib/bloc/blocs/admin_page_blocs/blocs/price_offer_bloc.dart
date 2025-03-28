@@ -86,7 +86,7 @@ class PriceOfferBloc extends Bloc<PriceOfferEvent, PriceOfferState> {
           'start_date': event.startDate,
           'end_date': event.endDate,
           'totalsum': event.totalSum,
-          'price_offers': event.priceOfferRows,
+          'price_offer_items': event.priceOfferRows,
         }),
       );
 

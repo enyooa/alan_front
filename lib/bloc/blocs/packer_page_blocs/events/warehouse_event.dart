@@ -1,16 +1,16 @@
 import 'package:equatable/equatable.dart';
 
-abstract class PackagingEvent extends Equatable {
+abstract class WarehouseMovementEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
 
-class FetchPackagingDataEvent extends PackagingEvent {
-  final DateTime startDate;
-  final DateTime endDate;
+class FetchWarehouseMovementEvent extends WarehouseMovementEvent {
+  final String dateFrom;
+  final String dateTo;
 
-  FetchPackagingDataEvent({required this.startDate, required this.endDate});
+  FetchWarehouseMovementEvent({required this.dateFrom, required this.dateTo});
 
   @override
-  List<Object?> get props => [startDate, endDate];
+  List<Object?> get props => [dateFrom, dateTo];
 }

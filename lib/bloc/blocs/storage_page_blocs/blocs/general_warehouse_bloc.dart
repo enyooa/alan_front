@@ -66,7 +66,7 @@ class GeneralWarehouseBloc extends Bloc<GeneralWarehouseEvent, GeneralWarehouseS
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({'write_offs': event.writeOffs}),
+        body: jsonEncode({'write_off': event.writeOffs}),
       );
 
       if (response.statusCode == 200) {

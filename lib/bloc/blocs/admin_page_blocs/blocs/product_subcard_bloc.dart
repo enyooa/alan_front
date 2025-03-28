@@ -13,7 +13,36 @@ class ProductSubCardBloc extends Bloc<ProductSubCardEvent, ProductSubCardState> 
     on<FetchProductSubCardsEvent>(_handleFetchProductSubCards);
     on<UpdateProductSubCardEvent>(_updateProductSubCard);
     on<DeleteProductSubCardEvent>(_deleteProductSubCard);
-  // остаток
+// product_subcard_bloc.dart
+
+on<FetchSingleSubCardEvent>((event, emit) async {
+  emit(ProductSubCardLoading());
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) {
+      emit(ProductSubCardError("Authentication token not found."));
+      return;
+    }
+
+    // GET references/subproductCard/{id}
+    final url = Uri.parse('${baseUrl}references/subproductCard/${event.id}');
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      // e.g. a single subcard object
+      emit(SingleProductSubCardLoaded(data));
+    } else {
+      emit(ProductSubCardError('Failed to fetch subproductCard #${event.id}'));
+    }
+  } catch (e) {
+    emit(ProductSubCardError('Error fetching subproductCard: $e'));
+  }
+});
 
   }
 
@@ -105,14 +134,16 @@ Future<void> _updateProductSubCard(
       return;
     }
 
-    final response = await http.put(
-      Uri.parse('$baseUrl/product_subcards/${event.id}'),
+    // product_subcard_bloc.dart, in _updateProductSubCard
+    final response = await http.patch(
+      Uri.parse('${baseUrl}references/subproductCard/${event.id}'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
       body: jsonEncode(event.updatedFields),
     );
+
 
     if (response.statusCode == 200) {
       emit(ProductSubCardUpdated(message: "Подкарточка успешно обновлена!"));

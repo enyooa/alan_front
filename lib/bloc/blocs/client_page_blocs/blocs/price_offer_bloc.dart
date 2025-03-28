@@ -41,7 +41,7 @@ class PriceOfferBloc extends Bloc<PriceOfferEvent, PriceOfferState> {
         final data = jsonDecode(response.body);
 
         if (data['success'] == true) {
-          // "data" is your list of orders (id, client_id, price_offers, etc.)
+          // "data" is your list of orders (id, client_id, price_offer_items, etc.)
           final List<dynamic> orders = data['data'];
           emit(PriceOffersFetched(priceOffers: orders));
         } else {

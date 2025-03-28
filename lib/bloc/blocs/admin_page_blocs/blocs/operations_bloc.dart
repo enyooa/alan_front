@@ -48,7 +48,9 @@ class OperationsBloc extends Bloc<OperationsEvent, OperationsState> {
 
 
   Future<void> _editOperation(
-      EditOperationEvent event, Emitter<OperationsState> emit) async {
+    EditOperationEvent event, 
+    Emitter<OperationsState> emit
+  ) async {
     emit(OperationsLoading());
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -58,8 +60,11 @@ class OperationsBloc extends Bloc<OperationsEvent, OperationsState> {
         return;
       }
 
-      final response = await http.put(
-        Uri.parse('${baseUrl}operations/${event.id}/${event.type}'),
+      // Suppose we do a patch with JSON (no file). 
+      // If you need a file, do a multipart instead.
+      final url = Uri.parse('${baseUrl}references/${event.type}/${event.id}');
+      final response = await http.patch(
+        url,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -68,19 +73,22 @@ class OperationsBloc extends Bloc<OperationsEvent, OperationsState> {
       );
 
       if (response.statusCode == 200) {
-        emit(OperationsSuccess(message: 'Операция успешно выполнена!'));
-        add(FetchOperationsHistoryEvent()); // Refresh operations
+        // Re-fetch the list so the UI sees changes
+        add(FetchOperationsHistoryEvent());
+        emit(OperationsSuccess(message: 'Успешно обновлено!'));
       } else {
-        final errorData = jsonDecode(response.body);
-        emit(OperationsError(message: errorData['message'] ?? 'Failed to update operation.'));
+        final errorJson = jsonDecode(response.body);
+        emit(OperationsError(message: errorJson['error'] ?? 'Edit failed.'));
       }
-    } catch (error) {
-      emit(OperationsError(message: error.toString()));
+    } catch (err) {
+      emit(OperationsError(message: err.toString()));
     }
   }
 
  Future<void> _deleteOperation(
-    DeleteOperationEvent event, Emitter<OperationsState> emit) async {
+  DeleteOperationEvent event,
+  Emitter<OperationsState> emit
+) async {
   emit(OperationsLoading());
   try {
     final prefs = await SharedPreferences.getInstance();
@@ -90,19 +98,24 @@ class OperationsBloc extends Bloc<OperationsEvent, OperationsState> {
       return;
     }
 
+    // FIX: use "references/{type}/{id}"
+    final url = Uri.parse('${baseUrl}references/${event.type}/${event.id}');
+    
     final response = await http.delete(
-      Uri.parse('${baseUrl}operations/${event.id}/${event.type}'),
+      url,
       headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
+      // On success
       emit(OperationsSuccess(message: 'Операция успешно выполнена!.'));
-      // Fetch the updated list
+      // Re-fetch to update the table
       add(FetchOperationsHistoryEvent());
     } else {
       final errorData = jsonDecode(response.body);
       emit(OperationsError(
-          message: errorData['message'] ?? 'Failed to delete operation.'));
+        message: errorData['message'] ?? 'Failed to delete operation.'
+      ));
     }
   } catch (error) {
     emit(OperationsError(message: error.toString()));

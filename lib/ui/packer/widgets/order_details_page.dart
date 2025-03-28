@@ -1,12 +1,15 @@
-import 'package:alan/bloc/blocs/packer_page_blocs/blocs/packer_document_bloc.dart';
-import 'package:alan/ui/packer/widgets/create_invoice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+
 import 'package:alan/bloc/blocs/packer_page_blocs/blocs/packer_order_bloc.dart';
 import 'package:alan/bloc/blocs/packer_page_blocs/events/packer_order_event.dart';
 import 'package:alan/bloc/blocs/packer_page_blocs/states/packer_order_state.dart';
-import 'package:intl/intl.dart'; // For date formatting
+
 import 'package:alan/constant.dart';
+
+// If you still want to link to the InvoicePage:
+import 'package:alan/ui/packer/widgets/create_invoice.dart';
 
 class OrderDetailsPage extends StatefulWidget {
   final int orderId;
@@ -36,44 +39,6 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     }
   }
 
-  Widget _buildActionButtons(BuildContext context, Map<String, dynamic> order) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        ElevatedButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => BlocProvider(
-                  create: (context) => PackerDocumentBloc(),
-                  child: InvoicePage(orderDetails: order),
-                ),
-              ),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-          ),
-          icon: const Icon(Icons.receipt_long, color: Colors.white),
-          label: const Text('Создать накладную', style: buttonTextStyle),
-        ),
-        ElevatedButton.icon(
-          onPressed: () {
-            // Implement print functionality
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            padding: buttonPadding,
-          ),
-          icon: const Icon(Icons.print, color: Colors.white),
-          label: const Text('Печать', style: buttonTextStyle),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -91,8 +56,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             } else if (state is SingleOrderLoaded) {
               final order = state.orderDetails;
               final address = order['address'] ?? 'Не указан';
-              final status = _translateStatus(order['status'] ?? '');
               final createdAt = _formatDate(order['created_at'] ?? '');
+
+              // The order might have a numeric status_id and/or a text-based "status".
+              // If your backend only returns status_id, read from that.
+              final int? statusId = order['status_id'] as int?;
               final products = order['order_products'] ?? [];
 
               return Padding(
@@ -101,8 +69,6 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Адрес доставки: $address', style: subheadingStyle),
-                    const SizedBox(height: 8),
-                    Text('Статус: $status', style: bodyTextStyle),
                     const SizedBox(height: 8),
                     Text('Дата создания: $createdAt', style: bodyTextStyle),
                     const Divider(),
@@ -116,11 +82,17 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                           final product = products[index];
                           final productSubCard = product['product_sub_card'];
                           final productCard = productSubCard?['product_card'] ?? {};
-                          final productName = productCard['name_of_products'] ?? 'Не указано';
-                          final productDescription = productCard['description'] ?? 'Нет описания';
+
+                          final productName =
+                              productCard['name_of_products'] ?? 'Не указано';
+                          final productDescription =
+                              productCard['description'] ?? 'Нет описания';
+
                           final quantity = product['quantity'] ?? 0;
                           final price = product['price'] ?? 0;
+                          final totalsum = product['totalsum'] ?? 0;
 
+                          // If you had a photo
                           final photoUrl = productCard['photo_product'] != null
                               ? '{$basePhotoUrl}storage/products/${productCard['photo_product']}'
                               : '';
@@ -154,7 +126,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                         Text(productDescription, style: bodyTextStyle),
                                         const SizedBox(height: 5),
                                         Text(
-                                          'Количество: $quantity | Цена: $price ₸',
+                                          'Количество: $quantity | Цена: $price ₸ | Сумма: $totalsum ₸',
                                           style: bodyTextStyle,
                                         ),
                                       ],
@@ -167,7 +139,42 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         },
                       ),
                     ),
-                    _buildActionButtons(context, order),
+
+                    // Conditionally show the "Создать накладную" button only if status_id != 4
+                    // If status_id == 4 => "исполнено"
+                    const SizedBox(height: 16),
+                    if (statusId != 4) ...[
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          // Just open InvoicePage with no extra BLoC
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BlocProvider.value(
+                                // Re-use the same PackerOrdersBloc from above
+                                value: context.read<PackerOrdersBloc>(),
+                                child: InvoicePage(orderDetails: order),
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                        icon: const Icon(Icons.receipt_long, color: Colors.white),
+                        label: const Text('Создать накладную', style: buttonTextStyle),
+                      ),
+                    ] else ...[
+                      // If status_id == 4 => show a short message
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        child: const Text(
+                          'Статус: исполнено - редактирование не доступно',
+                          style: bodyTextStyle,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               );

@@ -1,4 +1,6 @@
-import 'package:alan/bloc/blocs/common_blocs/events/auth_event.dart';
+import 'package:equatable/equatable.dart';
+import 'auth_event.dart';
+
 class RegisterEvent extends AuthEvent {
   final String firstName;
   final String lastName;
@@ -18,11 +20,11 @@ class RegisterEvent extends AuthEvent {
 
   @override
   List<Object> get props => [
-        firstName,
-        lastName,
-        surname,
-        whatsappNumber,
-        password,
-        passwordConfirmation,
-      ];
+    firstName,
+    lastName,
+    surname,
+    whatsappNumber,
+    password,
+    passwordConfirmation,
+  ];
 }

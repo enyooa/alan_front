@@ -12,10 +12,11 @@ class EditOperationEvent extends OperationsEvent {
   final String type;
   final Map<String, dynamic> updatedFields;
 
-  EditOperationEvent({required this.id, required this.type, required this.updatedFields});
-
-  @override
-  List<Object?> get props => [id, type, updatedFields];
+  EditOperationEvent({
+    required this.id,
+    required this.type,
+    required this.updatedFields,
+  });
 }
 
 class DeleteOperationEvent extends OperationsEvent {

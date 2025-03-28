@@ -1,9 +1,9 @@
-import 'package:alan/bloc/blocs/packer_page_blocs/events/couriers_event.dart';
-import 'package:alan/bloc/blocs/packer_page_blocs/repo/courier_repo.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/events/all_instances_event.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/repo/all_instances_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:alan/bloc/blocs/packer_page_blocs/blocs/couriers_bloc.dart';
-import 'package:alan/bloc/blocs/packer_page_blocs/states/couriers_state.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/blocs/all_instances_bloc.dart';
+import 'package:alan/bloc/blocs/packer_page_blocs/states/all_instances_state.dart';
 import 'package:alan/constant.dart';
 
 class CourierScreen extends StatefulWidget {
@@ -16,7 +16,7 @@ class CourierScreen extends StatefulWidget {
 class _CourierScreenState extends State<CourierScreen> {
   @override
   void initState() {
-    context.read<CourierBloc>().add(FetchCouriersEvent());
+    context.read<AllInstancesBloc>().add(FetchAllInstancesEvent());
 
   }
   @override
@@ -31,14 +31,14 @@ class _CourierScreenState extends State<CourierScreen> {
         centerTitle: true,
         elevation: 4,
       ),
-      body: BlocBuilder<CourierBloc, CourierState>(
+      body: BlocBuilder<AllInstancesBloc, AllInstancesState>(
         builder: (context, state) {
-          if (state is CourierLoading) {
+          if (state is AllInstancesLoading) {
             return const Center(child: CircularProgressIndicator());
-          } else if (state is CourierError) {
+          } else if (state is AllInstancesError) {
             return Center(child: Text('Ошибка: ${state.message}', style: bodyTextStyle));
-          } else if (state is CourierLoaded) {
-            final couriers = state.couriers;
+          } else if (state is AllInstancesLoaded) {
+            final couriers = state.data;
     
             if (couriers.isEmpty) {
               return const Center(child: Text('Нет курьеров', style: bodyTextStyle));

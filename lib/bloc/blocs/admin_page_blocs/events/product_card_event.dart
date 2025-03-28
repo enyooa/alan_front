@@ -26,16 +26,30 @@ class CreateProductCardEvent extends ProductCardEvent {
   List<Object?> get props => [nameOfProducts, description, country, type, photoProduct];
 }
 
+// product_card_event.dart
+class FetchSingleProductCardEvent extends ProductCardEvent {
+  final int id;
+  FetchSingleProductCardEvent(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}
 
 class UpdateProductCardEvent extends ProductCardEvent {
   final int id;
   final Map<String, dynamic> updatedFields;
+  final File? photoFile; // <--- ADD THIS
 
-  UpdateProductCardEvent({required this.id, required this.updatedFields});
+  UpdateProductCardEvent({
+    required this.id,
+    required this.updatedFields,
+    this.photoFile,
+  });
 
   @override
-  List<Object?> get props => [id, updatedFields];
+  List<Object?> get props => [id, updatedFields, photoFile];
 }
+
 
 class DeleteProductCardEvent extends ProductCardEvent {
   final int id;

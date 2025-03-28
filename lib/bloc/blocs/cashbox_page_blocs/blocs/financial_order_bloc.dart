@@ -60,7 +60,7 @@ Future<void> _addFinancialOrder(
     final headers = await _getHeaders();
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse(baseUrl + 'financial-order'),
+      Uri.parse(baseUrl + 'financial-orders'),
     );
 
     // Add headers

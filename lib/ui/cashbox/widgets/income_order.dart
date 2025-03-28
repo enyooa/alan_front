@@ -1,10 +1,12 @@
-import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
-import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
-import 'package:alan/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
+import 'dart:io'; // For File handling
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart'; // For capturing or selecting photos
-import 'dart:io'; // For File handling
+
+// Blocs & States
+import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/financial_order_bloc.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_order_event.dart';
+import 'package:alan/bloc/blocs/cashbox_page_blocs/states/financial_order_state.dart';
 import 'package:alan/bloc/blocs/cashbox_page_blocs/blocs/financial_element.dart';
 import 'package:alan/bloc/blocs/cashbox_page_blocs/events/financial_element.dart';
 import 'package:alan/bloc/blocs/cashbox_page_blocs/states/financial_element.dart';
@@ -14,9 +16,15 @@ import 'package:alan/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
 import 'package:alan/bloc/blocs/common_blocs/events/auth_event.dart';
 import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
 
+// Styles & constants
 import 'package:alan/constant.dart';
 
+// For date formatting (optional)
+import 'package:intl/intl.dart';
+
 class IncomeOrderWidget extends StatefulWidget {
+  const IncomeOrderWidget({Key? key}) : super(key: key);
+
   @override
   _IncomeOrderWidgetState createState() => _IncomeOrderWidgetState();
 }
@@ -25,34 +33,35 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
   String? selectedCashAccount;
   String? selectedContractor;
   String? selectedMovementType;
-  TextEditingController amountController = TextEditingController();
+
+  final TextEditingController amountController = TextEditingController();
+
   File? selectedPhoto; // To hold the selected or captured photo
   final ImagePicker _imagePicker = ImagePicker(); // Image picker instance
 
-  // For selected date range
-  DateTime? startDate;
-  DateTime? endDate;
+  // We'll store the chosen date for "date_of_check"
+  DateTime? _selectedDateOfCheck;
 
   @override
   void initState() {
     super.initState();
-    // Fetch users and income categories
+    // Fetch users and references
     context.read<AuthBloc>().add(FetchClientUsersEvent());
     context.read<ReferenceBloc>().add(FetchReferencesEvent());
   }
 
-  // Function to capture or select a photo
+  // Open bottom sheet to choose camera or gallery
   Future<void> _choosePhoto() async {
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (BuildContext context) {
         return Wrap(
           children: [
             ListTile(
-              leading: Icon(Icons.camera_alt, color: primaryColor),
+              leading: const Icon(Icons.camera_alt, color: primaryColor),
               title: Text('Сделать фото', style: bodyTextStyle),
               onTap: () async {
                 Navigator.pop(context);
@@ -66,7 +75,7 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.photo_library, color: primaryColor),
+              leading: const Icon(Icons.photo_library, color: primaryColor),
               title: Text('Выбрать из галереи', style: bodyTextStyle),
               onTap: () async {
                 Navigator.pop(context);
@@ -85,36 +94,56 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
     );
   }
 
-  // Function to save the financial order
-  void _saveFinancialOrder(BuildContext context) {
-  if (selectedCashAccount == null ||
-      selectedContractor == null ||
-      selectedMovementType == null ||
-      amountController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Заполните все поля', style: bodyTextStyle)),
+  // Choose date for date_of_check
+  Future<void> _pickDateOfCheck() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateOfCheck ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
     );
-    return;
+    if (picked != null) {
+      setState(() {
+        _selectedDateOfCheck = picked;
+      });
+    }
   }
 
-  // Prepare the data to submit
-  final orderData = {
-    'type': 'income',
-    'admin_cash_id': selectedCashAccount,
-    'user_id': selectedContractor,
-    'financial_element_id': selectedMovementType,
-    'summary_cash': int.tryParse(amountController.text) ?? 0,
-    'date_of_check': DateTime.now().toIso8601String(),
-  };
+  // Validate and dispatch the "add financial order" event
+  void _saveFinancialOrder(BuildContext context) {
+    if (selectedCashAccount == null ||
+        selectedContractor == null ||
+        selectedMovementType == null ||
+        amountController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Заполните все поля', style: bodyTextStyle)),
+      );
+      return;
+    }
 
-  // Add the photo_of_check field only if a photo is selected
-  if (selectedPhoto != null) {
-    orderData['photo_of_check'] = selectedPhoto!.path;
+    // If the user hasn't chosen a date, use "now" or forcibly show a message
+    final chosenDate =
+        _selectedDateOfCheck != null ? _selectedDateOfCheck! : DateTime.now();
+
+    // Prepare the data to submit
+    final orderData = {
+      'type': 'income',
+      'admin_cash_id': selectedCashAccount,
+      'user_id': selectedContractor,
+      'financial_element_id': selectedMovementType,
+      'summary_cash': int.tryParse(amountController.text) ?? 0,
+      // Use ISO8601 or any format
+      'date_of_check': chosenDate.toIso8601String(),
+    };
+
+    // If a photo is selected, we pass its path for the BLoC to handle
+    if (selectedPhoto != null) {
+      orderData['photo_of_check'] = selectedPhoto!.path;
+    }
+
+    // Dispatch the event to the bloc
+    context.read<FinancialOrderBloc>().add(AddFinancialOrderEvent(orderData));
   }
-
-  // Dispatch the event to the bloc
-  context.read<FinancialOrderBloc>().add(AddFinancialOrderEvent(orderData));
-}
 
   @override
   Widget build(BuildContext context) {
@@ -127,9 +156,11 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
         listener: (context, state) {
           if (state is FinancialOrderSaved) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Финансовый ордер сохранен', style: bodyTextStyle)),
+              SnackBar(
+                content: Text('Финансовый ордер сохранен', style: bodyTextStyle),
+              ),
             );
-            Navigator.pop(context); // Close the modal after saving
+            Navigator.pop(context); // Dismiss page after saving
           } else if (state is FinancialOrderError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Ошибка: ${state.message}', style: bodyTextStyle)),
@@ -145,14 +176,11 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
                 BlocBuilder<AdminCashBloc, AdminCashState>(
                   builder: (context, state) {
                     if (state.isLoading) {
-                      return Center(child: CircularProgressIndicator());
+                      return const Center(child: CircularProgressIndicator());
                     }
                     if (state.errorMessage != null) {
                       return Center(
-                        child: Text(
-                          state.errorMessage!,
-                          style: bodyTextStyle,
-                        ),
+                        child: Text(state.errorMessage!, style: bodyTextStyle),
                       );
                     }
                     return DropdownButtonFormField<String>(
@@ -169,7 +197,10 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
                       items: state.cashAccounts.map((cashAccount) {
                         return DropdownMenuItem<String>(
                           value: cashAccount['id'],
-                          child: Text(cashAccount['name']!, style: bodyTextStyle),
+                          child: Text(
+                            cashAccount['name'] ?? 'Без имени',
+                            style: bodyTextStyle,
+                          ),
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -180,13 +211,13 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
                     );
                   },
                 ),
-                SizedBox(height: verticalPadding),
+                const SizedBox(height: verticalPadding),
 
                 // Contractor Dropdown
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
                     if (state is AuthLoading) {
-                      return Center(child: CircularProgressIndicator());
+                      return const Center(child: CircularProgressIndicator());
                     }
                     if (state is ClientUsersLoaded) {
                       return DropdownButtonFormField<String>(
@@ -201,9 +232,11 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
                         ),
                         value: selectedContractor,
                         items: state.clientUsers.map((contractor) {
+                          final idStr = contractor['id'].toString();
+                          final nameStr = contractor['name'] ?? 'Без имени';
                           return DropdownMenuItem<String>(
-                            value: contractor['id'].toString(),
-                            child: Text(contractor['name'], style: bodyTextStyle),
+                            value: idStr,
+                            child: Text(nameStr, style: bodyTextStyle),
                           );
                         }).toList(),
                         onChanged: (value) {
@@ -214,19 +247,20 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
                       );
                     } else if (state is AuthError) {
                       return Center(
-                          child: Text('Ошибка: ${state.message}', style: bodyTextStyle));
+                        child: Text('Ошибка: ${state.message}', style: bodyTextStyle),
+                      );
                     } else {
-                      return SizedBox.shrink();
+                      return const SizedBox.shrink();
                     }
                   },
                 ),
-                SizedBox(height: verticalPadding),
+                const SizedBox(height: verticalPadding),
 
                 // Movement Type Dropdown
                 BlocBuilder<ReferenceBloc, ReferenceState>(
                   builder: (context, state) {
                     if (state.isLoading) {
-                      return Center(child: CircularProgressIndicator());
+                      return const Center(child: CircularProgressIndicator());
                     }
                     if (state.errorMessage != null) {
                       return Center(
@@ -245,10 +279,12 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
                         ),
                       ),
                       value: selectedMovementType,
-                      items: movementTypes.map((type) {
+                      items: movementTypes.map<DropdownMenuItem<String>>((type) {
+                        final idStr = type['id'].toString();
+                        final nameStr = type['name'] ?? 'Без названия';
                         return DropdownMenuItem<String>(
-                          value: type['id'].toString(),
-                          child: Text(type['name'], style: bodyTextStyle),
+                          value: idStr,
+                          child: Text(nameStr, style: bodyTextStyle),
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -259,13 +295,13 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
                     );
                   },
                 ),
-                SizedBox(height: verticalPadding),
+                const SizedBox(height: verticalPadding),
 
                 // Amount Text Field
                 TextField(
                   controller: amountController,
                   decoration: InputDecoration(
-                    labelText: 'Сумма (вводиться вручную)',
+                    labelText: 'Сумма (ввод)',
                     labelStyle: bodyTextStyle,
                     filled: true,
                     fillColor: Colors.grey[200],
@@ -276,9 +312,45 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
                   keyboardType: TextInputType.number,
                   style: bodyTextStyle,
                 ),
-                SizedBox(height: verticalPadding),
+                const SizedBox(height: verticalPadding),
 
-                // Photo Upload Section
+                // Date of Check
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Дата чека', style: bodyTextStyle),
+                    const SizedBox(height: 4),
+                    GestureDetector(
+                      onTap: _pickDateOfCheck,
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12.0,
+                            vertical: 8.0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _selectedDateOfCheck == null
+                                    ? 'Выберите дату'
+                                    : DateFormat('yyyy-MM-dd').format(_selectedDateOfCheck!),
+                                style: bodyTextStyle,
+                              ),
+                              const Icon(Icons.calendar_today, color: Colors.grey),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: verticalPadding),
+
+                // Photo Upload
                 GestureDetector(
                   onTap: _choosePhoto,
                   child: Container(
@@ -291,21 +363,21 @@ class _IncomeOrderWidgetState extends State<IncomeOrderWidget> {
                           : Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.upload_file, color: primaryColor, size: 40),
-                                SizedBox(height: 8),
+                                const Icon(Icons.upload_file, color: primaryColor, size: 40),
+                                const SizedBox(height: 8),
                                 Text('Загрузить фото', style: bodyTextStyle),
                               ],
                             ),
                     ),
                   ),
                 ),
-                SizedBox(height: verticalPadding),
+                const SizedBox(height: verticalPadding),
 
                 // Save Button
                 ElevatedButton(
                   onPressed: () => _saveFinancialOrder(context),
-                  child: Text('Сохранить', style: buttonTextStyle),
                   style: elevatedButtonStyle,
+                  child: const Text('Сохранить', style: buttonTextStyle),
                 ),
               ],
             ),

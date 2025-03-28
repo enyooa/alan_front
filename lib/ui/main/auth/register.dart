@@ -1,9 +1,14 @@
-import 'package:alan/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
-import 'package:alan/bloc/blocs/common_blocs/events/register_event.dart';
-import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
-import 'package:alan/constant.dart';
+import 'package:alan/ui/main/auth/sms_verification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+// BLoCs
+import 'package:alan/bloc/blocs/common_blocs/blocs/auth_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/states/auth_state.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/register_event.dart';
+
+// Styles/constants
+import 'package:alan/constant.dart';
 
 class Register extends StatefulWidget {
   const Register({Key? key}) : super(key: key);
@@ -20,16 +25,32 @@ class _RegisterState extends State<Register> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _passwordConfirmationController = TextEditingController();
 
+  // Loading flag to show a circular indicator
+  bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthAuthenticated) {
+        listener: (context, state) async {
+          if (state is AuthNotVerified) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Номер не подтвержден, пожалуйста, введите код.')),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SmsVerificationScreen(rawPhone: state.rawPhone),
+              ),
+            );
+          } else if (state is AuthAuthenticated) {
+            setState(() => _isLoading = false);
             Navigator.pushReplacementNamed(context, '/client_dashboard');
           } else if (state is AuthError) {
+            setState(() => _isLoading = false);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
@@ -70,40 +91,21 @@ class _RegisterState extends State<Register> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: () {
-  final firstName = _firstNameController.text.trim();
-  final lastName = _lastNameController.text.trim();
-  final surname = _surnameController.text.trim();
-  final whatsappNumber = _whatsappNumberController.text.trim();
-  final password = _passwordController.text.trim();
-  final passwordConfirmation = _passwordConfirmationController.text.trim();
-
-  if ([firstName, whatsappNumber, password, passwordConfirmation].any((field) => field.isEmpty)) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Пожалуйста заполните все поля!')),
-    );
-  } else if (password != passwordConfirmation) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Пароль не совподает')),
-    );
-  } else {
-    BlocProvider.of<AuthBloc>(context).add(
-      RegisterEvent(
-        firstName: firstName,
-        lastName: lastName,
-        surname: surname,
-        whatsappNumber: whatsappNumber,
-        password: password,
-        passwordConfirmation: passwordConfirmation,
-      ),
-    );
-  }
-},
-style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-                    child: const Text(
-                      'Зарегистрироваться',
-                      style: TextStyle(color: Colors.white, fontSize: 15, fontFamily: 'Poppins', fontWeight: FontWeight.w500),
-                    ),
+                    onPressed: _isLoading ? null : _onRegisterPressed,
+                    style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          )
+                        : const Text(
+                            'Зарегистрироваться',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -113,13 +115,23 @@ style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
                 children: [
                   const Text(
                     'Уже есть аккаунт?',
-                    style: TextStyle(color: Color(0xFF837E93), fontSize: 13, fontFamily: 'Poppins', fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      color: Color(0xFF837E93),
+                      fontSize: 13,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context),
                     child: const Text(
                       'Войти',
-                      style: TextStyle(color: primaryColor, fontSize: 13, fontFamily: 'Poppins', fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontSize: 13,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -131,14 +143,55 @@ style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
     );
   }
 
+  void _onRegisterPressed() {
+    final firstName = _firstNameController.text.trim();
+    final lastName = _lastNameController.text.trim();
+    final surname = _surnameController.text.trim();
+    final whatsappNumber = _whatsappNumberController.text.trim();
+    final password = _passwordController.text.trim();
+    final passwordConfirmation = _passwordConfirmationController.text.trim();
+
+    if ([firstName, whatsappNumber, password, passwordConfirmation].any((field) => field.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Пожалуйста заполните все поля!')),
+      );
+    } else if (password != passwordConfirmation) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Пароль не совпадает')),
+      );
+    } else {
+      setState(() => _isLoading = true);
+      context.read<AuthBloc>().add(
+        RegisterEvent(
+          firstName: firstName,
+          lastName: lastName,
+          surname: surname,
+          whatsappNumber: whatsappNumber,
+          password: password,
+          passwordConfirmation: passwordConfirmation,
+        ),
+      );
+    }
+  }
+
   Widget _buildTextField(TextEditingController controller, String labelText) {
     return TextField(
       controller: controller,
       textAlign: TextAlign.center,
-      style: const TextStyle(color: primaryColor, fontSize: 13, fontFamily: 'Poppins', fontWeight: FontWeight.w400),
+      style: const TextStyle(
+        color: primaryColor,
+        fontSize: 13,
+        fontFamily: 'Poppins',
+        fontWeight: FontWeight.w400,
+      ),
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: const TextStyle(color: primaryColor, fontSize: 15, fontFamily: 'Poppins', fontWeight: FontWeight.w600),
+        labelStyle: const TextStyle(
+          color: primaryColor,
+          fontSize: 15,
+          fontFamily: 'Poppins',
+          fontWeight: FontWeight.w600,
+        ),
         enabledBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(10)),
           borderSide: BorderSide(width: 1, color: primaryColor),
@@ -156,10 +209,20 @@ style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
       controller: controller,
       obscureText: true,
       textAlign: TextAlign.center,
-      style: const TextStyle(color: primaryColor, fontSize: 13, fontFamily: 'Poppins', fontWeight: FontWeight.w400),
+      style: const TextStyle(
+        color: primaryColor,
+        fontSize: 13,
+        fontFamily: 'Poppins',
+        fontWeight: FontWeight.w400,
+      ),
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: const TextStyle(color: primaryColor, fontSize: 15, fontFamily: 'Poppins', fontWeight: FontWeight.w600),
+        labelStyle: const TextStyle(
+          color: primaryColor,
+          fontSize: 15,
+          fontFamily: 'Poppins',
+          fontWeight: FontWeight.w600,
+        ),
         enabledBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(10)),
           borderSide: BorderSide(width: 1, color: primaryColor),

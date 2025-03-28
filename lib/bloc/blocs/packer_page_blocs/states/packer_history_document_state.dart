@@ -11,13 +11,16 @@ class PackerHistoryDocumentLoading extends PackerHistoryDocumentState {}
 
 class PackerHistoryDocumentLoaded extends PackerHistoryDocumentState {
   final List<Map<String, dynamic>> documents;
+  final List<Map<String, dynamic>> statuses; // New field
 
-  PackerHistoryDocumentLoaded({required this.documents});
+  PackerHistoryDocumentLoaded({
+    required this.documents,
+    required this.statuses,
+  });
 
   @override
-  List<Object?> get props => [documents];
+  List<Object?> get props => [documents, statuses];
 }
-
 class PackerHistoryDocumentError extends PackerHistoryDocumentState {
   final String message;
 

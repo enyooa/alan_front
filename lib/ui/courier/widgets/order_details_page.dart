@@ -120,7 +120,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                           final productCard = productSubCard?['product_card'] ?? {};
                           final productName = productCard['name_of_products'] ?? 'Не указано';
                           final productDescription = productCard['description'] ?? 'Нет описания';
-                          final quantity = product['quantity'] ?? 0;
+                          final quantity = product['packer_quantity'] ?? 0;
                           final price = product['price'] ?? 0;
 
                           final photoUrl = productCard['photo_product'] != null

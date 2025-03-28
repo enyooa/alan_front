@@ -13,6 +13,35 @@ class ProviderBloc extends Bloc<ProviderEvent, ProviderState> {
     on<CreateProviderEvent>(_createProvider);
     on<UpdateProviderEvent>(_updateProvider);
     on<DeleteProviderEvent>(_deleteProvider);
+    on<FetchSingleProviderEvent>((event, emit) async {
+  emit(ProviderLoading());
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) {
+      emit(ProviderError("Authentication token not found."));
+      return;
+    }
+
+    // GET /api/references/provider/{id}
+    final url = Uri.parse('${baseUrl}references/provider/${event.id}');
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body); // single provider object
+      // data might be {"id":..., "name":"..."}
+      emit(SingleProviderLoaded(data));
+    } else {
+      emit(ProviderError('Failed to fetch provider #${event.id}'));
+    }
+  } catch (e) {
+    emit(ProviderError('Error fetching provider: $e'));
+  }
+});
+
   }
 
   Future<void> _fetchProviders(
@@ -80,36 +109,40 @@ class ProviderBloc extends Bloc<ProviderEvent, ProviderState> {
   }
 
   Future<void> _updateProvider(
-      UpdateProviderEvent event, Emitter<ProviderState> emit) async {
-    emit(ProviderLoading());
+  UpdateProviderEvent event, 
+  Emitter<ProviderState> emit
+) async {
+  emit(ProviderLoading());
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-
-      if (token == null) {
-        emit(ProviderError("Authentication token not found."));
-        return;
-      }
-
-      final response = await http.put(
-        Uri.parse(baseUrl + 'providers/${event.id}'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({'name': event.name}),
-      );
-
-      if (response.statusCode == 200) {
-        emit(ProviderSuccess("Provider successfully updated."));
-      } else {
-        emit(ProviderError("Failed to update provider."));
-      }
-    } catch (e) {
-      emit(ProviderError("Error: $e"));
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) {
+      emit(ProviderError("Authentication token not found."));
+      return;
     }
+
+    // PATCH references/provider/{id}
+    final url = Uri.parse('${baseUrl}references/provider/${event.id}');
+    final response = await http.patch(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'name': event.name}),
+    );
+
+    if (response.statusCode == 200) {
+      emit(ProviderSuccess("Поставщик успешно обновлён."));
+    } else {
+      final errorData = jsonDecode(response.body);
+      emit(ProviderError(errorData['message'] ?? "Не удалось обновить поставщика."));
+    }
+  } catch (e) {
+    emit(ProviderError("Error: $e"));
   }
+}
 
   Future<void> _deleteProvider(
       DeleteProviderEvent event, Emitter<ProviderState> emit) async {

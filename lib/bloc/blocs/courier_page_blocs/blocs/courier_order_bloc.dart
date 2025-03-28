@@ -15,36 +15,47 @@ class CourierOrdersBloc extends Bloc<CourierOrdersEvent, CourierOrdersState> {
     on<UpdateOrderDetailsEvent>(_updateOrderDetails);
   }
 Future<void> _fetchCourierOrders(
-    FetchCourierOrdersEvent event, Emitter<CourierOrdersState> emit) async {
-  emit(CourierOrdersLoading());
+      FetchCourierOrdersEvent event, Emitter<CourierOrdersState> emit) async {
+    emit(CourierOrdersLoading());
 
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
 
-    if (token == null) {
-      emit(CourierOrdersError(message: "Authentication token not found."));
-      return;
+      if (token == null) {
+        emit(CourierOrdersError(message: "Authentication token not found."));
+        return;
+      }
+
+      final response = await http.get(
+        Uri.parse(baseUrl + 'getCourierOrders'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+  final json = jsonDecode(response.body) as Map<String, dynamic>;
+  
+  // Parse orders
+  final List<dynamic> ordersData = json['orders'];
+  final orders = ordersData.map((e) => Map<String, dynamic>.from(e)).toList();
+
+  // Parse statuses
+  final List<dynamic> statusesData = json['statuses'];
+  final statuses = statusesData.map((s) => Map<String, dynamic>.from(s)).toList();
+
+  // Modify your loaded state to include statuses
+  emit(CourierOrdersLoaded(
+    orders: orders,
+    statuses: statuses,
+  ));
+} 
+
+    } catch (e) {
+      emit(CourierOrdersError(message: e.toString()));
     }
-
-    final response = await http.get(
-      Uri.parse(baseUrl + 'getCourierOrders'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
- 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body)['orders'];
-      final orders = data.map((e) => Map<String, dynamic>.from(e)).toList();
-      emit(CourierOrdersLoaded(orders: orders));
-    } else {
-      emit(CourierOrdersError(message: "Failed to fetch Courier orders."));
-    }
-  } catch (e) {
-    emit(CourierOrdersError(message: e.toString()));
   }
-}
 
 
   Future<void> _fetchSingleOrder(

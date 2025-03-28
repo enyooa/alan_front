@@ -35,6 +35,14 @@ class FetchProductSubCardsEvent extends ProductSubCardEvent {
   @override
   List<Object?> get props => [];
 }
+
+class FetchSingleSubCardEvent extends ProductSubCardEvent {
+  final int id;
+  FetchSingleSubCardEvent(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}
 class UpdateProductSubCardEvent extends ProductSubCardEvent {
   final int id;
   final Map<String, dynamic> updatedFields;
@@ -44,6 +52,8 @@ class UpdateProductSubCardEvent extends ProductSubCardEvent {
   @override
   List<Object?> get props => [id, updatedFields];
 }
+
+
 
 class DeleteProductSubCardEvent extends ProductSubCardEvent {
   final int id;

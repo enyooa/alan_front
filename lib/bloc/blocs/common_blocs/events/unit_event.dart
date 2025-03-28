@@ -7,3 +7,14 @@ class CreateUnitEvent extends UnitEvent {
 }
 
 class FetchUnitsEvent extends UnitEvent {}
+
+class FetchSingleUnitEvent extends UnitEvent {
+  final int id;
+  FetchSingleUnitEvent({required this.id});
+}
+class UpdateUnitEvent extends UnitEvent {
+  final int id;                     // The unit record ID
+  final Map<String, dynamic> data;  // e.g. { "name": "...", "tare": "..." }
+
+  UpdateUnitEvent({required this.id, required this.data});
+}

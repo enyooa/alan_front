@@ -87,37 +87,41 @@ class ProductReceivingBloc extends Bloc<ProductReceivingEvent, ProductReceivingS
 
 
 Future<void> _createBulkProductReceiving(
-    CreateBulkProductReceivingEvent event, Emitter<ProductReceivingState> emit) async {
-  emit(ProductReceivingLoading());
+    CreateBulkProductReceivingEvent event,
+    Emitter<ProductReceivingState> emit,
+  ) async {
+    emit(ProductReceivingLoading());
 
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      if (token == null) {
+        emit(ProductReceivingError(message: "Authentication token not found."));
+        return;
+      }
 
-    if (token == null) {
-      emit(ProductReceivingError(message: "Authentication token not found."));
-      return;
+      final response = await http.post(
+        Uri.parse(baseUrl + 'storeIncomes'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'receivings': event.receivings}),
+      );
+
+      if (response.statusCode == 201) {
+        emit(ProductReceivingCreated(
+          message: "Все товары успешно добавлены в склад!",
+        ));
+      } else {
+        final errorData = jsonDecode(response.body);
+        emit(ProductReceivingError(
+          message: errorData['message'] ?? "Error saving bulk receiving.",
+        ));
+      }
+    } catch (error) {
+      emit(ProductReceivingError(message: error.toString()));
     }
-
-    final response = await http.post(
-      Uri.parse(baseUrl + 'receivingBulkStore'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({'receivings': event.receivings}),
-    );
-
-    if (response.statusCode == 201) {
-      emit(ProductReceivingCreated(message: "Все товары успешно добавлены в склад!"));
-    } else {
-      final errorData = jsonDecode(response.body);
-      emit(ProductReceivingError(message: errorData['message'] ?? "Error saving bulk receiving."));
-    }
-  } catch (error) {
-    emit(ProductReceivingError(message: error.toString()));
   }
-}
-
 
 }

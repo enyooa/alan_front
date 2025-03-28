@@ -12,38 +12,48 @@ class PackerOrdersBloc extends Bloc<PackerOrdersEvent, PackerOrdersState> {
     on<FetchPackerOrdersEvent>(_fetchPackerOrders);
     on<FetchSingleOrderEvent>(_fetchSingleOrder);
     on<UpdateOrderDetailsEvent>(_updateOrderDetails);
+    on<SubmitOrderEvent>(_onSubmitOrder);
+
   }
 Future<void> _fetchPackerOrders(
-    FetchPackerOrdersEvent event, Emitter<PackerOrdersState> emit) async {
-  emit(PackerOrdersLoading());
+      FetchPackerOrdersEvent event, Emitter<PackerOrdersState> emit) async {
+    emit(PackerOrdersLoading());
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
 
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+      if (token == null) {
+        emit(PackerOrdersError(message: "Authentication token not found."));
+        return;
+      }
 
-    if (token == null) {
-      emit(PackerOrdersError(message: "Authentication token not found."));
-      return;
+      // Call your API endpoint; adjust the path as needed
+      final response = await http.get(
+        Uri.parse(baseUrl+'packer/orders'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        // Expecting two keys: "orders" and "status"
+        final List<dynamic> rawOrders = decoded['orders'] ?? [];
+        final List<dynamic> rawStatuses = decoded['status'] ?? [];
+
+        final orders =
+            rawOrders.map((order) => Map<String, dynamic>.from(order)).toList();
+        final statuses =
+            rawStatuses.map((st) => Map<String, dynamic>.from(st)).toList();
+
+        emit(PackerOrdersLoaded(orders: orders, statuses: statuses));
+      } else {
+        emit(PackerOrdersError(message: "Failed to fetch packer orders."));
+      }
+    } catch (e) {
+      emit(PackerOrdersError(message: e.toString()));
     }
-
-    final response = await http.get(
-      Uri.parse(baseUrl + 'packer/orders'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body)['orders'];
-      final orders = data.map((e) => Map<String, dynamic>.from(e)).toList();
-      emit(PackerOrdersLoaded(orders: orders));
-    } else {
-      emit(PackerOrdersError(message: "Failed to fetch packer orders."));
-    }
-  } catch (e) {
-    emit(PackerOrdersError(message: e.toString()));
   }
-}
 
 
   Future<void> _fetchSingleOrder(
@@ -125,6 +135,52 @@ _updateOrderDetails(UpdateOrderDetailsEvent event, Emitter<PackerOrdersState> em
     } catch (e) {
       emit(UpdateOrderError(message: e.toString()));
       print('Exception occurred: $e');
+    }
+  }
+
+  Future<void> _onSubmitOrder(
+    SubmitOrderEvent event,
+    Emitter<PackerOrdersState> emit,
+  ) async {
+    emit(SubmitOrderLoading()); // Emitting new "loading" state
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        emit(SubmitOrderError(error: 'Authentication token not found.'));
+        return;
+      }
+
+      // 1) Construct the payload
+      final payload = {
+        'order_id': event.orderId,
+        'products': event.products,
+      };
+
+      // 2) Send POST request
+      final response = await http.post(
+        Uri.parse(baseUrl + 'create_packer_document'), // Example route
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(payload),
+      );
+
+      // 3) Handle response
+      if (response.statusCode == 201) {
+        final responseData = jsonDecode(response.body);
+        final message = responseData['message'] ?? 'Order submitted successfully.';
+        emit(SubmitOrderSuccess(message: message));
+      } else {
+        final responseData = jsonDecode(response.body);
+        final errorMessage = responseData['error'] ?? 'Failed to submit order.';
+        emit(SubmitOrderError(error: errorMessage));
+      }
+    } catch (e) {
+      emit(SubmitOrderError(error: e.toString()));
     }
   }
 }

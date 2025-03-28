@@ -20,3 +20,7 @@ class DeleteProviderEvent extends ProviderEvent {
 
   DeleteProviderEvent({required this.id});
 }
+class FetchSingleProviderEvent extends ProviderEvent {
+  final int id;
+  FetchSingleProviderEvent({required this.id});
+}

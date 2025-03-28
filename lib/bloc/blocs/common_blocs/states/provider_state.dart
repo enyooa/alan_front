@@ -23,3 +23,7 @@ class ProviderError extends ProviderState {
 
   ProviderError(this.error);
 }
+class SingleProviderLoaded extends ProviderState {
+  final Map<String, dynamic> providerData;
+  SingleProviderLoaded(this.providerData);
+}
