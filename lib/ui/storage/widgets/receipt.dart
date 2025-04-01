@@ -679,34 +679,35 @@ class _ReceiptWidgetState extends State<ReceiptWidget> {
 
   /// On Save: returns a payload with the final data
   void _onSave() {
-    final dateStr = _selectedDate == null
-        ? null
-        : DateFormat('yyyy-MM-dd').format(_selectedDate!);
+  final dateStr = _selectedDate == null
+      ? null
+      : DateFormat('yyyy-MM-dd').format(_selectedDate!);
 
-    final payload = {
-      'provider_id': _selectedProviderId,
-      'document_date': dateStr,
-      'products': _productRows.map((p) => {
-        'product_subcard_id': p['product_subcard_id'],
-        // If the backend expects `unit_measurement` as a string name, we do _findUnitName(p['unitId']).
-        // If it wants the ID, pass p['unitId'] instead.
-        'unit_measurement': _findUnitName(p['unitId']),
-        'quantity': p['quantity'],
-        'brutto': p['brutto'],
-        'netto': p['netto'],
-        'price': p['price'],
-        'total_sum': p['sum'],
-        'additional_expenses': p['additionalExpense'],
-        'cost_price': p['costPrice'],
-      }).toList(),
-      'expenses': _expenseRows.map((e) => {
-        'expense_id': e['expenseId'],
-        'amount': e['amount'],
-      }).toList(),
-    };
+  // Filter out expense rows where 'expenseId' is null.
+  final filteredExpenses = _expenseRows.where((e) => e['expenseId'] != null).toList();
 
-    Navigator.of(context).pop(payload);
-  }
+  final payload = {
+    'provider_id': _selectedProviderId,
+    'document_date': dateStr,
+    'products': _productRows.map((p) => {
+      'product_subcard_id': p['product_subcard_id'],
+      'unit_measurement': _findUnitName(p['unitId']),
+      'quantity': p['quantity'],
+      'brutto': p['brutto'],
+      'netto': p['netto'],
+      'price': p['price'],
+      'total_sum': p['sum'],
+      'additional_expenses': p['additionalExpense'],
+      'cost_price': p['costPrice'],
+    }).toList(),
+    'expenses': filteredExpenses.map((e) => {
+      'expense_id': e['expenseId'],
+      'amount': e['amount'],
+    }).toList(),
+  };
+
+  Navigator.of(context).pop(payload);
+}
 
   /// If the backend wants a unit measurement string instead of an ID
   String _findUnitName(dynamic unitId) {

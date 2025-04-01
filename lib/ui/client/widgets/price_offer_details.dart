@@ -25,15 +25,12 @@ class PriceOfferDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final int orderId = offerOrder['id'];
-    // The list of items under this offer order:
+    // The list of price offer items from the order:
     final List<dynamic> items = offerOrder['price_offers'] ?? [];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Предложение #$orderId',
-          style: headingStyle,
-        ),
+        title: Text('Предложение #$orderId', style: headingStyle),
         backgroundColor: primaryColor,
       ),
       body: Padding(
@@ -43,30 +40,21 @@ class PriceOfferDetailsPage extends StatelessWidget {
           itemBuilder: (context, index) {
             final item = items[index];
 
-            // Identify the product_sub_card_id from the nested JSON:
+            // Get product_sub_card details; if null, fallback to product_subcard_id.
             final int productSubCardId = item['product_sub_card']?['id'] ??
                 (item['product_subcard_id'] ?? -1);
 
-            // Some fields from the JSON:
+            // Get product name; if product_sub_card is null, use a default value.
             final String productName =
                 item['product_sub_card']?['name'] ?? 'Товар';
             final double price = (item['price'] ?? 0).toDouble();
-            final double amount = (item['amount'] ?? 0).toDouble();
-
-            // If your backend already calculated totalsum:
-            final double totalSum = (item['totalsum'] ?? 0).toDouble();
-
-            // If you prefer to recalc totalsum as price * amount, do:
-            // final double totalSum = price * amount;
-
-            // Unit measurement field (e.g. "мешок", "кг", etc.)
+            // Use unit_measurement from the JSON or default to 'шт'
             final String unitMeasurement =
                 (item['unit_measurement'] ?? 'шт').toString();
 
-            // Handling photo from nested "product_card"
+            // Build the photo URL if available from nested product_card.
             String photoUrl = '';
-            if (item['product_sub_card']?['product_card']?['photo_product'] !=
-                null) {
+            if (item['product_sub_card']?['product_card']?['photo_product'] != null) {
               photoUrl =
                   '$baseUrl${item['product_sub_card']['product_card']['photo_product']}';
             }
@@ -107,7 +95,6 @@ class PriceOfferDetailsPage extends StatelessWidget {
                             ),
                           ),
                     const SizedBox(width: 10),
-
                     // Product Details
                     Expanded(
                       child: Column(
@@ -115,57 +102,40 @@ class PriceOfferDetailsPage extends StatelessWidget {
                         children: [
                           Text(
                             productName,
-                            style: subheadingStyle.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: subheadingStyle.copyWith(fontWeight: FontWeight.bold),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            'Кол-во: $amount | Цена: $price ₸',
-                            style: titleStyle,
-                          ),
-                          Text(
-                            'Ед: $unitMeasurement | Сумма: $totalSum ₸',
-                            style: captionStyle,
-                          ),
+                          Text('Цена: $price ₸', style: titleStyle),
+                          Text('Ед: $unitMeasurement', style: captionStyle),
                         ],
                       ),
                     ),
-
                     // Favorite Button
                     BlocBuilder<FavoritesBloc, FavoritesState>(
                       builder: (context, favState) {
                         final bool isFavorite =
                             (favState is FavoritesLoaded) &&
-                                favState.favorites.any(
-                                  (fav) =>
-                                      fav['product_subcard_id'] ==
-                                      productSubCardId,
-                                );
-
+                                favState.favorites.any((fav) =>
+                                    fav['product_subcard_id'] == productSubCardId);
                         return IconButton(
                           icon: Icon(
-                            isFavorite
-                                ? Icons.favorite
-                                : Icons.favorite_border,
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
                             color: isFavorite ? Colors.red : textColor,
                           ),
                           onPressed: () {
                             if (isFavorite) {
                               context.read<FavoritesBloc>().add(
                                     RemoveFromFavoritesEvent(
-                                      productSubcardId:
-                                          productSubCardId.toString(),
+                                      productSubcardId: productSubCardId.toString(),
                                     ),
                                   );
                             } else {
                               context.read<FavoritesBloc>().add(
                                     AddToFavoritesEvent(
                                       product: {
-                                        'product_subcard_id':
-                                            productSubCardId,
+                                        'product_subcard_id': productSubCardId,
                                         'source_table': 'price_offer_items',
                                       },
                                     ),
@@ -175,78 +145,60 @@ class PriceOfferDetailsPage extends StatelessWidget {
                         );
                       },
                     ),
-
                     // Basket Buttons
                     BlocBuilder<BasketBloc, BasketState>(
                       builder: (context, basketState) {
-                        // Check if it's already in the basket
-                        final basketItem =
-                            basketState.basketItems.firstWhere(
-                          (bItem) =>
-                              bItem.productSubcardId == productSubCardId,
+                        // Try to find this item in the basket.
+                        final basketItem = basketState.basketItems.firstWhere(
+                          (bItem) => bItem.productSubcardId == productSubCardId,
                           orElse: () => BasketItem(
-                            sourceTable: 'price_offer_items',
                             id: -1,
                             quantity: 0,
                             productSubcardId: productSubCardId,
+                            sourceTable: 'price_offer_items',
                             price: 0.0,
                           ),
                         );
-
                         final int quantity = basketItem.quantity;
+                        // Recalculate totalsum as quantity * price.
+                        final double newTotalSumIncrement = (quantity + 1) * price;
+                        final double newTotalSumDecrement = (quantity - 1) * price;
 
-                        // If the user already has some quantity
-                        // show increment/decrement
                         if (quantity > 0) {
                           return Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(
-                                  Icons.remove_circle,
-                                  color: primaryColor,
-                                ),
+                                icon: const Icon(Icons.remove_circle, color: primaryColor),
                                 onPressed: () {
-                                  context.read<BasketBloc>().add(
-                                        AddToBasketEvent({
-                                          'product_subcard_id':
-                                              productSubCardId,
-                                          'source_table':
-                                              'price_offer_items',
-                                          'source_table_id': item['id'],
-                                          'quantity': -1,
-                                          'price': price,
-                                          // NEW FIELDS:
-                                          'unit_measurement':
-                                              unitMeasurement,
-                                          'totalsum': totalSum,
-                                        }),
-                                      );
+                                  if (quantity > 0) {
+                                    context.read<BasketBloc>().add(
+                                          AddToBasketEvent({
+                                            'product_subcard_id': productSubCardId,
+                                            'source_table': 'price_offer_items',
+                                            'source_table_id': item['id'],
+                                            'quantity': -1,
+                                            'price': price,
+                                            'unit_measurement': unitMeasurement,
+                                            'totalsum': newTotalSumDecrement,
+                                          }),
+                                        );
+                                  }
                                 },
                               ),
-                              Text(
-                                '$quantity',
-                                style: subheadingStyle,
-                              ),
+                              Text('$quantity', style: subheadingStyle),
                               IconButton(
-                                icon: const Icon(
-                                  Icons.add_circle,
-                                  color: primaryColor,
-                                ),
+                                icon: const Icon(Icons.add_circle, color: primaryColor),
                                 onPressed: () {
                                   context.read<BasketBloc>().add(
                                         AddToBasketEvent({
-                                          'product_subcard_id':
-                                              productSubCardId,
-                                          'source_table':
-                                              'price_offer_items',
+                                          'product_subcard_id': productSubCardId,
+                                          'source_table': 'price_offer_items',
                                           'source_table_id': item['id'],
                                           'quantity': 1,
                                           'price': price,
-                                          // NEW FIELDS:
-                                          'unit_measurement':
-                                              unitMeasurement,
-                                          'totalsum': totalSum,
+                                          'unit_measurement': unitMeasurement,
+                                          'totalsum': newTotalSumIncrement,
                                         }),
                                       );
                                 },
@@ -254,21 +206,18 @@ class PriceOfferDetailsPage extends StatelessWidget {
                             ],
                           );
                         } else {
-                          // If quantity == 0, show "В корзину"
+                          // When the item is not yet in the basket, show "В корзину"
                           return ElevatedButton(
                             onPressed: () {
                               context.read<BasketBloc>().add(
                                     AddToBasketEvent({
-                                      'product_subcard_id':
-                                          productSubCardId,
-                                      'source_table':
-                                          'price_offer_items',
+                                      'product_subcard_id': productSubCardId,
+                                      'source_table': 'price_offer_items',
                                       'source_table_id': item['id'],
                                       'quantity': 1,
                                       'price': price,
-                                      // NEW FIELDS:
                                       'unit_measurement': unitMeasurement,
-                                      'totalsum': totalSum,
+                                      'totalsum': price,
                                     }),
                                   );
                             },
@@ -278,10 +227,7 @@ class PriceOfferDetailsPage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: const Text(
-                              'В корзину',
-                              style: TextStyle(color: Colors.white),
-                            ),
+                            child: const Text('В корзину', style: TextStyle(color: Colors.white)),
                           );
                         }
                       },
