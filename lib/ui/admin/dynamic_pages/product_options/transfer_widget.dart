@@ -1,32 +1,31 @@
-import 'package:alan/bloc/blocs/admin_page_blocs/blocs/transfer_bloc.dart';
-import 'package:alan/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
-import 'package:alan/bloc/blocs/admin_page_blocs/events/transfer_event.dart';
-import 'package:alan/bloc/blocs/admin_page_blocs/events/warehouse_event.dart';
-import 'package:alan/bloc/blocs/admin_page_blocs/states/transfer_state.dart';
-
-import 'package:alan/bloc/blocs/common_blocs/events/unit_event.dart';
-
+import 'package:alan/ui/admin/widgets/filter_transfer_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 // BLoCs
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/transfer_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/transfer_event.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/states/transfer_state.dart';
+
 import 'package:alan/bloc/blocs/admin_page_blocs/blocs/product_subcard_bloc.dart';
-import 'package:alan/bloc/blocs/admin_page_blocs/blocs/warehouse_bloc.dart';
-import 'package:alan/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
-
-
-
+import 'package:alan/bloc/blocs/admin_page_blocs/events/product_subcard_event.dart';
 import 'package:alan/bloc/blocs/admin_page_blocs/states/product_subcard_state.dart';
+
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/warehouse_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/warehouse_event.dart';
 import 'package:alan/bloc/blocs/admin_page_blocs/states/warehouse_state.dart';
+
+import 'package:alan/bloc/blocs/common_blocs/blocs/unit_bloc.dart';
+import 'package:alan/bloc/blocs/common_blocs/events/unit_event.dart';
 import 'package:alan/bloc/blocs/common_blocs/states/unit_state.dart';
 
-// Styles
-import 'package:alan/constant.dart';
-
+// Styles: #0ABCD7 -> #6CC6DA
+import 'package:alan/constant_new_version.dart';
 
 class ProductTransferPage extends StatefulWidget {
   final VoidCallback? onClose;
+
   const ProductTransferPage({Key? key, this.onClose}) : super(key: key);
 
   @override
@@ -34,74 +33,114 @@ class ProductTransferPage extends StatefulWidget {
 }
 
 class _ProductTransferPageState extends State<ProductTransferPage> {
-  // user picks "from warehouse" / "to warehouse" / date
+  // --------------------------------------------------------------------------
+  // Filter fields (source/dest warehouse, date), chosen via FilterTransferPage
+  // --------------------------------------------------------------------------
   int? _sourceWhId;
   int? _destWhId;
   DateTime? _selectedDate;
 
+  // --------------------------------------------------------------------------
+  // Product rows => each row: product_subcard_id, quantity, unit
+  // --------------------------------------------------------------------------
   final List<Map<String, dynamic>> _productRows = [
     {
       'product_subcard_id': null,
       'quantity': 0.0,
       'unit_measurement': null,
-    }
+    },
   ];
 
   @override
   void initState() {
     super.initState();
-    // fetch needed data
+    // Kick off the data fetch
     context.read<WarehouseBloc>().add(FetchWarehousesEvent());
     context.read<UnitBloc>().add(FetchUnitsEvent());
     context.read<ProductSubCardBloc>().add(FetchProductSubCardsEvent());
-    // ... no leftover logic here unless you want to do it
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      // Gradient AppBar (#0ABCD7 -> #6CC6DA)
       appBar: AppBar(
-        backgroundColor: primaryColor,
-        title: const Text('Перемещение', style: headingStyle),
+        automaticallyImplyLeading: false,
+        elevation: 0,
+        title: const Text('Перемещение', style: TextStyle(color: Colors.white)),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [primaryColor, accentColor],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         actions: [
+          // Фильтр button => open FilterTransferPage
           IconButton(
-            icon: const Icon(Icons.close),
+            icon: const Icon(Icons.filter_list, color: Colors.white),
+            tooltip: 'Фильтр',
+            onPressed: _openFilterScreen,
+          ),
+          // Close
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.white),
             onPressed: () {
-              // Child does the pop
-              Navigator.of(context).pop();
+              widget.onClose?.call();
+              Navigator.pop(context);
             },
-          )
+          ),
         ],
       ),
+
+      // Listen for "transfer created" or "error"
       body: BlocListener<ProductTransferBloc, ProductTransferState>(
         listener: (context, state) {
           if (state is ProductTransferCreated) {
-            // show success
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
-            // pop the sheet
-            Navigator.of(context).pop();
+            // Reset or pop
+            setState(() {
+              _sourceWhId = null;
+              _destWhId   = null;
+              _selectedDate = null;
+              _productRows.clear();
+              _productRows.add({
+                'product_subcard_id': null,
+                'quantity': 0.0,
+                'unit_measurement': null,
+              });
+            });
             widget.onClose?.call();
           } else if (state is ProductTransferError) {
-            // show error
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
           }
         },
         child: SingleChildScrollView(
-          padding: pagePadding,
+          padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              _buildWarehouseSelectors(),
+              // Show the chosen filter at top
+              _buildChosenFilterSummary(),
               const SizedBox(height: 16),
+
+              // Product table
               _buildProductTable(),
               const SizedBox(height: 16),
+
               ElevatedButton(
-                style: elevatedButtonStyle,
-                onPressed: _saveTransfer,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: _onSave,
                 child: const Text('Сохранить перемещение', style: buttonTextStyle),
               ),
             ],
@@ -111,136 +150,80 @@ class _ProductTransferPageState extends State<ProductTransferPage> {
     );
   }
 
-  Widget _buildWarehouseSelectors() {
-    return Row(
-      children: [
-        Expanded(child: _buildSourceWhDropdown()),
-        const SizedBox(width: 8),
-        Expanded(child: _buildDestWhDropdown()),
-        const SizedBox(width: 8),
-        Expanded(child: _buildDatePicker()),
-      ],
-    );
-  }
+  // --------------------------------------------------------------------------
+  // Show the chosen filter at top
+  // --------------------------------------------------------------------------
+  Widget _buildChosenFilterSummary() {
+    final srcStr = _sourceWhId?.toString() ?? 'нет';
+    final dstStr = _destWhId?.toString() ?? 'нет';
+    final dateStr = (_selectedDate == null)
+        ? 'Не выбрана'
+        : DateFormat('yyyy-MM-dd').format(_selectedDate!);
 
-  Widget _buildSourceWhDropdown() {
-    return BlocBuilder<WarehouseBloc, WarehouseState>(
-      builder: (context, state) {
-        if (state is WarehouseLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is WarehouseError) {
-          return Text('Ошибка: ${state.message}', style: bodyTextStyle);
-        } else if (state is WarehouseLoaded) {
-          final items = state.warehouses.map<DropdownMenuItem<int>>((w) {
-            return DropdownMenuItem<int>(
-              value: w['id'],
-              child: Text(w['name'] ?? 'NoName', style: bodyTextStyle),
-            );
-          }).toList();
-
-          return DropdownButtonFormField<int>(
-            value: _sourceWhId,
-            onChanged: (val) => setState(() => _sourceWhId = val),
-            items: items,
-            decoration: InputDecoration(
-              labelText: 'Откуда (склад)',
-              labelStyle: formLabelStyle,
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          );
-        }
-        return const Text('Загрузка складов...', style: bodyTextStyle);
-      },
-    );
-  }
-
-  Widget _buildDestWhDropdown() {
-    return BlocBuilder<WarehouseBloc, WarehouseState>(
-      builder: (context, state) {
-        if (state is WarehouseLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is WarehouseError) {
-          return Text('Ошибка: ${state.message}', style: bodyTextStyle);
-        } else if (state is WarehouseLoaded) {
-          final items = state.warehouses.map<DropdownMenuItem<int>>((w) {
-            return DropdownMenuItem<int>(
-              value: w['id'],
-              child: Text(w['name'] ?? 'NoName', style: bodyTextStyle),
-            );
-          }).toList();
-
-          return DropdownButtonFormField<int>(
-            value: _destWhId,
-            onChanged: (val) => setState(() => _destWhId = val),
-            items: items,
-            decoration: InputDecoration(
-              labelText: 'Куда (склад)',
-              labelStyle: formLabelStyle,
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          );
-        }
-        return const Text('Загрузка складов...', style: bodyTextStyle);
-      },
-    );
-  }
-
-  Widget _buildDatePicker() {
-    return GestureDetector(
-      onTap: () async {
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: _selectedDate ?? DateTime.now(),
-          firstDate: DateTime(2000),
-          lastDate: DateTime(2100),
-        );
-        if (picked != null) {
-          setState(() => _selectedDate = picked);
-        }
-      },
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal:8.0, vertical:10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                _selectedDate == null
-                  ? 'Дата'
-                  : DateFormat('yyyy-MM-dd').format(_selectedDate!),
-                style: bodyTextStyle,
-              ),
-              const Icon(Icons.calendar_today, size:16, color:Colors.grey),
-            ],
-          ),
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      elevation: 2,
+      child: ListTile(
+        title: Text(
+          'Текущий фильтр:',
+          style: bodyTextStyle.copyWith(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          'Откуда: $srcStr\n'
+          'Куда: $dstStr\n'
+          'Дата: $dateStr',
+          style: bodyTextStyle,
         ),
       ),
     );
   }
 
+  // --------------------------------------------------------------------------
+  // Open filter page => store results
+  // --------------------------------------------------------------------------
+  Future<void> _openFilterScreen() async {
+    final initFilter = TransferFilterData(
+      sourceWhId: _sourceWhId,
+      destWhId:   _destWhId,
+      date:       _selectedDate,
+    );
+
+    final result = await Navigator.push<TransferFilterData>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FilterTransferPage(initialFilter: initFilter),
+      ),
+    );
+
+    // If user picks filter => update
+    if (result != null) {
+      setState(() {
+        _sourceWhId = result.sourceWhId;
+        _destWhId   = result.destWhId;
+        _selectedDate = result.date;
+      });
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Product table
+  // --------------------------------------------------------------------------
   Widget _buildProductTable() {
     return BlocBuilder<ProductSubCardBloc, ProductSubCardState>(
-      builder: (context, state) {
-        if (state is ProductSubCardLoading) {
+      builder: (context, subcardState) {
+        if (subcardState is ProductSubCardLoading) {
           return const Center(child: CircularProgressIndicator());
-        } else if (state is ProductSubCardError) {
-          return Text('Ошибка товаров: ${state.message}', style: bodyTextStyle);
-        } else if (state is ProductSubCardsLoaded) {
-          final subcards = state.productSubCards;
-
+        } else if (subcardState is ProductSubCardError) {
+          return Text('Ошибка товаров: ${subcardState.message}', style: bodyTextStyle);
+        } else if (subcardState is ProductSubCardsLoaded) {
+          final subcards = subcardState.productSubCards;
           return BlocBuilder<UnitBloc, UnitState>(
             builder: (context, unitState) {
               if (unitState is UnitLoading) {
                 return const Center(child: CircularProgressIndicator());
               } else if (unitState is UnitFetchedSuccess) {
                 final units = unitState.units;
-                return _buildProductTableBody(subcards, units);
+                return _buildTableBody(subcards, units);
               }
               return const Text('Ошибка ед. изм', style: bodyTextStyle);
             },
@@ -251,114 +234,154 @@ class _ProductTransferPageState extends State<ProductTransferPage> {
     );
   }
 
-  Widget _buildProductTableBody(List<dynamic> subcards, List<dynamic> units) {
+  Widget _buildTableBody(List<dynamic> subcards, List<dynamic> units) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
-        side: const BorderSide(color:borderColor),
+        side: BorderSide(color: accentColor, width: 1.2),
       ),
       child: Padding(
         padding: elementPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(mainAxisAlignment:MainAxisAlignment.spaceBetween, children:[
-              Text('Товары для перемещения', style: subheadingStyle),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text(''),
-                style: elevatedButtonStyle,
-                onPressed: () {
-                  setState(() {
-                    _productRows.add({
-                      'product_subcard_id': null,
-                      'quantity': 0.0,
-                      'unit_measurement': null,
-                    });
-                  });
-                },
+            // Title bar
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [primaryColor, accentColor],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(6),
               ),
-            ]),
-            const SizedBox(height:8),
-
-            SingleChildScrollView(
-              scrollDirection:Axis.horizontal,
-              child: DataTable(
-                headingRowColor: MaterialStateProperty.all(primaryColor),
-                columns: const [
-                  DataColumn(label: Text('Товар', style: tableHeaderStyle)),
-                  DataColumn(label: Text('Кол-во', style: tableHeaderStyle)),
-                  DataColumn(label: Text('Ед. изм', style: tableHeaderStyle)),
-                  DataColumn(label: Text('Удалить', style: tableHeaderStyle)),
-                ],
-                rows: List.generate(_productRows.length, (index){
-                  final row = _productRows[index];
-                  return DataRow(cells:[
-                    // product_subcard_id
-                    DataCell(
-                      DropdownButton<int>(
-                        value: row['product_subcard_id'],
-                        underline: const SizedBox(),
-                        isExpanded:true,
-                        style: tableCellStyle,
-                        items: subcards.map<DropdownMenuItem<int>>((sc){
-                          return DropdownMenuItem<int>(
-                            value:sc['id'],
-                            child: Text(sc['name']??'NoName', style: tableCellStyle),
-                          );
-                        }).toList(),
-                        onChanged:(val){
-                          setState(()=> row['product_subcard_id']=val);
-                        },
-                      ),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Товары для перемещения',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                    // quantity
-                    DataCell(
-                      SizedBox(
-                        width:60,
-                        child: TextField(
-                          style:tableCellStyle,
-                          keyboardType:TextInputType.number,
-                          decoration: const InputDecoration(
-                            border:InputBorder.none,
-                            hintText:'0',
-                          ),
-                          onChanged:(val){
-                            setState(()=> row['quantity']=double.tryParse(val)??0.0);
-                          },
-                        ),
-                      ),
-                    ),
-                    // unit_measurement
-                    DataCell(
-                      DropdownButton<String>(
-                        value: row['unit_measurement'],
-                        underline:const SizedBox(),
-                        isExpanded:true,
-                        style:tableCellStyle,
-                        items: units.map<DropdownMenuItem<String>>((u){
-                          return DropdownMenuItem<String>(
-                            value:u['name'],
-                            child: Text(u['name'], style:tableCellStyle),
-                          );
-                        }).toList(),
-                        onChanged:(val){
-                          setState(()=> row['unit_measurement']=val);
-                        },
-                      ),
-                    ),
-                    // remove
-                    DataCell(
+                  ),
+                  Row(
+                    children: [
                       IconButton(
-                        icon: const Icon(Icons.delete, color:Colors.red),
-                        onPressed:(){
-                          setState(()=>_productRows.removeAt(index));
+                        icon: const Icon(Icons.delete, color: Colors.white),
+                        onPressed: () {
+                          setState(() => _productRows.clear());
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add, color: Colors.white),
+                        onPressed: () {
+                          setState(() {
+                            _productRows.add({
+                              'product_subcard_id': null,
+                              'quantity': 0.0,
+                              'unit_measurement': null,
+                            });
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Table header
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [primaryColor, accentColor],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+              ),
+              child: Row(
+                children: [
+                  _tableHeaderCell('Товар', width:120),
+                  _tableHeaderCell('Кол-во', width:60),
+                  _tableHeaderCell('Ед. изм', width:60),
+                  _tableHeaderCell('', width:50), // Delete icon
+                ],
+              ),
+            ),
+
+            // Table body
+            Column(
+              children: List.generate(_productRows.length, (i) {
+                final row = _productRows[i];
+                return Row(
+                  children: [
+                    _tableBodyCell(
+                      width: 120,
+                      child: DropdownButton<int>(
+                        value: row['product_subcard_id'],
+                        isExpanded: true,
+                        underline: const SizedBox(),
+                        style: tableCellStyle,
+                        items: subcards.map<DropdownMenuItem<int>>((sc) {
+                          return DropdownMenuItem<int>(
+                            value: sc['id'],
+                            child: Text(sc['name'] ?? 'NoName', style: tableCellStyle),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() => row['product_subcard_id'] = val);
                         },
                       ),
                     ),
-                  ]);
-                }),
-              ),
+                    _tableBodyCell(
+                      width: 60,
+                      child: TextField(
+                        style: tableCellStyle,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: '0',
+                        ),
+                        onChanged: (val) {
+                          setState(() => row['quantity'] = double.tryParse(val) ?? 0.0);
+                        },
+                      ),
+                    ),
+                    _tableBodyCell(
+                      width: 60,
+                      child: DropdownButton<String>(
+                        value: row['unit_measurement'],
+                        isExpanded: true,
+                        underline: const SizedBox(),
+                        style: tableCellStyle,
+                        items: units.map<DropdownMenuItem<String>>((u) {
+                          final unitName = (u['name'] ?? '').toString();
+                          return DropdownMenuItem<String>(
+                            value: unitName,
+                            child: Text(unitName, style: tableCellStyle),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() => row['unit_measurement'] = val);
+                        },
+                      ),
+                    ),
+                    _tableBodyCell(
+                      width: 50,
+                      child: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          setState(() => _productRows.removeAt(i));
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }),
             ),
           ],
         ),
@@ -366,46 +389,76 @@ class _ProductTransferPageState extends State<ProductTransferPage> {
     );
   }
 
-  void _saveTransfer() {
-    // validations
+  Widget _tableHeaderCell(String label, {double width=100}) {
+    return Container(
+      width: width,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: const BoxDecoration(
+        border: Border(right: tableBorderSide),
+      ),
+      child: Text(label, style: tableHeaderStyle, textAlign: TextAlign.center),
+    );
+  }
+
+  Widget _tableBodyCell({required Widget child, double width=100}) {
+    return Container(
+      width: width,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      decoration: const BoxDecoration(
+        border: Border(
+          right: tableBorderSide,
+          bottom: tableBorderSide,
+        ),
+      ),
+      child: child,
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // On Save => dispatch to create
+  // --------------------------------------------------------------------------
+  void _onSave() {
+    // Basic validation
     if (_sourceWhId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Укажите склад 'откуда'")),
+        const SnackBar(content: Text("Укажите склад 'Откуда'")),
       );
       return;
     }
     if (_destWhId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Укажите склад 'куда'")),
+        const SnackBar(content: Text("Укажите склад 'Куда'")),
       );
       return;
     }
     if (_sourceWhId == _destWhId) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Нельзя перемещать в тот же самый склад.")),
+        const SnackBar(content: Text("Нельзя перемещать в тот же склад.")),
       );
       return;
     }
     if (_selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Укажите дату перемещения")),
+        const SnackBar(content: Text("Укажите дату перемещения.")),
       );
       return;
     }
     if (_productRows.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Нет строк для перемещения")),
+        const SnackBar(content: Text("Нет данных для перемещения.")),
       );
       return;
     }
 
-    // build final payload
     final docDate = DateFormat('yyyy-MM-dd').format(_selectedDate!);
-    final productList = _productRows.map((r){
+
+    final productList = _productRows.map((row) {
       return {
-        'product_subcard_id': r['product_subcard_id']??0,
-        'quantity': r['quantity']??0.0,
-        'unit_measurement': r['unit_measurement']??'',
+        'product_subcard_id': row['product_subcard_id'] ?? 0,
+        'quantity': row['quantity'] ?? 0.0,
+        'unit_measurement': row['unit_measurement'] ?? '',
       };
     }).toList();
 

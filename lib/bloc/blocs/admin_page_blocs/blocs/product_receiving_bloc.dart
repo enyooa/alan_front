@@ -12,6 +12,9 @@ class ProductReceivingBloc extends Bloc<ProductReceivingEvent, ProductReceivingS
     on<FetchProductReceivingEvent>(_fetchProductReceiving);
     on<CreateProductReceivingEvent>(_createProductReceiving);
     on<CreateBulkProductReceivingEvent>(_createBulkProductReceiving);
+    on<UpdateProductReceivingEvent>(_updateProductReceiving);
+
+on<FetchSingleProductReceivingEvent>(_fetchSingleProductReceiving);
 
   }
 
@@ -124,4 +127,96 @@ Future<void> _createBulkProductReceiving(
     }
   }
 
+
+// 2) Update existing doc
+Future<void> _updateProductReceiving(
+  UpdateProductReceivingEvent event,
+  Emitter<ProductReceivingState> emit,
+) async {
+  emit(ProductReceivingLoading());
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) {
+      emit(ProductReceivingError(message: "No token found."));
+      return;
+    }
+
+    // e.g. 'updateIncome' or 'updateReceipt/ID' endpoint
+      final updateUrl = Uri.parse('${baseUrl}updateIncome/${event.docId}');
+    final response = await http.put(
+      updateUrl,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(event.updatedData),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      emit(ProductReceivingUpdated(data['message'] ?? 'Документ успешно обновлён!'));
+    } else {
+      final err = jsonDecode(response.body);
+      emit(ProductReceivingError(
+        message: err['error'] ?? 'Ошибка обновления документа',
+      ));
+    }
+  } catch (e) {
+    emit(ProductReceivingError(message: e.toString()));
+  }
+}
+
+
+Future<void> _fetchSingleProductReceiving(
+  FetchSingleProductReceivingEvent event,
+  Emitter<ProductReceivingState> emit,
+) async {
+  emit(ProductReceivingLoading());
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) {
+      emit(ProductReceivingError(message: "No token found."));
+      return;
+    }
+
+    // 1) Fetch the doc itself, e.g. GET /api/incomes/{event.docId} 
+    //    or whatever your endpoint is:
+    final docResponse = await http.get(
+      Uri.parse(baseUrl + 'documents/${event.docId}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (docResponse.statusCode != 200) {
+      final errBody = jsonDecode(docResponse.body);
+      throw Exception(errBody['message'] ?? 'Failed to load doc #${event.docId}');
+    }
+    final docData = jsonDecode(docResponse.body);
+
+    // 2) Fetch references if needed (providers, warehouses, subcards, units, expenses).
+    //    Or if you already have separate BLoCs for them, you can skip here.
+    final refResponse = await http.get(
+      Uri.parse(baseUrl+'getWarehouseDetails'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (refResponse.statusCode != 200) {
+      throw Exception('Failed to load references for editing');
+    }
+    final refData = jsonDecode(refResponse.body);
+
+    // 3) Emit loaded state
+    emit(ProductReceivingSingleLoaded(
+      document: docData,
+      providers: refData['providers'] ?? [],
+      warehouses: refData['warehouses'] ?? [],
+      productSubCards: refData['product_sub_cards'] ?? [],
+      unitMeasurements: refData['unit_measurements'] ?? [],
+      expenses: refData['expenses'] ?? [],
+    ));
+  } catch (e) {
+    emit(ProductReceivingError(message: e.toString()));
+  }
+}
 }

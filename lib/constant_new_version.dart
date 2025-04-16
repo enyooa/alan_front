@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 
-const baseUrl = 'https://alantrade.kz/api/';
-const basePhotoUrl = 'https://alantrade.kz/';
+// If your new color codes are #0ABCD7 -> #6CC6DA:
+const Color primaryColor = Color(0xFF0ABCD7); // Was 0xFF0288d1
+const Color accentColor  = Color(0xFF6CC6DA); // second accent color
 
-// Replace the old colors with the new ones you want
-const primaryColor = Color(0xFF0ABCD7); // #0ABCD7
-const accentColor  = Color(0xFF6CC6DA); // #6CC6DA
+const Color backgroundColor  = Color(0xFFF1F3F8);
+const Color borderColor      = Color(0xFFD1D9E6);
+const Color unselectednavbar = Colors.grey;
+const Color errorColor       = Color(0xFFB00020);
+const Color textColor        = Colors.black87;
 
-const backgroundColor = Color(0xFFF1F3F8);
-const borderColor = Color(0xFFD1D9E6);
-const unselectednavbar = Colors.grey;
-const Color errorColor = Color(0xFFB00020);
-const Color textColor = Colors.black87;
-
-// Define text styles
+// Standard text styles
 const TextStyle headingStyle = TextStyle(
   fontSize: 16,
   fontWeight: FontWeight.w100,
@@ -71,15 +68,21 @@ const TextStyle tableCellStyle = TextStyle(
 
 // Padding constants
 const double horizontalPadding = 16.0;
-const double verticalPadding = 12.0;
-const EdgeInsets pagePadding = EdgeInsets.all(16.0);
-const EdgeInsets elementPadding = EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0);
-const EdgeInsets buttonPadding = EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0);
+const double verticalPadding   = 12.0;
+const EdgeInsets pagePadding   = EdgeInsets.all(16.0);
+const EdgeInsets elementPadding = EdgeInsets.symmetric(
+  horizontal: 16.0,
+  vertical: 8.0,
+);
+const EdgeInsets buttonPadding = EdgeInsets.symmetric(
+  horizontal: 24.0,
+  vertical: 12.0,
+);
 
 // Border styles
 const BorderSide tableBorderSide = BorderSide(color: borderColor, width: 1.0);
 
-// Elevated Button style
+// For ElevatedButton, if needed:
 final ButtonStyle elevatedButtonStyle = ElevatedButton.styleFrom(
   backgroundColor: primaryColor,
   foregroundColor: Colors.white,

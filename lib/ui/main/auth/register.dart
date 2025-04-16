@@ -19,10 +19,10 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _surnameController = TextEditingController();
+  final TextEditingController _lastNameController  = TextEditingController();
+  final TextEditingController _surnameController   = TextEditingController();
   final TextEditingController _whatsappNumberController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordController  = TextEditingController();
   final TextEditingController _passwordConfirmationController = TextEditingController();
 
   // Loading flag to show a circular indicator
@@ -79,12 +79,44 @@ class _RegisterState extends State<Register> {
               const SizedBox(height: 15),
               _buildTextField(_surnameController, 'Отчество'),
               const SizedBox(height: 15),
-              _buildTextField(_whatsappNumberController, 'WhatsApp номер'),
+
+              // WhatsApp Number with +7 prefix
+              TextField(
+                controller: _whatsappNumberController,
+                keyboardType: TextInputType.phone,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: primaryColor,
+                  fontSize: 13,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w400,
+                ),
+                decoration: const InputDecoration(
+                  prefixText: '+7 ',
+                  labelText: 'WhatsApp номер',
+                  labelStyle: TextStyle(
+                    color: primaryColor,
+                    fontSize: 15,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w600,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    borderSide: BorderSide(width: 1, color: primaryColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    borderSide: BorderSide(width: 1, color: primaryColor),
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 15),
               _buildPasswordField(_passwordController, 'Пароль'),
               const SizedBox(height: 15),
               _buildPasswordField(_passwordConfirmationController, 'Подтверждение пароля'),
               const SizedBox(height: 25),
+
               ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
                 child: SizedBox(
@@ -110,6 +142,7 @@ class _RegisterState extends State<Register> {
                 ),
               ),
               const SizedBox(height: 15),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -147,31 +180,40 @@ class _RegisterState extends State<Register> {
     final firstName = _firstNameController.text.trim();
     final lastName = _lastNameController.text.trim();
     final surname = _surnameController.text.trim();
-    final whatsappNumber = _whatsappNumberController.text.trim();
+    final typedNumber = _whatsappNumberController.text.trim();
     final password = _passwordController.text.trim();
     final passwordConfirmation = _passwordConfirmationController.text.trim();
 
-    if ([firstName, whatsappNumber, password, passwordConfirmation].any((field) => field.isEmpty)) {
+    if ([firstName, typedNumber, password, passwordConfirmation].any((field) => field.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Пожалуйста заполните все поля!')),
       );
-    } else if (password != passwordConfirmation) {
+      return;
+    }
+
+    if (password != passwordConfirmation) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Пароль не совпадает')),
       );
-    } else {
-      setState(() => _isLoading = true);
-      context.read<AuthBloc>().add(
-        RegisterEvent(
-          firstName: firstName,
-          lastName: lastName,
-          surname: surname,
-          whatsappNumber: whatsappNumber,
-          password: password,
-          passwordConfirmation: passwordConfirmation,
-        ),
-      );
+      return;
     }
+
+    // Because we used prefix "+7 ", typedNumber might be e.g. "7076069831"
+    // We'll build the final phone like "7" + typedNumber => "77076069831"
+    final finalNumber = '7$typedNumber';
+
+    setState(() => _isLoading = true);
+
+    context.read<AuthBloc>().add(
+      RegisterEvent(
+        firstName: firstName,
+        lastName: lastName,
+        surname: surname,
+        whatsappNumber: finalNumber,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+      ),
+    );
   }
 
   Widget _buildTextField(TextEditingController controller, String labelText) {

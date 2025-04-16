@@ -35,3 +35,34 @@ class ProductReceivingError extends ProductReceivingState {
   @override
   List<Object?> get props => [message];
 }
+
+class ProductReceivingSingleLoaded extends ProductReceivingState {
+  final Map<String, dynamic> document;
+  final List<dynamic> providers;
+  final List<dynamic> warehouses;
+  final List<dynamic> productSubCards;
+  final List<dynamic> unitMeasurements;
+  final List<dynamic> expenses;
+
+  ProductReceivingSingleLoaded({
+    required this.document,
+    required this.providers,
+    required this.warehouses,
+    required this.productSubCards,
+    required this.unitMeasurements,
+    required this.expenses,
+  });
+
+  @override
+  List<Object?> get props =>
+      [document, providers, warehouses, productSubCards, unitMeasurements, expenses];
+}
+
+class ProductReceivingUpdated extends ProductReceivingState {
+  final String message;
+  ProductReceivingUpdated(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+

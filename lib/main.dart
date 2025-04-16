@@ -1,5 +1,7 @@
 // lib/main.dart
 
+import 'package:alan/bloc/blocs/admin_page_blocs/blocs/warehouse_bloc.dart';
+import 'package:alan/bloc/blocs/admin_page_blocs/events/warehouse_event.dart';
 import 'package:alan/role_selection_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -131,6 +133,9 @@ class StartApp extends StatelessWidget {
           create: (context) => FavoritesBloc(repository: FavoritesRepository(baseUrl: baseUrl)),
         ),
         BlocProvider(create: (_) => ProviderBloc()),
+        BlocProvider<WarehouseBloc>(
+          create: (_) => WarehouseBloc()..add(FetchWarehousesEvent()),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

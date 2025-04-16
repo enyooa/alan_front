@@ -10,9 +10,23 @@ class FetchProductReceivingEvent extends ProductReceivingEvent {
   @override
   List<Object?> get props => [];
 }
+class FetchSingleProductReceivingEvent extends ProductReceivingEvent {
+  final int docId;
+  FetchSingleProductReceivingEvent(this.docId);
+
+  @override
+  List<Object?> get props => [docId];
+}
 
 
+class UpdateProductReceivingEvent extends ProductReceivingEvent {
+  final int docId;
+  final Map<String, dynamic> updatedData;
+  UpdateProductReceivingEvent({required this.docId, required this.updatedData});
 
+  @override
+  List<Object?> get props => [docId, updatedData];
+}
 class CreateProductReceivingEvent extends ProductReceivingEvent {
   final int productCardId;
   final String? unitMeasurement;

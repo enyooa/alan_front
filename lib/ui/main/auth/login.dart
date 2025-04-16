@@ -17,6 +17,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController _whatsappNumberController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
   bool _obscurePassword = true; // Control password visibility
 
   @override
@@ -27,23 +28,39 @@ class _LoginState extends State<Login> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            // Navigate based on roles
+            // The user is logged in; route them based on their roles.
             final roles = state.roles;
 
-            if (roles.contains('admin')) {
-              Navigator.pushReplacementNamed(context, '/admin_dashboard');
-            } else if (roles.contains('cashbox')) {
-              Navigator.pushReplacementNamed(context, '/cashbox_dashboard');
-            } else if (roles.contains('client')) {
-              Navigator.pushReplacementNamed(context, '/client_dashboard');
-            } else if (roles.contains('packer')) {
-              Navigator.pushReplacementNamed(context, '/packer_dashboard');
-            } else if (roles.contains('courier')) {
-              Navigator.pushReplacementNamed(context, '/courier_dashboard');
-            } else if (roles.contains('storager')) {
-              Navigator.pushReplacementNamed(context, '/storage_dashboard');
+            if (roles.isEmpty) {
+              Navigator.pushReplacementNamed(context, '/login');
+            } else if (roles.length == 1) {
+              final singleRole = roles.first;
+              switch (singleRole) {
+                case 'admin':
+                  Navigator.pushReplacementNamed(context, '/admin_dashboard');
+                  break;
+                case 'cashbox':
+                  Navigator.pushReplacementNamed(context, '/cashbox_dashboard');
+                  break;
+                case 'client':
+                  Navigator.pushReplacementNamed(context, '/client_dashboard');
+                  break;
+                case 'packer':
+                  Navigator.pushReplacementNamed(context, '/packer_dashboard');
+                  break;
+                case 'courier':
+                  Navigator.pushReplacementNamed(context, '/courier_dashboard');
+                  break;
+                case 'storager':
+                  Navigator.pushReplacementNamed(context, '/storage_dashboard');
+                  break;
+                default:
+                  Navigator.pushReplacementNamed(context, '/login');
+                  break;
+              }
             } else {
-              Navigator.pushReplacementNamed(context, '/home');
+              // 2+ roles => show the Role Selection screen
+              Navigator.pushReplacementNamed(context, '/role_selection');
             }
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -59,6 +76,7 @@ class _LoginState extends State<Login> {
               children: [
                 const SizedBox(height: 18),
                 SizedBox(height: MediaQuery.of(context).size.height / 4),
+
                 const Text(
                   'Логин',
                   style: TextStyle(
@@ -69,9 +87,11 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 const SizedBox(height: 50),
-                // WhatsApp Number Input
+
+                // WhatsApp Number Input with +7 prefix
                 TextField(
                   controller: _whatsappNumberController,
+                  keyboardType: TextInputType.phone,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: primaryColor,
@@ -80,6 +100,7 @@ class _LoginState extends State<Login> {
                     fontWeight: FontWeight.w400,
                   ),
                   decoration: const InputDecoration(
+                    prefixText: '+7 ',
                     labelText: 'WhatsApp номер',
                     labelStyle: TextStyle(
                       color: primaryColor,
@@ -97,11 +118,13 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 30),
+
                 // Password Input with Eye Icon
                 TextField(
                   controller: _passwordController,
-                  obscureText: _obscurePassword, // Use the state variable
+                  obscureText: _obscurePassword,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: primaryColor,
@@ -110,7 +133,7 @@ class _LoginState extends State<Login> {
                     fontWeight: FontWeight.w400,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: 'Пароль',
                     labelStyle: const TextStyle(
                       color: primaryColor,
                       fontSize: 15,
@@ -132,13 +155,14 @@ class _LoginState extends State<Login> {
                       ),
                       onPressed: () {
                         setState(() {
-                          _obscurePassword = !_obscurePassword; // Toggle visibility
+                          _obscurePassword = !_obscurePassword;
                         });
                       },
                     ),
                   ),
                 ),
                 const SizedBox(height: 25),
+
                 // Login Button
                 ClipRRect(
                   borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -147,16 +171,20 @@ class _LoginState extends State<Login> {
                     height: 56,
                     child: ElevatedButton(
                       onPressed: () {
-                        final whatsappNumber = _whatsappNumberController.text.trim();
+                        final typedNumber = _whatsappNumberController.text.trim();
                         final password = _passwordController.text.trim();
 
-                        if (whatsappNumber.isEmpty || password.isEmpty) {
+                        if (typedNumber.isEmpty || password.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Пожалуйста заполните все поля!')),
                           );
                         } else {
+                          // No extra '7' prefix here:
                           BlocProvider.of<AuthBloc>(context).add(
-                            LoginEvent(whatsapp_number: whatsappNumber, password: password),
+                            LoginEvent(
+                              whatsapp_number: typedNumber,  // use it as-is
+                              password: password,
+                            ),
                           );
                         }
                       },
@@ -175,7 +203,9 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 15),
+
                 Row(
                   children: [
                     const Text(
@@ -191,7 +221,7 @@ class _LoginState extends State<Login> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => Register()),
+                          MaterialPageRoute(builder: (context) => const Register()),
                         );
                       },
                       child: const Text(
@@ -207,11 +237,12 @@ class _LoginState extends State<Login> {
                   ],
                 ),
                 const SizedBox(height: 15),
+
                 TextButton(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => PasswordVerificationScreen()),
+                      MaterialPageRoute(builder: (context) =>  PasswordVerificationScreen()),
                     );
                   },
                   child: const Text(
